@@ -8,6 +8,8 @@ categories: 四大组件
 ## 前言
 Activity的启动流程有俩种过程，一种是根Activity的启动过程，即在Launch界面点击一个应用图标启动应用程序，根Activity指的是应用程序启动的第一个Activity；另一种是普通Activity的启动流程，即我们平时调用startActivity方法来启动一个Activity。本文讨论第二种，startActivity方法大家都知道是用来启动一个Activity的，那么大家有没有想过它在底层是怎么启动的呢？Activity的生命周期方法是如何被回调的？它启动过程中涉及到多少个进程？接下来我们通过撸一篇源码来了解Activity的大概启动流程，然后解答这几个问题。
 
+<!--more-->
+
 > 本文源码基于Android8.0，本文涉及的源码文件位置如下：
 > frameworks/base/core/java/android/app/Activity.java
 > frameworks/base/services/core/java/com/android/server/am/*.java(*代表ActivityManagerService，ActivityStack，ActivityStarter，ActivityStackSupervisor，ActivityStack)

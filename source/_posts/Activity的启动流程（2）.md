@@ -10,6 +10,8 @@ categories: 四大组件
 
 上一篇文章讲了应用进程请求AMS启动Activity过程和Activity在AMS中的启动过程，然后Activity启动的代码逻辑就从AMS所在进程，又重新回到了应用进程所在的ApplicationThread中。我们还留下了一个问题，**Activity的生命周期方法是如何被回调的？**，下面我们就带着这个疑问，去走一遍源码，看一下在应用进程中ApplicationThread启动Activity的过程。
 
+<!--more-->
+
 > 本文基于android8.0，本文相关源码文件位置如下：
 > frameworks/base/core/java/android/app/Activity.java
 > frameworks/base/core/java/android/app/ActivityThread.java
