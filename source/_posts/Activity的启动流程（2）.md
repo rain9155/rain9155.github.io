@@ -92,7 +92,7 @@ private void sendMessage(int what, Object obj) {
 final H mH = new H();
 ```
 
-熟悉android消息机制的都知道(不了解的，可以看这一篇文章[Android消息机制java层](https://blog.csdn.net/Rain_9155/article/details/86684083))，Handler发送消息后，都会统一到handlerMessage方法中处理。
+熟悉android消息机制的都知道(不了解的，可以看这一篇文章[Android消息机制java层](https://rain9155.github.io/2019/02/21/Android%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6java%E5%B1%82/))，Handler发送消息后，都会统一到handlerMessage方法中处理。
 
 我们来看一下Handler H对消息的处理。
 
