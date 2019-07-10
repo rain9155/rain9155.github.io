@@ -6,16 +6,16 @@ categories: 四大组件
 ---
 
 ## 前言
-* 上一篇文章[Activity的启动流程（1）](https://blog.csdn.net/Rain_9155/article/details/89421385)
+* 上一篇文章[Activity的启动流程（1）](https://rain9155.github.io/2019/05/19/Activity%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%EF%BC%881%EF%BC%89/)
 
 上一篇文章讲了应用进程请求AMS启动Activity过程和Activity在AMS中的启动过程，然后Activity启动的代码逻辑就从AMS所在进程，又重新回到了应用进程所在的ApplicationThread中。我们还留下了一个问题，**Activity的生命周期方法是如何被回调的？**，下面我们就带着这个疑问，去走一遍源码，看一下在应用进程中ApplicationThread启动Activity的过程。
 
 <!--more-->
 
-> 本文基于android8.0，本文相关源码文件位置如下：
-> frameworks/base/core/java/android/app/Activity.java
-> frameworks/base/core/java/android/app/ActivityThread.java
-> frameworks/base/core/java/android/app/Instrumentation.java
+	本文基于android8.0，本文相关源码文件位置如下：
+	frameworks/base/core/java/android/app/Activity.java
+	frameworks/base/core/java/android/app/ActivityThread.java
+	frameworks/base/core/java/android/app/Instrumentation.java
 
 ## ApplicationThread::scheduleLaunchActivity()
 上文结尾讲到在ActivityStackSupervisor的realStartActivityLocked()中调用了ApplicationThread中的scheduleLaunchActivity方法，这里是Activity启动的开始。ApplicationThread是ActivityThread的内部类，实现了IApplicationThread.stub接口。ActivityThread代表应用程序进程的主线程，它管理着当前应用程序进程的线程。
@@ -455,7 +455,7 @@ final void handleResumeActivity(IBinder token,
 }
 ```
 
-handleResumeActivity方法里面的代码也有点长，这个方法主要是把Activity置为Resume状态，并把Activity显示出来，所以我们只关注注释1，注释2是把Activity值为VISIBLE状态，大家要明白的是Activity其实也可以说是一个View，它的顶级View叫做DecorView，但系统回调完Activity的onResume函数时，只是说明Activity1已经完成所有的资源准备工作，Activity已经做好显示给用户的准备，所以还要通过类似于setVisible的方式把它显示出来，这个过程涉及到WindowManage的相关知识，为什么要这样做？大家可以看这篇文章[Window,WindowManager和WindowManagerService之间的关系](https://blog.csdn.net/Rain_9155/article/details/88829992)了解一下，所以注释2不是本文重点就不讲了。
+handleResumeActivity方法里面的代码也有点长，这个方法主要是把Activity置为Resume状态，并把Activity显示出来，所以我们只关注注释1，注释2是把Activity值为VISIBLE状态，大家要明白的是Activity其实也可以说是一个View，它的顶级View叫做DecorView，但系统回调完Activity的onResume函数时，只是说明Activity1已经完成所有的资源准备工作，Activity已经做好显示给用户的准备，所以还要通过类似于setVisible的方式把它显示出来，这个过程涉及到WindowManage的相关知识，为什么要这样做？大家可以看这篇文章[Window,WindowManager和WindowManagerService之间的关系](https://rain9155.github.io/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/)了解一下，所以注释2不是本文重点就不讲了。
 
 下面我们来看注释1的performResumeActivity方法。
 
@@ -541,11 +541,11 @@ public void callActivityOnResume(Activity activity) {
 
 到目前为止我们已经回调了Activity的三个生命周期方法：onCreate -> onStart -> onResume，onRestart也介绍了一下，可以说开头那个问题已经解解决了一半，我先来看一下本文的时序图：
 
-![](https://img-blog.csdnimg.cn/20190508171007587.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JhaW5fOTE1NQ==,size_16,color_FFFFFF,t_70)
+{% asset_img activity1.jpg activity1 %}
 
 所以现在我们知道了在应用进程中ApplicationThread启动Activity的过程。
 
-那么还有三个方法：onPause -> onStop -> onDestory 什么时候被回调呢？大家都知道Activity有7个生命周期方法，除去onRestart，其他3个都是一 一对应的，结合前面那篇文章[Activity的启动流程（1）](https://blog.csdn.net/Rain_9155/article/details/89421385)我们知道：
+那么还有三个方法：onPause -> onStop -> onDestory 什么时候被回调呢？大家都知道Activity有7个生命周期方法，除去onRestart，其他3个都是一 一对应的，结合前面那篇文章[Activity的启动流程（1）](https://rain9155.github.io/2019/05/19/Activity%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%EF%BC%881%EF%BC%89/)我们知道：
 
 * 1、在AMS中含有ApplicatiThread的本地代理，所以AMS所在进程可以通过这个代理与ActivityThread的主线程通信，也就能调用ApplicatiThread的一些方法。
 

@@ -10,9 +10,9 @@ Activity的启动流程有俩种过程，一种是根Activity的启动过程，�
 
 <!--more-->
 
-> 本文源码基于Android8.0，本文涉及的源码文件位置如下：
-> frameworks/base/core/java/android/app/Activity.java
-> frameworks/base/services/core/java/com/android/server/am/*.java(*代表ActivityManagerService，ActivityStack，ActivityStarter，ActivityStackSupervisor，ActivityStack)
+	本文源码基于Android8.0，本文涉及的源码文件位置如下：
+	frameworks/base/core/java/android/app/Activity.java
+	frameworks/base/services/core/java/com/android/server/am/*.java(*代表ActivityManagerService，ActivityStack，ActivityStarter，ActivityStackSupervisor，ActivityStack)
 
 ## Activity::startActivity()
 
@@ -552,7 +552,7 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 从应用调用一个startActivity方法开始，应用进程开始请求AMS启动Activity，然后在AMS中Activity完成它的一系列准备，最后再回到应用进程中开始回调Activity的生命周期，本文回答了一半这个问题，即本文讲解了应用进程开始请求AMS启动Activity，然后在AMS中完成它的一系列准备的过程，这个过程用时序图表示如下：
 
-![](https://img-blog.csdnimg.cn/20190420181934413.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JhaW5fOTE1NQ==,size_16,color_FFFFFF,t_70)
+{% asset_img activity3.jpg activity3 %}
 
 * Activity的生命周期方法是如何被回调的？
 
@@ -562,13 +562,13 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 答案是2个，前言已经讲过本文讨论的是普通Activity的启动流程，即我们平时调用startActivity方法来启动一个Activity，所以本文这个过程涉及的进程可以可以用下面这个图表示：
 
-![](https://img-blog.csdnimg.cn/20190420181958732.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JhaW5fOTE1NQ==,size_16,color_FFFFFF,t_70)
+{% asset_img activity1.png activity1 %}
 
 图中AppProcess代表应用所在进程，systemServer代表AMS所在进程，两个进程之间通过Binder进行通信，实现了XX.Stub的类就可以进行Binder通信，如本文的ApplicationThread和AMS都实现了各自的Stub类，所以应用进程startActivity时请求AMS启动Activity，AMS准备好后，再发送scheduleLaunchActivity请求告诉应用可以开始启动Activity了。
 
 那么如果是前言所讲的第一种启动Activity的过程，即即在Launch界面点击一个应用图标启动应用程序，那么会涉及多少个进程？答案是4个，如图：
 
-![](https://img-blog.csdnimg.cn/20190420182008912.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1JhaW5fOTE1NQ==,size_16,color_FFFFFF,t_70)
+{% asset_img activity2.png activity2 %}
 
 可以看到会涉及Launcher进程、SystemServer进程、App进程、Zygote进程。关于这些进程的简单信息可以看这篇[从进程的角度看Android的系统架构](https://blog.csdn.net/Rain_9155/article/details/88831678)
 

@@ -322,13 +322,13 @@ public void setView(View view, WindowManager.LayoutParams attrs, View panelParen
 
 注意这个传入的mInputChannel参数，它实现了Parcelable接口，用于接受WMS返回来的输入事件。
 
-## 总结
-
-通过上面简单的介绍，我们知道Window是View的载体，我们想要对Window进行删除，添加，更新View就得通过WindowManager，WindowManager与WMS通过Session进行通信，具体的实现就交给了WMS处理，WMS会为每一个Window创建一个WindowState并管理它们，具体的渲染工作WMS就交给SurfaceFinger处理。它们之间的类图关系如下：
+它们之间的类图关系如下：
 
 {% asset_img  window1.jpg Window,WindowManager, WMS之间的关系 %}
 
-如果不讨论具体的实现，本文所讨论的WMS系统相关结构如下：
+## 总结
+
+通过上面简单的介绍，我们知道Window是View的载体，我们想要对Window进行删除，添加，更新View就得通过WindowManager，WindowManager与WMS通过Session进行通信，具体的实现就交给了WMS处理，WMS会为每一个Window创建一个WindowState并管理它们，具体的渲染工作WMS就交给SurfaceFinger处理。本文所讨论的WMS系统相关结构如下：
 
 {% asset_img window2.jpg WMS系统结构 %}
 
