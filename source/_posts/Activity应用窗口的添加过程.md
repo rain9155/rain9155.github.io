@@ -1,6 +1,6 @@
 ---
-title: 'Window,WindowManager和WindowManagerService之间的关系'
-date: 2019-03-22 22:36:32
+title: 'Activity应用窗口的添加过程'
+date: 2019-07-10 15:20:32
 tags: 
 - window
 - windowManager
@@ -14,6 +14,8 @@ categories: Window机制
 * 上一篇文章[Window, WindowManager和WindowManagerService之间的关系](https://rain9155.github.io/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/)
 
 从上一篇文章中，我们了解到了Window的体系机制，也知道了window分为三种类型，分别是应用窗口(Application Window)、子窗口(Sub Window)、系统窗口(System Window），本文通过源码以Activity为例讲解一下应用窗口的添加过程，如果没看过上一篇文章建议先看，对于不同类型的窗口的添加，它们在WindowManager中的处理过程会有一点不一样，但是对于在WMS的处理过程中，基本上都是一样的。所以本文深入讲解一下Activity窗口的添加过程，知道了这个过程，对于其他类型的窗口添加也就能举一反三了。
+
+<!--more-->
 
 	本文基于Android8.0, 相关源码位置如下:
 	frameworks/base/core/java/android/view/*.java（*代表Window, WindowManager, 		WindowManagerImpl，WindowManagerGlobal, ViewRootImpl）
