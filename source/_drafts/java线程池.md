@@ -16,7 +16,7 @@ Executor是一个接口，里面只有一个方法execute(Runnable command)，�
 
 下面一张图说明的它们之间的关系。
 
-{% asset_img thread3.jpg thread3 %}
+{% asset_img thread1.jpg thread1 %}
 
 ## ThreadPoolExecutor
 
@@ -53,6 +53,10 @@ ThreadPoolExecutor是线程池的真正实现，它的构造方法提供了一�
 如果放入队列失败，说明队列满了，且当线程中线程数小于 maximumPoolSize 的时候，则会创建一个工作线程（非核心线程）来执行这个任务，如果线程池中的线程数大于maximumPoolSize，调用给定的拒绝策略。
 
 如果任务成功放入队列，则看看是否需要开启新的线程来执行任务，只有当当前工作线程数为0的时候才会创建新的线程，因为之前的线程有可能因为都处于空闲状态或因为工作结束等待超时而被移除，否则就从队列中一个个取出任务给空闲的线程执行。
+
+如图，线程池的工作流程如下:
+
+{% asset_img thread3.png thread %}
 
 ### 3、 long  keepAliveTime
 
