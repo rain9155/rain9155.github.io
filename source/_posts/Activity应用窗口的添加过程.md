@@ -604,7 +604,7 @@ public void setView(View view, WindowManager.LayoutParams attrs, View panelParen
 }
 ```
 
-在setView方法中，我们先看注释1，在向WMS发起将View显示到手机窗口上前，先调用requestLayout绘制整颗View Hierarchy，这个方法里面会往Handler发送DO_TRAVERSAL消息，这个消息会触发整个View树的绘制操作，也就是performTraversal()方法的执行。我们来看注释2，到这里Activity的Window的添加就交给了mWindowSession，它是一个IWindowSession类型，IWindowSession是一个AIDL接口文件，需要编译后才生成IWindowSession.java接口，mWindowSession是在上面的ViewRootImpl的构造中被赋值的：**mWindowSession = WindowManagerGlobal.getWindowSession();**，关于这部分的已经在上一篇文章讲解过了，所以注释2其实最终调用的Session的addToDisplay()方法，在addToDisplay()中返回了WMS的addWindow()的返回结果,所以，从这里开始添加Window的过程转移到WMS进程中去。
+在setView方法中，我们先看注释1，在向WMS发起将View显示到手机窗口上前，先调用requestLayout绘制整颗View Hierarchy，这个方法里面会通过Choreographer的postCallback方法注册对应的绘制回调(CALLBACK_TRAVERSAL)，等待vsync信号，然后会触发整个View树的绘制操作，也就是performTraversal()方法的执行。我们来看注释2，到这里Activity的Window的添加就交给了mWindowSession，它是一个IWindowSession类型，IWindowSession是一个AIDL接口文件，需要编译后才生成IWindowSession.java接口，mWindowSession是在上面的ViewRootImpl的构造中被赋值的：**mWindowSession = WindowManagerGlobal.getWindowSession();**，关于这部分的已经在上一篇文章讲解过了，所以注释2其实最终调用的Session的addToDisplay()方法，在addToDisplay()中返回了WMS的addWindow()的返回结果,所以，从这里开始添加Window的过程转移到WMS进程中去。
 
 ### 2、WMS :: addWindow()
 

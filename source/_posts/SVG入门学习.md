@@ -277,7 +277,7 @@ path是树形结构中最小的单位，而通过Group可以将不同的path进�
 ```
 上面的代码画了俩条线，每条线由三个点控制，形成初始状态，下面立马通过AnimatedVectorDrawable来实现动画效果。
 
->  源码文末给出
+	源码文末给出
 
 ### 2、 AnimatedVectorDrawable
 AnimatedVectorDrawable就是通过连接静态的VectorDrawable和动态的objectAninmator来为VectorDrawable提供动画效果，分几个步骤来使用：

@@ -86,7 +86,7 @@ onViewCreated方法的回调在onCreateView方法后，当调用onViewCreated方
 
 ### 应用示例
 
-下面是我在项目中使用的情况：
+下面是我在[项目](https://github.com/rain9155/WanAndroid)中使用的情况：
 
 {% asset_img fragment1.gif fragment1 %}
 
@@ -160,7 +160,7 @@ onHiddenChanged方法是当Fragment的隐藏状态变化示被调用，当Fragme
 
 ## 结语
 
-以上就是我的懒加载历程，虽然现在也有一些Fragment库可以实现这个效果，但是它的原理也是这个，我们要知其所以然，还有该懒加载类已经用到了我的[小项目](https://github.com/rain9155/WanAndroid)中，该[懒加载类](https://github.com/rain9155/lazyLoagingFragment/tree/master/app/src/main/java/com/example/lazyloading/fragment)整合场景一和场景二，只有简单的几句代码，只要继承就能在两种场景下使用。
+以上就是我的懒加载历程，虽然现在也有一些Fragment库可以实现这个效果，但是它的原理也是这个，我们要知其所以然，该[懒加载类](https://github.com/rain9155/lazyLoagingFragment/tree/master/app/src/main/java/com/example/lazyloading/fragment)整合场景一和场景二，只有简单的几句代码，只要继承就能在两种场景下使用。
 
 参考文章：
 
