@@ -1,12 +1,18 @@
 ---
 title: java线程
-tags: 线程
+tags: 
+- 线程
+- java
 categories: java
+date: 2019-07-19 12:25:50
 ---
+
 
 ## 前言
 
 在java中，线程非常重要，我们要分清楚进程和线程的区别：进程是指一个内存中运行的应用程序，每个进程都拥有自己的一块独立的内存空间，进程之间的资源不共享；线程是CPU调度的最小单元，一个进程可以有多个线程，线程之间的堆空间是共享的，但栈空间是独立的，java程序的进程至少包含主线程和后台线程(垃圾回收线程)。了解这些知识后，来看下文有关线程的知识。
+
+<!--more-->
 
 ## 并发和并行
 
@@ -164,7 +170,9 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 | LockSupport.parkNanos() 方法        | LockSupport.unpark(Thread)                      |
 | LockSupport.parkUntil() 方法        | LockSupport.unpark(Thread)                      |
 
-> ps：阻塞和等待的区别在于，阻塞是被动的，它是在等待获取一个排它锁。而等待是主动的，通过调用 Thread.sleep() 和 Object.wait() 等方法进入。
+```
+ps：阻塞和等待的区别在于，阻塞是被动的，它是在等待获取一个排它锁。而等待是主动的，通过调用 Thread.sleep() 和 Object.wait() 等方法进入。
+```
 
 ### 6、TREMINATED(终止状态)
 
@@ -203,7 +211,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 * notify()：执行该方法的线程唤醒在等待池中等待的任意一个线程，把线程转到锁池中等待
 * notifyAll()：执行该方法的线程唤醒在等待池中等待的所有线程，把线程转到锁池中等待
 
-> 注意：上述方法只能在同步方法或者同步代码中使用，否则会报IllegalMonitorStateException异常，还有上述方法只能被同步监听锁对象来调用，不能使用其他对象调用，否则会报IllegalMonitorStateException异常。
+注意：上述方法只能在同步方法或者同步代码中使用，否则会报IllegalMonitorStateException异常，还有上述方法只能被同步监听锁对象来调用，不能使用其他对象调用，否则会报IllegalMonitorStateException异常。
 
 假设A线程和B线程共同操作一个X对象，A、B线程可以通过X对象的wait方法和notify方法进行通信，流程如下：
 
@@ -363,7 +371,9 @@ Blank:存钱完毕，存了100元
 
 可以看到，小明总是在收到ATM的通知后才来取钱，如果通过这个存钱取钱的例子还不了解wait/notify机制的话，可以看看这个[修厕所的例子](https://mp.weixin.qq.com/s/OriB-ouTDuCzquoFmjv9Lg)。
 
-> ps: **wait() 和 sleep() 的区别**是什么，首先wait()是Object的方法，而sleep()是Thread的静态方法，其次调用wait()会释放同步锁，而sleep()不会，最后一点不同的是调用`wait`方法需要先获得锁，而调用`sleep`方法是不需要的。
+```
+ps: **wait() 和 sleep() 的区别**是什么，首先wait()是Object的方法，而sleep()是Thread的静态方法，其次调用wait()会释放同步锁，而sleep()不会，最后一点不同的是调用`wait`方法需要先获得锁，而调用`sleep`方法是不需要的。
+```
 
 ### 2、await()  / signal() signalAll()机制
 
@@ -544,7 +554,9 @@ public class DeamonThread extends Thread {
 
 2、前台线程创建的线程默认是前台线程，可以通过setDaemon(true)设置为后台线程，在后台线程创建的新线程，新线程是后台线程。
 
-> 注意：**t.setDaemon(true)**方法必须在start方法前调用，否则会报IllegalMonitorStateException异常
+```
+注意：**t.setDaemon(true)**方法必须在start方法前调用，否则会报IllegalMonitorStateException异常
+```
 
 ### 4、线程礼让
 

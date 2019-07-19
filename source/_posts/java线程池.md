@@ -1,14 +1,20 @@
 ---
 title: java线程池
-tags: 线程
+tags: 
+- 线程池
+- java
 categories: java
+date: 2019-07-19 12:26:00
 ---
+
 
 ## 前言
 
-* 上一篇文章：[java线程](https://blog.csdn.net/Rain_9155/article/details/90607359)
+* 上一篇文章：[java线程](https://rain9155.github.io/2019/07/19/java%E7%BA%BF%E7%A8%8B/)
 
 当我们需要频繁的创建多个线程时，每次都通过new一个Thread是一种不好的操作，创建一个线程是要消耗资源，频繁的创建会导致性能较差，而且我们还要管理多个线程的状态，管理不好还可能会出现死锁，浪费资源。这时就需要java提供的线程池，它能够有效的管理、调度线程，避免过多资源的消耗，通过线程池的统一调度、管理，使得多线程开发变得更简单。本文讲解一下有关线程池的知识点。
+
+<!--more-->
 
 ## Executor、ExecutorService、Executors、ThreadPoolExecutor之间的关系
 
@@ -124,9 +130,9 @@ execute方法用于提交不需要返回值的任务，所以无法判断任务�
 
 当调用ThreadPoolExecutor的shutdown或shutdownNow方法后，便会进入关闭状态，这时意味线程池不再接受新的任务。这时isShutdown方法返回true。
 
-> 调用shutdown方法会等待线程执行完毕后再关闭线程池，但是如果调用的是shutdownNow方法，则相当于调用每个线程的interrupt方法。
->
-> 如果只想中断 Executor 中的一个线程，可以通过使用 submit() 方法来提交一个线程，它会返回一个 Future<?> 对象，通过调用该对象的 cancel(true) 方法就可以中断线程。
+调用shutdown方法会等待线程执行完毕后再关闭线程池，但是如果调用的是shutdownNow方法，则相当于调用每个线程的interrupt方法。
+
+如果只想中断 Executor 中的一个线程，可以通过使用 submit() 方法来提交一个线程，它会返回一个 Future<?> 对象，通过调用该对象的 cancel(true) 方法就可以中断线程。
 
 ### 3、终止
 
