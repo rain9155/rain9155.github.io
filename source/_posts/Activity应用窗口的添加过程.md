@@ -352,7 +352,7 @@ layoutResID就是我们setContentView传进来的内容布局id，所以这里�
 
 ## Activity的Window的视图添加  - WindowManager :: addView()
 
-熟悉Activity的启动流程的都知道，Activity会在handleResumeActivity方法中把DecorView显示出来，而添加一个Winow是通过WindowManager的addView方法实现的，但是Window只是View的载体，并不是真实存在的，所以addView其实就是添加一个View，这个View是依附在Window上，并且这个View是 View Hierarchy 最顶端的根 View，而Activity的的顶级View是DecorView, 所以Activity的Window的添加DecorView。我们来看一下handleResumeActivity方法，如下：
+熟悉Activity的启动流程的都知道，Activity会在handleResumeActivity方法中把DecorView显示出来，而添加一个Winow是通过WindowManager的addView方法实现的，但是Window只是View的载体，并不是真实存在的，所以addView其实就是添加一个View，这个View是依附在Window上，并且这个View是 View Hierarchy 最顶端的根 View，而Activity的的顶级View是DecorView, 所以添加Activity的Window就是添加DecorView。我们来看一下handleResumeActivity方法，如下：
 
 ```java
 //ActivityThread.java
@@ -465,7 +465,7 @@ public void addView(View view, ViewGroup.LayoutParams params,
 
 ```
 
-上述方法主要分为3个部分，我们先来看WindowManagerGlobal的addView传进来的4个参数，其中view、params和display三者是必不可少的，view就代表待添加的View，这里是DecorView，params就代表窗口布局参数，diaplay代表的是表示要输出的显示设备，而parentWindow表示父窗口，这里的父窗口并不一定是真正意义上的父窗口，有可能就是描述一个窗口的对象本身。在上述分析Activity的 WindowManager创建时就提到parentWindow就是PhoneWindow本身。
+上述方法主要分为4个部分，我们先来看WindowManagerGlobal的addView传进来的4个参数，其中view、params和display三者是必不可少的，view就代表待添加的View，这里是DecorView，params就代表窗口布局参数，diaplay代表的是表示要输出的显示设备，而parentWindow表示父窗口，这里的父窗口并不一定是真正意义上的父窗口，有可能就是描述一个窗口的对象本身。在上述分析Activity的 WindowManager创建时就提到parentWindow就是PhoneWindow本身。
 
 #### 1.1、adjustLayoutParamsForSubWindow(wparams)
 
@@ -557,7 +557,7 @@ public final class WindowManagerGlobal {
 }
 ```
 
-#### 1.4、把ViewRootImpl :: setView()
+#### 1.4、通过ViewRootImpl 的setView()方法把DecorView显示到窗口上
 
 我们回到addView()方法继续看注释4，注释4就是调用ViewRootImpl的setView方法，它里面会请求View Hierarchy的绘制，并请求WMS显示待添加的View，我们看一下该方法，如下：
 
@@ -604,7 +604,7 @@ public void setView(View view, WindowManager.LayoutParams attrs, View panelParen
 }
 ```
 
-在setView方法中，我们先看注释1，在向WMS发起将View显示到手机窗口上前，先调用requestLayout绘制整颗View Hierarchy，这个方法里面会通过Choreographer的postCallback方法注册对应的绘制回调(CALLBACK_TRAVERSAL)，等待vsync信号，然后会触发整个View树的绘制操作，也就是performTraversal()方法的执行。我们来看注释2，到这里Activity的Window的添加就交给了mWindowSession，它是一个IWindowSession类型，IWindowSession是一个AIDL接口文件，需要编译后才生成IWindowSession.java接口，mWindowSession是在上面的ViewRootImpl的构造中被赋值的：**mWindowSession = WindowManagerGlobal.getWindowSession();**，关于这部分的已经在上一篇文章讲解过了，所以注释2其实最终调用的Session的addToDisplay()方法，在addToDisplay()中返回了WMS的addWindow()的返回结果,所以，从这里开始添加Window的过程转移到WMS进程中去。
+在setView方法中，我们先看注释1，在向WMS发起将View显示到手机窗口上前，先调用requestLayout绘制整颗View Hierarchy，这个方法里面会通过Choreographer的postCallback方法注册对应的绘制回调(CALLBACK_TRAVERSAL)，等待vsync信号，然后会触发整个View树的绘制操作，也就是performTraversal()方法的执行。我们来看注释2，到这里Activity的Window的添加就交给了mWindowSession，它是一个IWindowSession类型，IWindowSession是一个AIDL接口文件，需要编译后才生成IWindowSession.java接口，mWindowSession是在上面的ViewRootImpl的构造中被赋值的：**mWindowSession = WindowManagerGlobal.getWindowSession();**，关于这部分的已经在上一篇文章讲解过了，所以注释2其实最终调用的Session的addToDisplay()方法，在addToDisplay()中返回了WMS的addWindow()的返回结果,所以从这里开始**添加Window的过程转移到WMS进程**中去。
 
 ### 2、WMS :: addWindow()
 
@@ -711,7 +711,7 @@ public int addWindow(Session session, IWindow client, int seq,
 
 {% asset_img window4.png window4 %}
 
-从图中可以看到，添加一个Window，会涉及到两个进程的交互，一个是Activity所在的应用进程，一个是WMS所在的系统服务进程，所以绿色的那部分就代表着IPC，ViewRootImpl通过WindonManagerGlobal的静态变量sWindowSession负责与WMS通信，它是Session类型，在ViewRootImpl构造中被赋值，WMS中的每个Window的WindowState的mClient负责与Activity所在的应用进程通信，它是W类型，在创建WindowState构造中被赋值，在Activity所在的应用进程的WindonManagerGlobal中会为每一个添加的Window中的View创建一个ViewRootImpl，所以多个Window就对应多个ViewRootImpl，而在WMS中，Window对应着一个View，它会为每一个Window创建一个WindowState以维护Window的状态，所以多个Window就多个WindowState，如果WMS接收到外界的状态变化，就会把这些事件分发给合适的Window，然后Window再转发给View。
+从图中可以看到，添加一个Window，会涉及到两个进程的交互，一个是Activity所在的应用进程，一个是WMS所在的系统服务进程，所以绿色的那部分就代表着IPC，ViewRootImpl通过WindonManagerGlobal的静态变量sWindowSession负责与WMS通信，它是Session类型，在ViewRootImpl构造中被赋值，WMS中的每个Window的WindowState的mClient负责与Activity所在的应用进程通信，它是W类型，在创建WindowState构造中被赋值，在Activity所在的应用进程的WindonManagerGlobal中会为每一个添加的Window中的View创建一个ViewRootImpl，所以多个Window就对应多个ViewRootImpl，而在WMS中，Window对应着一个View，它会为每一个Window创建一个WindowState以维护Window的状态，所以多个Window就多个WindowState。
 
 从应用窗口的添加过程中，对Window的机制也有了一些了解，以后如果遇到有关于Window的添加的异常也懂得去哪里找原因。
 

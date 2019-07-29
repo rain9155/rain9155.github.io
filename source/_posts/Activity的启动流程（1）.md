@@ -548,31 +548,31 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 本来一篇文章写完Activity的启动，写到这里才发现，篇幅太长，所以**Activity在应用进程中的启动过程**就放到下一篇文章。本文简单的介绍了**应用进程请求AMS启动Activity过程和Activity在AMS中的启动过程**，现在让我们来回答一下开头给出的几个问题：
 
-* Activity的启动流程是怎样的？
+* **1、Activity的启动流程是怎样的？**
 
 从应用调用一个startActivity方法开始，应用进程开始请求AMS启动Activity，然后在AMS中Activity完成它的一系列准备，最后再回到应用进程中开始回调Activity的生命周期，本文回答了一半这个问题，即本文讲解了应用进程开始请求AMS启动Activity，然后在AMS中完成它的一系列准备的过程，这个过程用时序图表示如下：
 
 {% asset_img activity3.jpg activity3 %}
 
-* Activity的生命周期方法是如何被回调的？
+* **2、Activity的生命周期方法是如何被回调的？**
 
 本文并没有解答这个问题，这个问题要到下一篇文章才能有答案。
 
-* 它启动过程中涉及到多少个进程？
+* **3、它启动过程中涉及到多少个进程？**
 
-答案是2个，前言已经讲过本文讨论的是普通Activity的启动流程，即我们平时调用startActivity方法来启动一个Activity，所以本文这个过程涉及的进程可以可以用下面这个图表示：
+答案是2个，前言已经讲过本文讨论的是普通Activity的启动流程，**即我们平时调用startActivity方法来启动一个Activity**，所以本文这个过程涉及的进程可以可以用下面这个图表示：
 
 {% asset_img activity1.png activity1 %}
 
 图中AppProcess代表应用所在进程，systemServer代表AMS所在进程，两个进程之间通过Binder进行通信，实现了XX.Stub的类就可以进行Binder通信，如本文的ApplicationThread和AMS都实现了各自的Stub类，所以应用进程startActivity时请求AMS启动Activity，AMS准备好后，再发送scheduleLaunchActivity请求告诉应用可以开始启动Activity了。
 
-那么如果是前言所讲的第一种启动Activity的过程，即即在Launch界面点击一个应用图标启动应用程序，那么会涉及多少个进程？答案是4个，如图：
+那么如果是前言所讲的第一种启动Activity的过程，**即在Launch界面点击一个应用图标启动应用程序**，那么会涉及多少个进程？答案是4个，如图：
 
 {% asset_img activity2.png activity2 %}
 
 可以看到会涉及Launcher进程、SystemServer进程、App进程、Zygote进程。关于这些进程的简单信息可以看这篇[从进程的角度看Android的系统架构](https://blog.csdn.net/Rain_9155/article/details/88831678)
 
-阅读源码真的是一个漫长的过程，又时候看别人写的那么简单，但是当自己去写，才发现要考虑的东西很多，所以这是一个日积月累的过程，所以阅读源码的时候，最后跟着前人的文章阅读，这样理解的更快。
+阅读源码真的是一个漫长的过程，又时候看别人写的那么简单，但是当自己去写，才发现要考虑的东西很多，所以这是一个日积月累的过程，所以阅读源码的时候，最好跟着前人的文章阅读，这样理解的更快。
 
 参考文章：
 
