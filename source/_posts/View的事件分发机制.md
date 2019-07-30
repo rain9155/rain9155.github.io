@@ -5,10 +5,9 @@ categories: View机制
 date: 2019-07-29 23:14:42
 ---
 
-
 ## 前言
 
-前几天写过一篇文章[View的工作原理](https://rain9155.github.io/2019/07/22/View的工作原理/)，讲述的View工作的三大流程，其实与View的工作流程同样重要还有View的事件分发机制，平时我们经常通过setOnClickListener()方法来设置一个View的点击监听，那你有没有想过这个点击事件底层是怎么样传递到这个View的呢？当你自定义控件时，如果要处理滑动事件，那么到底返回true还是false？还有当你遇到了滑动嵌套的情景，你要怎么解决滑动嵌套引起的冲突？所以，本文通过 源码 + 流程图 来深入了解一个事件分发机制，当你掌握了它之后，当你遇到与滑动相关的问题时就更加的游刃有余。
+前几天写过一篇文章[View的工作原理](https://rain9155.github.io/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/)，讲述的View工作的三大流程，其实与View的工作流程同样重要还有View的事件分发机制，平时我们经常通过setOnClickListener()方法来设置一个View的点击监听，那你有没有想过这个点击事件底层是怎么样传递到这个View的呢？当你自定义控件时，如果要处理滑动事件，那么到底返回true还是false？还有当你遇到了滑动嵌套的情景，你要怎么解决滑动嵌套引起的冲突？所以，本文通过 源码 + 流程图 来深入了解一个事件分发机制，当你掌握了它之后，当你遇到与滑动相关的问题时就更加的游刃有余。
 
 <!--more-->
 
@@ -61,11 +60,11 @@ public final class MotionEvent extends InputEvent implements Parcelable {
 
 我想大家都知道View的事件分发机制的起点是View的dispatchTouchEvent()方法，但是如果从View的dispatchTouchEvent()继续追溯上去，事件是从哪里来的呢？
 
-Android的输入设备有很多种，如屏幕、键盘、鼠标、轨迹球等，而屏幕是我们接触最多的设备，当用户手指触摸屏幕时就会产生触摸事件，这时Android的输入系统就会为这个触摸事件在/dev/input/路径下写入以event[NUMBER]为名的输入设备节点，这时输入系统中的EventHub就会监听到这个输入事件，然后InputReader就会把这个原始输入事件读取并经过加工后交给输入系统中的InputReader，InputDispatcher会在Window列表中会找到合适的Window，然后把这个输入事件分发给合适的Window，然后Window就会把这个事件分发给顶级View，**然后顶级View就把这个输入事件在View树中层层分发下去，直到找到合适的View来处理这个事件，这来到了我们熟悉的View的事件分发机制**。
+Android的输入设备有很多种，如屏幕、键盘、鼠标、轨迹球等，而屏幕是我们接触最多的设备，当用户手指触摸屏幕时就会产生触摸事件，这时Android的输入系统就会为这个触摸事件在/dev/input/路径下写入以event[NUMBER]为名的输入设备节点，这时输入系统中的EventHub就会监听到这个输入事件，然后InputReader就会把这个原始输入事件读取并经过加工后交给输入系统中的InputDispatcher，InputDispatcher会在Window列表中会找到合适的Window，然后把这个输入事件分发给合适的Window，然后Window就会把这个事件分发给顶级View，**然后顶级View就把这个输入事件在View树中层层分发下去，直到找到合适的View来处理这个事件，这来到了我们熟悉的View的事件分发机制**。
 
-上面的一些名词如EventHub、InputReader、InputReader都是属于Android的输入系统，这部分是一个很复杂的知识，我只是概括了一下。所以我们只要知道，**输入系统监听到输入事件后，就会先交给Window，然后Window再交给顶级View，然后顶级View在把它分发下去**。(关于Window和View的关系可以看这篇文章[Window, WindowManager和WindowManagerService之间的关系](https://juejin.im/post/5d32acdbf265da1bc4148e86))
+上面的一些名词如EventHub、InputReader、InputReader都是属于Android的输入系统，这部分是一个很复杂的知识，我只是概括了一下。所以我们只要知道，**输入系统监听到输入事件后，就会先交给Window，然后Window再交给顶级View，然后顶级View在把它分发下去**。(关于Window和View的关系可以看这篇文章[Window, WindowManager和WindowManagerService之间的关系](https://rain9155.github.io/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/))
 
-这个顶级View可能是View，也有可能是ViewGroup，具体情况看你添加Window到WMS时你的**addView(View view, ViewGroup.LayoutParams params)**方法中的View是View实例还是ViewGroup实例，所以本文接下来就分别分析View的事件分发和ViewGroup的事件分发。
+这个顶级View可能是View，也有可能是ViewGroup，具体情况看你添加Window到WMS时你的addView(View view, ViewGroup.LayoutParams params)方法中的View是View实例还是ViewGroup实例，所以本文接下来就分别分析View的事件分发和ViewGroup的事件分发。
 
 ## View的事件分发
 
@@ -440,6 +439,7 @@ performClick()方法中的逻辑是，如果你设置了OnClickListener回调，
 
 流程图：
 
+
 {% asset_img view2.png view2 %}
 
 ## ViewGroup的事件分发
@@ -585,15 +585,16 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
 这个方法特别长，里面就是整个ViewGroup的事件分发逻辑，我知道大家也没有想看的欲望了，这个方法对应的流程图如下：
 
-{% asset_img view3.png view3   %}
+
+{% asset_img view3.png view3 %}
 
 可以看到，**在同一个事件序列内（从down开始，到up结束）**，ViewGroup的dispatchTouchEvent()方法可以分为两大过程：**1、ACTION_DOWN事件的处理流程；2、除了ACTION_DOWN以外的事件处理流程**。下面跟着这两个流程分别走一遍。
 
 ### 2、ViewGroup处理ACTION_DOWN事件的流程
 
-{% asset_img view4.png view4  %}
-
 ACTION_DOWN事件的处理流程又可以分为两个流程即：**ViewGroup拦截事件(intercepted = true)与不拦截事件（intercepted = false）**。
+
+{% asset_img view4.png view4 %}
 
 看流程图，在dispatchTouchEvent()方法注释2中的if语句会决定 intercepted 的值，如下：
 
@@ -779,11 +780,9 @@ mFirstTouchTarget不为空，就来到else分支，然后因为是DOWN事件，�
 
 到这里在DOWN事件下ViewGroup不拦截的情况下分析完毕。上面是假设找到了子View并且子View消费了事件，这样当下一次事件到来时mFirstTouchTarget不为空，就直接把这个事件给子View；但是如果上面是找到子View而这个子View不消费这个DOWN事件，即子View的dispatchTouchEvent()方法返回false，那么dispatchTransformedTouchEvent()返回false，就导致无法为mFirstTouchTarget赋值，mFirstTouchTarget为空，当下一次事件序列到来时，ViewGroup会直接处理，而不再转发给子View。这里得出一个结论：**子View如果不消费ACTION_DOWN事件，那么同一事件序列的其他事件都不会再交给它来处理，而是交给它的父ViewGroup处理；子View一旦消费ACTION_DOWN事件，那么同一事件序列的其他事件都会交给它处理**。
 
-所以如果此时子View没有消费ACTION_DOWN事件，并且我重写了ViewGroup的onInterceptTouchEvent()并返回了true，那么ViewGroup就会开始拦截事件，接下来看在DOWN事件下ViewGroup拦截的情况，即**intercepted = true**。
+所以如果此时子View没有消费ACTION_DOWN事件，或者我重写了ViewGroup的onInterceptTouchEvent()并返回了true，那么ViewGroup就会开始拦截事件，接下来看在DOWN事件下ViewGroup拦截的情况，即**intercepted = true**。
 
 #### 2.2、intercepted = true
-
-{% asset_img view6.png view6   %}
 
 如果ViewGroup拦截DOWN事件，那么**intercepted = true**，就不会进入dispatchTouchEvent()方法的注释3的if语句，这样在DOWN事件下ViewGroup就不会遍历它的子View，也就无法调用dispatchTransformedTouchEvent()找到要消费事件的子View，同理无法调用addTouchTarget()方法为mFirstTouchTarget赋值，就会导致在DOWN事件下mFirstTouchTarget为空，这样就直接来到了dispatchTouchEvent()方法的注释4的if语句，如下：
 
@@ -850,13 +849,11 @@ if (actionMasked == MotionEvent.ACTION_DOWN) {
 
 ### 3、ViewGroup处理除了ACTION_DOWN以外的事件的流程
 
-{% asset_img view5.png view5 %}
-
 ACTION_DOWN事件的处理流程又可以分为两个流程即：**mFirstTouchTarget != null与mFirstTouchTarget == null**。你会发现intercepted这个标记位似乎已经没有多大作用， 它如果是true，它根本不会进入dispatchTouchEvent()方法的注释3，就算是false进入了dispatchTouchEvent()方法的注释3，它也不会满足注释3.1的条件。所以我们就直接来到注释4。
 
-#### 3.1、mFirstTouchTarget == null
+{% asset_img view5.png view5 %}
 
-{% asset_img view7.png view7  %}
+#### 3.1、mFirstTouchTarget == null
 
 ```java
  //检查本次事件是否是ACTION_CANCEL
@@ -879,8 +876,6 @@ if (mFirstTouchTarget == null) {//这一般有三种情况导致mFirstTouchTarge
 这里1、2、3情况都有可能发生，**从ACTION_DOWN的处理流程我们知道为mFirstTouchTarget赋值的过程只会在处理ACTION_DOWN事件的时候出现**，所以如果在处理ACTION_DOWN事件的时候ViewGroup没有子View，不会进入for循环，导致mFirstTouchTarget为空；如果ViewGroup有子View，进入了for循环，但是View不消费DOWN事件，即在dispatchTouchEvent()返回了false，导致无法调用addTouchTarget()方法为mFirstTouchTarget赋值，导致mFirstTouchTarget为空；ViewGroup在DOWN事件中的onInterceptTouchEvent(ev)返回了true，不会进入注释3的if语句，导致mFirstTouchTarget为空；所以在处理ACTION_DOWN事件的时候没有找到mFirstTouchTarget，就会导致在除了ACTION_DOWN其他事件到来时mFirstTouchTarget == null，这里就直接让ViewGroup自己处理事件了。
 
 #### 3.2、mFirstTouchTarget != null
-
-{% asset_img view8.png view8 %}
 
 ```java
    //4、根据mFirstTouchTarget是否为null做出不同行为
@@ -960,7 +955,7 @@ private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
 }
 ```
 
-可以看到如果cancel为true，进入注释1这个if分支，里面会set一个ACTION_CANCEL事件，然后传递给target记录的子View，如果cancel为true，进入注释2这个else分支，调用child.dispatchTouchEvent(event)，表示让target记录的子View决定是否处理本次事件，前面已经讲过了。
+可以看到如果cancel为true，进入注释1这个if分支，里面会set一个ACTION_CANCEL事件，然后传递给target记录的子View；如果cancel为false，进入注释2这个else分支，调用child.dispatchTouchEvent(event)，表示让target记录的子View决定是否处理本次事件，前面已经讲过了。
 
 好，现在我们走出dispatchTransformedTouchEvent()方法，来到注释4，如果cancelChild为true，就会调用TouchTarget的recycler()方法回收这个target，这样做的后果是什么呢？这样相当于清空了mFirstTouchTarget，当下一次事件到来时mFirstTouchTarget == null，ViewGroup直接处理事件，不会再分发给子View。
 
@@ -1012,19 +1007,18 @@ if (!disallowIntercept) {//如果子View允许ViewGroup拦截事件
 
 2、ViewGroup如果在onInterceptTouchEvent()方法中一旦拦截除了ACTION_DOWN的事件，那么子View将会收到一个ACTION_CANCEL事件，并且接下来的事件都是交给ViewGroup处理。
 
-3、1、2点的含有都是ViewGroup决定拦截事件，那么一旦ViewGroup决定拦截事件，那么接下来的事件都是交给ViewGroup处理，并且ViewGroup的onInterceptTouchEvent()方法在这个事件序列内不会再调用，这说明ViewGroup的onInterceptTouchEvent()方法不是每次都调用。
+3、1、2点的含义都是ViewGroup决定拦截事件，那么一旦ViewGroup决定拦截事件，那么接下来的事件都是交给ViewGroup处理，并且ViewGroup的onInterceptTouchEvent()方法在这个事件序列内不会再调用，这说明ViewGroup的onInterceptTouchEvent()方法不是每次都调用,只有ViewGroup的dispatchTouchEvent()才能保证每次调用。
 
 3、在ViewGroup中ACTION_DOWN 事件负责寻找 target，即寻找能够消费ACTION_DOWN事件的子View，如果找到，那么接下来同一事件序列内的所有事件都会交给这个子View处理，不再交给ViewGroup；如果没有找到，有两种情况：1、ViewGroup没有子View，2、子View处理了ACTION_DOWN事件，但是在dispatchTouchEvent()返回了false，那么接下来同一事件序列下的所有事件都是ViewGroup自己处理。
 
-4、子View如果不消费ACTION_DOWN事件，那么同一事件序列的其他事件都不会再交给它来处理，而是交给它的父ViewGroup处理；子View一旦消费ACTION_DOWN事件，如果ViewGroup不拦截，那么同一事件序列的其他事件都会交给它处理，
+4、子View如果不消费ACTION_DOWN事件，那么同一事件序列的其他事件都不会再交给它来处理，而是交给它的父ViewGroup处理；子View一旦消费ACTION_DOWN事件，如果ViewGroup不拦截，那么同一事件序列的其他事件都会交给子View处理。
 
-5、当调用super.dispatchTouchEvent(event)就代表ViewGroup开始自己处理事件，里面的逻辑和View的事件分发一样。
+5、当调用super.dispatchTouchEvent(event)就代表ViewGroup开始自己处理事件，里面会执行ViewGroup的onTouchEvent(), 逻辑和View的事件分发一样。
 
 ## 结语
-
 当点击事件到达ViewGroup时，它的dispatchTouchEvent()方法就会被调用，如果这个ViewGroup的onInterceptTouchEvent()方法返回true，就表示它要拦截当前事件，接下来这个事件序列内的事件都会交给它处理，即super.dispatchTouchEvent()方法得到调用；如果这个ViewGroup的onInterceptTouchEvent()方法返回false，就表示它不拦截当前事件，这时当前事件就会传递给它的子View，接着子View的dispatchTouchEvent()方法就会被调用，如果子View是一个View，那么它的处理流程就像前面介绍的View的事件分发一样，如果子View是一个ViewGroup，那么它的处理流程就又是ViewGroup的事件分发，如此递归，**从上到下**，直到整颗View树都收到事件，接下来递归返回，**从下到上**，每一层的返回值都决定是否消费本次事件，如果消费，返回true，它的上一层就无法处理这个事件，如果不消费，返回false，它的上一层又继续传给上一层，直到根视图。
 
-View的事件分发小结和ViewGroup的事件分发小结都可以在源码中找到证明，可以自行验证一下，本文通过源码 + 流程图 说明了整个View的事件分发体制， 
+View的事件分发小结和ViewGroup的事件分发小结都可以在源码中找到证明，可以自行验证一下，本文通过源码 + 流程图 说明了整个View的事件分发体制，在看的过程最好要结合上下文来看，始终记住这是在同一个事件序列内，跟着流程图的每一个分支在源码中走一遍，那样你就会有更深刻的理解。
 
 参考资料：
 
