@@ -1,6 +1,8 @@
 ---
 title: View的事件分发机制
-tags: view
+tags: 
+- view
+- 源码
 categories: View机制
 date: 2019-07-29 23:14:42
 ---

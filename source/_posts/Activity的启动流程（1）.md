@@ -1,7 +1,9 @@
 ---
 title: Activity的启动流程（1）
 date: 2019-05-19 16:11:17
-tags: activity
+tags: 
+- activity
+- 源码
 categories: 四大组件
 ---
 

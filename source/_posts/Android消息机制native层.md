@@ -1,7 +1,9 @@
 ---
 title: Android消息机制native层
 date: 2019-02-21 13:51:51
-tags: handler
+tags: 
+- handler
+- 源码
 categories: 消息机制
 ---
 

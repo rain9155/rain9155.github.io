@@ -1,7 +1,9 @@
 ---
 date: 2019-07-22 19:57:11
 title: View的工作原理
-tags: view
+tags: 
+- view
+- 源码
 categories: View机制
 ---
 
