@@ -1,7 +1,7 @@
 ---
 title: 搞定两种场景下的Fragment懒加载
 tags: fragment
-categories: fragment
+categories: android
 ---
 
 ## 前言

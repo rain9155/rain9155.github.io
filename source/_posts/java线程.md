@@ -124,15 +124,122 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 
 综上所述，实现接口会更好一些。
 
+## 线程的中断与终止
+
+### 1、interrupt()、isInterrupted()、interrupted()的作用
+
+中断就是线程的一个标识位，它表示一个运行中的线程是否被其他线程调用了中断操作，其他线程可以通过调用线程的interrupt()方法对其进行中断操作，线程可以通过调用isInterrupted()方法判断是否被中断，线程也可以通过调用Thread的interrupted()静态方法对当前线程的中断标识位进行复位。
+
+大家不要认为调用了线程的interrupt()方法，该线程就会停止，它只是做了一个标志位，如下：
+
+```java
+public class InterruptThread extends Thread{
+    @Override
+    public void run() {
+        //一个死循环
+        while (true){
+            System.out.println("InterruptThread正在执行");
+        }
+    }
+}
+
+public static void main(String[] args) throws InterruptedException {
+    InterruptThread interruptThread = new InterruptThread();
+    interruptThread.start();
+    interruptThread.interrupt();//调用线程的interrupt()
+    System.out.println("interruptThread是否被中断，interrupt  = " + interruptThread.isInterrupted());//此时isInterrupted()方法返回true
+}
+
+输出结果：
+interruptThread是否被中断，interrupt  = true
+InterruptThread正在执行
+InterruptThread正在执行
+InterruptThread正在执行
+//...
+```
+
+可以看到当你调用了线程的interrupt()方法后，此时调用isInterrupted()方法会返回true，但是该线程还是会继续执行下去。所以怎么样才能终止一个线程的运行呢？
+
+### 2、终止线程的运行
+
+一个线程正常执行完run方法之后会自动结束，如果在运行过程中发生异常也会提前结束；所以利用这两种情况，我们还可以通过以下三种种方式安全的终止运行中的线程：
+
+#### 2.1、利用中断标志位
+
+前面讲到的中断操作就可以用来取消线程任务，如下：
+
+```java
+public class InterruptThread extends Thread{
+    @Override
+    public void run() {
+        while (!isInterrupted()){//利用中断标记位
+            System.out.println("InterruptThread正在执行");
+        }
+    }
+}
+```
+
+当不需要运行InterruptThread线程时，通过调用InterruptThread.interrupt()使得isInterrupted()返回true，就可以让线程退出循环，正常执行完毕之后自动结束。
+
+#### 2.2、利用一个boolean变量
+
+利用一个boolean变量和上述方法同理，如下：
+
+```java
+public class InterruptThread extends Thread{
+    
+    private volatile boolean isCancel;
+
+    @Override
+    public void run() {
+        while (!isCancel){//利用boolean变量
+            System.out.println("InterruptThread正在执行");
+        }
+    }
+
+    public void cancel(){
+        isCancel = true;
+    }
+}
+
+```
+
+当不需要运行InterruptThread线程时，通过调用InterruptThread.cancel()使isCancel等于true，就可以让线程退出循环，正常执行完毕之后自动结束，这里要注意boolean变量要用volatile修饰保证内存的可见性。
+
+#### 2.3、响应InterruptedException
+
+通过调用一个线程的 interrupt() 来中断该线程时，如果该线程处于阻塞、限期等待或者无限期等待状态，那么就会抛出 InterruptedException，从而提前结束该线程，例如当你调用Thread.sleep()方法时，通常会让你捕获一个InterruptedException异常，如下:
+
+```java
+public class InterruptThread extends Thread{
+    @Override
+    public void run() {
+        try{
+            while (true){
+                Thread.sleep(100);//Thread.sleep会抛出InterruptedException
+                System.out.println("InterruptThread正在执行");
+            }
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+    }
+}
+
+```
+
+当不需要运行InterruptThread线程时，通过调用InterruptThread.interrupt()使得 Thread.sleep() 抛出InterruptedException，就可以让线程退出循环，提前结束。在抛出InterruptedException异常之前，JVM会把中断标识位复位，此时调用线程的isInterrupted()方法将会返回false。
+
 ## 线程的生命周期
+
+### 1、线程的6种状态
 
 线程也是有生命周期，也就是存在不同的状态，状态之间相互转换，线程可以处于以下的状态之一：
 
-### 1、NEW(新建状态)
+#### 1.1、NEW(新建状态)
 
 使用new创建一个线程对象，但还没有调用线程的start方法，**Thread t = new Thread()**，此时属于新建状态。
 
-### 2、RUNNABLE(可运行状态)
+#### 1.2、RUNNABLE(可运行状态)
 
 但在新建状态下线程调用了start方法，**t.start()**，此时进入了可运行状态。可运行状态又分为两种状态：
 
@@ -141,16 +248,20 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 
 线程的start方法只能调用一次，否则报错（IllegalThreadStateException）。
 
-### 3、BLOCKED(阻塞状态)
+#### 1.3、BLOCKED(阻塞状态)
 
 正在运行的线程因为某些原因放弃CPU，暂时停止运行，就会进入阻塞状态，此时JVM不会给该线程分配CPU，直到线程重新进入就绪状态，才有机会转到运行状态，阻塞状态只能先进入就绪状态，不能跳过就绪状态直接进入运行状态。线程进入阻塞状态常见的情况有：
 
-* 1、当A线程处于运行状态时，试图获取同步锁，却被B线程获取，此时JVM把当前A线程放到对象的锁池中，A线程进入阻塞状态，等待获取对象的同步锁。
+* 1、当A线程处于运行状态时，试图获取同步锁，却被B线程获取，此时JVM把当前A线程放到对象的锁池(同步队列)中，A线程进入阻塞状态，等待获取对象的同步锁。
 * 2、当线程处于运行状态时，发出了IO请求，此时进入阻塞状态。
 
-### 4、WAITING(等待状态)
+```
+ps: 如果是使用Synchronize关键字，那么尝试获取锁的线程会进入BLOCKED状态；如果是使用java.util.concurrent 类库中的Lock，那么尝试获取锁的线程则会进入WAITING或TIMED WAITING状态，因为java.util.concurrent 类库中的Lock是使用LockSupport来进行同步的。
+```
 
-正在运行的线程调用了无参数的wait方法，此时JVM把该线程放入对象的等待池中，此时线程进入等待状态，等待状态的线程只能被其他线程唤醒，否则不会被分配 CPU 时间片。下面是让线程进入等待状态的方法：
+#### 1.4、WAITING(等待状态)
+
+正在运行的线程调用了无参数的wait方法，此时JVM把该线程放入对象的等待池（等待队列）中，此时线程进入等待状态，等待状态的线程只能被其他线程唤醒，否则不会被分配 CPU 时间片。下面是让线程进入等待状态的方法：
 
 | 进入方法                          | 退出方法                             |
 | --------------------------------- | ------------------------------------ |
@@ -158,7 +269,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 | 无Timeout参数的Thread.join() 方法 | 被调用的线程执行完毕                 |
 | LockSupport.park() 方法           | LockSupport.unpark(Thread)           |
 
-### 5、TIMED WAITING(计时等待状态)
+#### 1.5、TIMED WAITING(计时等待状态)
 
 正在运行的线程调用了有参数的wait方法，此时JVM把该线程放入对象的等待池中，此时线程进入计时等待状态，计时等待状态的线程被其它线程显式地唤醒，在一定时间之后会被系统自动唤醒。下面是让线程进入等待状态的方法：
 
@@ -174,7 +285,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 ps：阻塞和等待的区别在于，阻塞是被动的，它是在等待获取一个排它锁。而等待是主动的，通过调用 Thread.sleep() 和 Object.wait() 等方法进入。
 ```
 
-### 6、TREMINATED(终止状态)
+#### 1. 6、TREMINATED(终止状态)
 
 又称死亡状态，表示线程的终止。线程进入终止状态的情况有：
 
@@ -183,17 +294,9 @@ ps：阻塞和等待的区别在于，阻塞是被动的，它是在等待获取
 
 线程一旦终止了，就不能再次启动，否则报错（IllegalThreadStateException）
 
-### 线程的状态转换图
+### 2、线程的状态转换图
 
 {% asset_img thread1.png thread1 %}
-
-### Thread类中过时的方法
-
-因为存在线程安全问题，所以弃用了，如下：
-
-* void suspend()：暂停当前线程。
-* void resume()：恢复当前线程。
-* void stop()：结束当前线程
 
 ## 线程之间的通信
 
@@ -372,7 +475,7 @@ Blank:存钱完毕，存了100元
 可以看到，小明总是在收到ATM的通知后才来取钱，如果通过这个存钱取钱的例子还不了解wait/notify机制的话，可以看看这个[修厕所的例子](https://mp.weixin.qq.com/s/OriB-ouTDuCzquoFmjv9Lg)。
 
 ```
-ps: **wait() 和 sleep() 的区别**是什么，首先wait()是Object的方法，而sleep()是Thread的静态方法，其次调用wait()会释放同步锁，而sleep()不会，最后一点不同的是调用`wait`方法需要先获得锁，而调用`sleep`方法是不需要的。
+ps: wait() 和 sleep() 的区别是什么，首先wait()是Object的方法，而sleep()是Thread的静态方法，其次调用wait()会释放同步锁，而sleep()不会，最后一点不同的是调用`wait`方法需要先获得锁，而调用`sleep`方法是不需要的。
 ```
 
 ### 2、await()  / signal() signalAll()机制
@@ -474,6 +577,16 @@ public class ATM2 {
 
 2、不要使用Thread类中过时的方法，因为容易导致死锁，所以被废弃，例如A线程获得对象锁，正在执行一个同步方法，如果B线程调用A线程的suspend()，此时A线程暂停运行，放弃CPU，但是不会放弃锁，所以B就永远不会得到A持有的锁。
 
+### 3、 Thread类中过时的方法
+
+由于线程安全问题，被弃用，如下：
+
+- void suspend()：暂停当前线程。
+- void resume()：恢复当前线程。
+- void stop()：结束当前线程
+
+suspend()方法在调用之后不会释放已经占有的资源(锁)，然后进入睡眠状态，这样很容易导致死锁； stop()方法直接终止线程，不会保证线程资源的正常释放，导致程序处于不确定状态。对于suspend()和 resume()可以用上面提到的等待/通知机制代替，而 stop()方法可以用上面提到的终止线程运行的3种方式代替。
+
 ## 线程的控制操作
 
 下面来看一些可以控制线程的操作。
@@ -492,7 +605,7 @@ public static void main(String[] args){
 
 ### 2、联合线程
 
-在线程中调用另一个线程的 join() 方法，会将当前线程置于阻塞状态，等待另一个线程完成后才继续执行，使用如下：
+在线程中调用另一个线程的 join() 方法，会将当前线程置于阻塞状态，等待另一个线程完成后才继续执行，原理就是等待/通知机制，使用如下：
 
 ```java
 public class JoinThread extends Thread {
@@ -554,11 +667,34 @@ public class DeamonThread extends Thread {
 
 2、前台线程创建的线程默认是前台线程，可以通过setDaemon(true)设置为后台线程，在后台线程创建的新线程，新线程是后台线程。
 
-```
-注意：**t.setDaemon(true)**方法必须在start方法前调用，否则会报IllegalMonitorStateException异常
+注意：t.setDaemon(true)方法必须在start方法前调用，否则会报IllegalMonitorStateException异常
+
+### 4、线程优先级
+
+当线程的时间片用完时就会发生线程调度，而线程优先级就是决定线程需要多或少分配一些CPU时间片的线程属性，在java中，通过一个成员变量priority来控制优先级，在线程构建时可以通过setPriority(int)方法来修改线程的优先级，如下：
+
+```java
+public class PriorityThread extends Thread{
+    @Override
+    public void run() {
+        super.run();
+    } 
+}
+
+public static void main(String[] args) throws InterruptedException {
+    PriorityThread priorityThread = new PriorityThread();
+    priorityThread.setPriority(Thread.MAX_PRIORITY);//10
+    priorityThread.start();
+}
 ```
 
-### 4、线程礼让
+优先级范围从1到10，默认是5，优先级高的线程分配的时间片数量要多于优先级低的线程。
+
+```
+ps: 在不同的JVM以及操作系统上，线程优先级规划会有差异，有些操作系统会忽略对线程优先级的设定，所以线程优先级不能作为程序正确性的依赖保证，因为操作系统可以完全不用理会线程优先级的设定
+```
+
+### 5、线程礼让
 
 对静态方法 Thread.yield() 的调用，声明了当前线程已经完成了生命周期中最重要的部分，可以切换给其它线程来执行。如下：
 
@@ -574,7 +710,7 @@ public class YieldThread extends Thread {
 
 该方法只是对线程调度器的一个建议，而且也只是建议具有相同优先级的其它线程可以运行。也就是说，就算你执行了这个方法，该线程还是有可能继续运行下去。
 
-### 5、线程组
+### 6、线程组
 
 java.lang.ThreadGroup类表示线程组，可以对一组线程进行集中管理，当用户在创建线程对象时，可以通过构造器指定其所属的线程组：Thread(ThreadGroup group, String name)。
 

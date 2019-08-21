@@ -1,7 +1,7 @@
 ---
 title: 自定义View实践-仿微信的滑动按钮
-tags: 自定义View
-categories: view
+tags: view
+categories: 自定义View
 ---
 
 ## 前言

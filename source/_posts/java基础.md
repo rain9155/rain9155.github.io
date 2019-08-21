@@ -91,9 +91,7 @@ String name2 = "rain";
 ps: 
 1、在字符串的比较中`==`是用来比较地址的，String的equals方法才是用来比较两个字符串是否相等 
 2、字符串的拼接可以使用`+`,这个运算符的底层其实是调用了String的concat方法，返回一个新的字符串
-
 3、在 Java 7 之前，String Pool 被放在运行时常量池中，它属于永久代。而在 Java 7，String Pool 被移到堆中。这是因为永久代的空间有限，在大量使用字符串的场景下会导致 OutOfMemoryError 错误
-
 4、在 Java 8 中，String 内部使用 char 数组存储数据，在 Java 9 之后，String 类的实现改用 byte 数组存储字符串，这些数组在都用final修饰，所以才保证String是不可变的
 ```
 

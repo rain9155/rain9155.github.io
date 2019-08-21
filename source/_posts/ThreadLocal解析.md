@@ -143,7 +143,7 @@ Thread 中的 threadLocal 成员变量初始值为 null，并且在 Thread 类�
 
 是如何做到同一个对象，却维护着不同线程的数据副本呢？
 **原来，这些数据本来就是存储在各自线程中了，ThreadLocal 的 get() 方法内部其实会先去获取当前的线程对象，然后直接将线程存储数据的容器(ThreadLocalMap)取出来，如果为空就会先创建并将初始值和当前 ThreadLocal 对象绑定存储进去，这样不同线程即使调用了同一 ThreadLocal 对象的get方法，取的数据也是各自线程的数据副本，这样自然就可以达到维护不同线程各自相互独立的数据副本，且以线程为作用域的效果了。**
-* 问题2:hThreadLocal是如何做到同一线程中不同 ThreadLocal 虽然共用同一个线程中的容器，但却可以相互独立运作？
+* 问题2:ThreadLocal是如何做到同一线程中不同 ThreadLocal 虽然共用同一个线程中的容器，但却可以相互独立运作？
 
 **原来，ThreadLocal 的 get() 方法内部根据线程取出map后，当map不为空时，会根据ThreadLocal实例去map中查找value，换句话说，在将数据存储到线程的容器map中是以当前 ThreadLocal 对象实例为 key 存储，这样，即使在同一线程中调用了不同的 ThreadLocal 对象的 get() 方法，所获取到的数据也是不同的，达到同一线程中不同 ThreadLocal 虽然共用一个容器，但却可以相互独立运作的效果。**
 ### 2、ThreadLocal#set(T value)
