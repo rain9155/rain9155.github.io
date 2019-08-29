@@ -69,7 +69,7 @@ call.enqueue(new Callback() {
 * 3、通过OkHttpClient和Request创建一个Call，用于发起网络请求
 * 4、调用Call的execute()或enqueue()方法发起同步或异步请求
 
-当网络请求的响应返回时使用Response来接收，这就是一个典型的HTTP的请求/响应流程(不熟悉HTTP的，可以看[Http网络请求浅析](https://blog.csdn.net/Rain_9155/article/details/83066847))，对应okhttp的Request和Response。
+当网络请求的响应返回时使用Response来接收，这就是一个典型的[HTTP](https://blog.csdn.net/Rain_9155/article/details/83066847)请求/响应流程，对应okhttp的Request和Response。
 
 ### 1.1、创建OkHttpClient
 
