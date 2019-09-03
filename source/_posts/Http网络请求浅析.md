@@ -206,3 +206,5 @@ Keep-Alive: timeout=5,max=100表示TCP连接最多保持5秒，长连接接受10
 
 [HTTP1.0、HTTP1.1 和 HTTP2.0 的区别](https://www.cnblogs.com/heluan/p/8620312.html)
 
+[深度解密 HTTP 通信细节](https://mp.weixin.qq.com/s/xU8X2gF_M_9_qzqbBdr4xQ)
+
