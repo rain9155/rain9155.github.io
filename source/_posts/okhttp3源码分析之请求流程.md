@@ -1,5 +1,5 @@
 ---
-title: okhttp源码分析之请求流程
+title: okhttp3源码分析之请求流程
 tags:
   - okhttp
   - 源码
@@ -17,9 +17,7 @@ date: 2019-09-03 22:49:13
 
 本文是第一篇 - okhttp的请求流程，okhttp项目地址：[okhttp](https://github.com/square/okhttp)
 
-```
-本文源码基于okhttp_3.14.x分支
-```
+<!--more-->
 
 ## okhttp的简单使用
 
