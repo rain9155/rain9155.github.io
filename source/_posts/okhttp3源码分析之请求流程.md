@@ -68,11 +68,11 @@ call.enqueue(new Callback() {
 * 3、通过OkHttpClient和Request创建一个Call，用于发起网络请求
 * 4、调用Call的execute()或enqueue()方法发起同步或异步请求
 
-当服务器处理完一个请求Request后，就会返回一个响应，在okhttp中用Response代表HTTP的响应，这就是一个典型的[HTTP](https://blog.csdn.net/Rain_9155/article/details/83066847)请求/响应流程。下面简单介绍1~3步骤：
+当服务器处理完一个请求Request后，就会返回一个响应，在okhttp中用Response代表HTTP的响应，这就是一个典型的[HTTP](https://rain9155.github.io/2018/12/31/Http网络请求浅析/)请求/响应流程。下面简单介绍1~3步骤：
 
 ### 1、创建OkHttpClient
 
-OkHttpClient是okhttp中的大管家，它将具体的工作分发到各个子系统中去完成，它使用[Builder模式](https://blog.csdn.net/Rain_9155/article/details/82936136)配置网络请求的各种参数如超时、拦截器、分发器等，Builder中可配置的参数如下：
+OkHttpClient是okhttp中的大管家，它将具体的工作分发到各个子系统中去完成，它使用[Builder模式](https://rain9155.github.io/2019/09/07/Builder%E6%A8%A1%E5%BC%8F/#more)配置网络请求的各种参数如超时、拦截器、分发器等，Builder中可配置的参数如下：
 
 ```java
 //OkHttpClient.Builder
@@ -215,7 +215,7 @@ public interface Call extends Cloneable {
 
 ```
 
-我们看到Call接口中有一个Factory接口，Factory中有一个newCall(Request)方法，这说明Call是通过[工厂模式](https://blog.csdn.net/Rain_9155/article/details/82942275)创建，而OkHttpClient实现了Call.Factory接口，重写了newCall(Request)方法，返回了Call的具体实现类RealCall，如下：
+我们看到Call接口中有一个Factory接口，Factory中有一个newCall(Request)方法，这说明Call是通过[工厂模式](https://rain9155.github.io/2019/09/07/%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/#more)创建，而OkHttpClient实现了Call.Factory接口，重写了newCall(Request)方法，返回了Call的具体实现类RealCall，如下：
 
 ```java
 public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory {
@@ -264,7 +264,7 @@ public Response execute() throws IOException {
 
 client就是我们上面所讲的OkHttpClient的实例，它在创建RealCall时作为构造参数传了进去，而OkHttpClient的dispatcher()方法返回的是Dispatcher实例，它在OkHttpClient构造时被创建。
 
-我们先讲一下Dispatcher，那Dispatcher是什么呢？Dispatcher是一个任务调度器，它负责进行请求任务的调度，它的内部维护着3个任务队列(readyAsyncCalls、runningAsyncCalls、runningSyncCalls)和1个[线程池](https://blog.csdn.net/Rain_9155/article/details/90757694)(executorService)，Dispatcher主要内容如下：
+我们先讲一下Dispatcher，那Dispatcher是什么呢？Dispatcher是一个任务调度器，它负责进行请求任务的调度，它的内部维护着3个任务队列(readyAsyncCalls、runningAsyncCalls、runningSyncCalls)和1个[线程池](https://rain9155.github.io/2019/07/19/java线程池/)(executorService)，Dispatcher主要内容如下：
 
 ```java
 public final class Dispatcher {
@@ -390,7 +390,7 @@ public Response proceed(Request request, Transmitter transmitter, @Nullable Exch
 }
 ```
 
-proceed()方法中再次新建了一个RealInterceptorChain，传入了index + 1，而获取拦截器时是通过index获取，这样每次都能获取到下一个拦截器，然后调用下一个拦截器的intercept(Chain)方法，intercept(Chain)方法中就是拦截器的主要功能实现，里面会继续调用传入的RealInterceptorChain的proceed()方法，这样又会重复上述逻辑，我们把RealInterceptorChain看作一条链中的节点，这样就把每个拦截器通过一个个RealInterceptorChain连接起来，形成一条链，这就是典型的[责任链模式](https://blog.csdn.net/Rain_9155/article/details/82962802)，从节点的首部开始把请求传递下去，每一个拦截器都有机会处理这个请求，这又像是一个递归的过程，直到最后一个拦截器器处理完请求后，才开始逐层返回Resquese，拦截器才是Okhttp核心功能所在，关于拦截器介绍下篇文章再讲，这里只需要知道每一个拦截器都代表了一个功能。
+proceed()方法中再次新建了一个RealInterceptorChain，传入了index + 1，而获取拦截器时是通过index获取，这样每次都能获取到下一个拦截器，然后调用下一个拦截器的intercept(Chain)方法，intercept(Chain)方法中就是拦截器的主要功能实现，里面会继续调用传入的RealInterceptorChain的proceed()方法，这样又会重复上述逻辑，我们把RealInterceptorChain看作一条链中的节点，这样就把每个拦截器通过一个个RealInterceptorChain连接起来，形成一条链，这就是典型的[责任链模式](https://rain9155.github.io/2019/09/07/%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/#more)，从节点的首部开始把请求传递下去，每一个拦截器都有机会处理这个请求，这又像是一个递归的过程，直到最后一个拦截器器处理完请求后，才开始逐层返回Resquese，拦截器才是Okhttp核心功能所在，关于拦截器介绍下篇文章再讲，这里只需要知道每一个拦截器都代表了一个功能。
 
 经过对拦截器的简单介绍后，我们知道最后一个添加的拦截器才是把请求发送出去并且返回响应的地方，我们看getResponseWithInterceptorChain()方法，最后一个拦截器的添加是CallServerInterceptor，所以我们直接看CallServerInterceptor的intercept(Chain)方法实现，如下：
 

@@ -78,7 +78,7 @@ public class MyInterceptor implements Interceptor {
 }
 ```
 
-上述就是一个拦截器的通用逻辑，首先我们继承Interceptor实现intercept(Chain)方法，然后根据需要进行1、2、3、4、5步，不管是自定义拦截器还是后面介绍的okhttp默认的拦截器大概都是这个模板实现，定义完拦截器后，我们在构造OkhttpChient时就可以通过addInterceptor(Interceptor)或addNetworkInterceptor(Interceptor)添加自定义拦截器，如下：
+上述就是一个拦截器的通用逻辑，首先我们继承Interceptor实现intercept(Chain)方法，完成我们自己的拦截逻辑，即根据需要进行1、2、3、4、5步，不管是自定义拦截器还是后面介绍的okhttp默认的拦截器大概都是这个模板实现，定义完拦截器后，我们在构造OkhttpChient时就可以通过addInterceptor(Interceptor)或addNetworkInterceptor(Interceptor)添加自定义拦截器，如下：
 
 ```java
 OkHttpClient client = new OkHttpClient.Builder()
@@ -214,9 +214,23 @@ public Response proceed(Request request, Transmitter transmitter, @Nullable Exch
 }
 ```
 
-proceed(Request)方法中会调用下一个拦截器的intercept(Chain)方法，从interceptors列表获取拦截器时是通过index获取的，而构造Chain时传入了index + 1，并在调用下一个拦截器的intercept(Chain)方法时传了进去，我们再回顾一下上面所讲的拦截器intercept(Chain)方法的模板，里面会再次调用传入的Chain的proceed(Request)方法，这样又会重复上述逻辑，这样就把每个拦截器通过一个个Chain连接起来，形成一条链，把Request依着链传递下去，如下：
+proceed(Request)方法中会调用下一个拦截器的intercept(Chain)方法，从interceptors列表获取拦截器时是通过index获取的，而构造Chain时传入了index + 1，并在调用下一个拦截器的intercept(Chain)方法时传了进去，我们再回顾一下上面所讲的拦截器intercept(Chain)方法的模板，里面会再次调用传入的Chain的proceed(Request)方法，这样又会重复上述逻辑，这样就把每个拦截器通过一个个Chain连接起来，形成一条链，把Request沿着链传递下去，直到请求被处理，然后返回Response，响应同样的沿着链传递上去，如下：
 
 
 
-可以看到责任链的尾节点就是
+从上图可知，责任链的尾节点就是CallServerInterceptor对应的Chain，CallServerInterceptor处于最底层，Request是按照interpretor的顺序正向处理，而Response是逆向处理的，每个interpretor都有机会处理Request和Response，一个完美的责任链模式的实现。
+
+知道了getResponseWithInterceptorChain()的整体流程后，下面分别介绍各个默认拦截器的功能。
+
+## RetryAndFollowUpInterceptor
+
+## BridgeInterceptor
+
+## CacheInterceptor
+
+## ConnectInterceptor
+
+## CallServerInterceptor
+
+## 结语
 
