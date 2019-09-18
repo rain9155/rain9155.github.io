@@ -1,11 +1,12 @@
 ---
 title: okhttp3源码分析之拦截器
-date: 2019-09-07 15:01:40
-tags: 
-- okhttp
-- 源码
+tags:
+  - okhttp
+  - 源码
 categories: 优秀开源库分析
+date: 2019-09-07 15:01:40
 ---
+
 
 ## 前言
 
@@ -14,8 +15,6 @@ categories: 优秀开源库分析
 本篇文章继续通过源码来探讨okhttp的另外一个重要知识点：拦截器，在上一篇文章我们知道，在请求发送到服务器之前有一系列的拦截器对请求做了处理后才发送出去，在服务器返回响应之后，同样的有一系列拦截器对响应做了处理后才返回给发起请求的调用者，可见，拦截器是okhttp的一个重要的核心功能，在分析各个拦截器功能的同时又会牵扯出okhttp的缓存机制、连接机制。
 
 okhttp项目地址：[okhttp](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fsquare%2Fokhttp)
-
-<!--more-->
 
 ## 拦截器的简单使用
 
@@ -326,7 +325,7 @@ RetryAndFollowUpInterceptor的intercept(Chain)方法中主要是失败重试和�
 
 ### 1、Transmitter 
 
-在整个方法的流程中出现了一个Transmitter，这里介绍一下，它是okhttp中应用层和网络层的桥梁，管理同一个Cal的所有连接、请求、响应和IO流之间的关系，它在RealCall创建后就被创建了，如下：
+在整个方法的流程中出现了一个Transmitter，这里介绍一下，它是okhttp中应用层和网络层的桥梁，管理着connections、requests、responses和streams之间的关系，它在RealCall创建后就被创建了，如下：
 
 ```java
 //RealCall.java
@@ -346,7 +345,7 @@ public final class Transmitter {
     
     private final OkHttpClient client;//OkHttpClient大管家
     private final RealConnectionPool connectionPool;//连接池，管理着连接
-    public RealConnection connection;//本次连接对象
+    public RealConnection connection;//连接对象
     private ExchangeFinder exchangeFinder;//负责连接的创建
     private @Nullable Exchange exchange;//负责连接IO流读写
     private final Call call;//Call对象
@@ -901,6 +900,7 @@ public Response intercept(Chain chain) throws IOException {
     //获取Transmitter
     Transmitter transmitter = realChain.transmitter();
 	
+    // We need the network to satisfy this request. Possibly for validating a conditional GET.
     boolean doExtensiveHealthChecks = !request.method().equals("GET");
     //1、新建一个Exchange
     Exchange exchange = transmitter.newExchange(chain, doExtensiveHealthChecks);
@@ -911,7 +911,7 @@ public Response intercept(Chain chain) throws IOException {
 }
 ```
 
-ConnectInterceptor的intercept(Chain)方法很简洁，里面定义了okhttp的连接机制，它首先获取Transmitter，然后通过Transmitter的newExchange方法创建一个Exchange，把它传到下一个拦截器CallServerInterceptor，Exchange是什么？Exchange负责从创建的连接的IO流中写入请求和读取响应，完成一次请求/响应的过程，在CallServerInterceptor中你会看到它真正的作用，这里先忽略。所以注释1的newExchange方法是连接机制的主要逻辑实现，我们继续看Transmitter的newExchange方法，如下：
+ConnectInterceptor的intercept(Chain)方法很简洁，里面定义了okhttp的连接机制，主要的逻辑实现都在注释1中newExchange方法，通过Transmitter的newExchange方法可以创建一个Exchange，Exchange是什么？Exchange负责从连接的IO流中写入请求和读取响应，完成一次请求/响应的过程，在CallServerInterceptor中你会看到它真正的作用，这里先忽略，我们继续看Transmitter的newExchange方法，如下：
 
 ```java
 //Transmitter.java
@@ -1072,7 +1072,7 @@ private void connectSocket(int connectTimeout, int readTimeout, Call call,
 }
 ```
 
-我们关注注释1，Platform是okhttp中根据不同Android版本平台的差异实现的一个兼容类，这里就不细究，Platform的connectSocket方法最终会调用rawSocket的connect()方法建立其Socket连接，建立Socket连接后，就可以通过Socket连接获得输入输出流source和sink，okhttp就可以从source读取或往sink写入数据，source和sink是BufferedSource和BufferedSink类型，它们是来自于[okio库](https://github.com/square/okio)，它是一个封装了java.io和java.nio的库，okhttp底层依赖这个库读写数据，Okio好在哪里？详情可以看这篇文章[Okio好在哪](https://www.jianshu.com/p/2fff6fe403dd)。
+我们关注注释1，Platform是okhttp中根据不同Android版本平台的差异实现的一个兼容类，这里就不细究，Platform的connectSocket方法最终会调用rawSocket的connect()方法建立其Socket连接，建立Socket连接后，就可以通过Socket连接获得输入输出流，okhttp就可以从source读取或往sink写入数据，source和sink是BufferedSource和BufferedSink类型，它们是来自于[okio库](https://github.com/square/okio)，它就是一个封装了java.io和java.nio的库，okhttp底层依赖这个库读写数据。
 
 ### 2、RealConnectionPool -  连接池
 
@@ -1132,9 +1132,7 @@ public final class RealConnectionPool {
 }
 ```
 
-RealConnectionPool 在内部维护了一个线程池，用来执行清理连接任务cleanupRunnable，还维护了一个双端队列connections，用来缓存已经创建的连接。要知道创建一次连接要经历TCP握手，如果是HTTPS还要经历TLS握手，握手的过程都是耗时的，所以为了提高效率，就需要connections来对连接进行缓存，从而可以复用；还有如果连接使用完毕，长时间不释放，也会造成资源的浪费，所以就需要cleanupRunnable定时清理无用的连接，okhttp支持5个并发连接，默认每个连接keepAlive为5分钟，keepAlive就是连接空闲后，保持存活的时间。
-
-当我们第一次调用RealConnectionPool 的put方法缓存新建连接时，如果cleanupRunnable还没执行，它首先会使用线程池执行cleanupRunnable，然后把新建连接放入双端队列，cleanupRunnable中会调用cleanup方法进行连接的清理，该方法返回现在到下次清理的时间间隔，然后调用wiat方法进入等待状态，等时间到了后，再次调用cleanup方法进行清理，就这样往复循环。我们来看一下cleanup方法的清理逻辑：
+RealConnectionPool 在内部维护了一个线程池，用来执行清理连接任务cleanupRunnable，还维护了一个双端队列，用来缓存已经创建的连接，当我们第一次调用RealConnectionPool 的put方法缓存新建连接时，如果cleanupRunnable还没执行，它首先会使用线程池执行cleanupRunnable，然后把新建连接放入双端队列，cleanupRunnable中会调用cleanup方法进行连接的清理，该方法返回现在到下次清理的时间间隔，然后调用wiat方法释放进入等待，等时间到了后，再次调用cleanup方法进行清理，就这样往复循环。我们来看一下cleanup方法的清理逻辑：
 
 ```java
 //RealConnectionPool.java
@@ -1213,7 +1211,7 @@ long cleanup(long now) {
 
 了解了RealConnectionPool和RealConnection后，我们再回到ExchangeFinder的find方法，这里是连接创建的地方。
 
-### 3、连接创建（连接机制）
+### 3、连接的创建 
 
 ExchangeFinder的fing方法如下：
 
@@ -1259,32 +1257,30 @@ ExchangeFinder的find方法会调用findHealthyConnection方法，里面会不�
 //ExchangeFinder.java
 private RealConnection findConnection(int connectTimeout, int readTimeout, int writeTimeout, int pingIntervalMillis, boolean connectionRetryEnabled) throws IOException {
     boolean foundPooledConnection = false;
-    RealConnection result = null;//返回结果，可用的连接
+    RealConnection result = null;
     Route selectedRoute = null;
     RealConnection releasedConnection;
     Socket toClose;
     synchronized (connectionPool) {
-       if (transmitter.isCanceled()) throw new IOException("Canceled");
-      hasStreamFailure = false; .
+        if (transmitter.isCanceled()) throw new IOException("Canceled");
+        hasStreamFailure = false; // This is a fresh attempt.
 
-	 //1、尝试使用已经创建过的连接，已经创建过的连接可能已经被限制创建新的流
-      releasedConnection = transmitter.connection;
-      //1.1、如果已经创建过的连接已经被限制创建新的流，就释放该连接（releaseConnectionNoEvents中会把该连接置空），并返回该连接的Socket以关闭
-      toClose = transmitter.connection != null && transmitter.connection.noNewExchanges
-          ? transmitter.releaseConnectionNoEvents()
-          : null;
+        // Attempt to use an already-allocated connection. We need to be careful here because our
+        // already-allocated connection may have been restricted from creating new exchanges.
+        releasedConnection = transmitter.connection;
+        toClose = transmitter.connection != null && transmitter.connection.noNewExchanges
+            ? transmitter.releaseConnectionNoEvents()
+            : null;
 
-        //1.2、已经创建过的连接还能使用，就直接使用它当作结果、
         if (transmitter.connection != null) {
+            // We had an already-allocated connection and it's good.
             result = transmitter.connection;
             releasedConnection = null;
         }
 
-        //2、已经创建过的连接不能使用
         if (result == null) {
-            //2.1、尝试从连接池中找可用的连接，如果找到，这个连接会赋值先保存在Transmitter中
+            // Attempt to get a connection from the pool.
             if (connectionPool.transmitterAcquirePooledConnection(address, transmitter, null, false)) {
-                //2.2、从连接池中找到可用的连接
                 foundPooledConnection = true;
                 result = transmitter.connection;
             } else if (nextRouteToTry != null) {
@@ -1295,92 +1291,87 @@ private RealConnection findConnection(int connectTimeout, int readTimeout, int w
             }
         }
     }
-	closeQuietly(toClose);
-    
-	//...
-    
+    closeQuietly(toClose);
+
+    if (releasedConnection != null) {
+        eventListener.connectionReleased(call, releasedConnection);
+    }
+    if (foundPooledConnection) {
+        eventListener.connectionAcquired(call, result);
+    }
     if (result != null) {
-        //3、如果在上面已经找到了可用连接，直接返回结果
+        // If we found an already-allocated or pooled connection, we're done.
         return result;
     }
-    
-    //走到这里没有找到可用连接
 
-    //看看是否需要路由选择，多IP操作
+    // If we need a route selection, make one. This is a blocking operation.
     boolean newRouteSelection = false;
     if (selectedRoute == null && (routeSelection == null || !routeSelection.hasNext())) {
         newRouteSelection = true;
         routeSelection = routeSelector.next();
     }
+
     List<Route> routes = null;
     synchronized (connectionPool) {
         if (transmitter.isCanceled()) throw new IOException("Canceled");
 
-        //如果有下一个路由
         if (newRouteSelection) {
+            // Now that we have a set of IP addresses, make another attempt at getting a connection from
+            // the pool. This could match due to connection coalescing.
             routes = routeSelection.getAll();
-            //4、这里第二次尝试从连接池中找可用连接
-            if (connectionPool.transmitterAcquirePooledConnection(address, transmitter, routes, false)) {
-                //4.1、从连接池中找到可用的连接
+            if (connectionPool.transmitterAcquirePooledConnection(
+                address, transmitter, routes, false)) {
                 foundPooledConnection = true;
                 result = transmitter.connection;
             }
         }
 
-        //在连接池中没有找到可用连接
         if (!foundPooledConnection) {
             if (selectedRoute == null) {
                 selectedRoute = routeSelection.next();
             }
 
-           //5、所以这里新创建一个连接，后面会进行Socket连接
+            // Create a connection and assign it to this allocation immediately. This makes it possible
+            // for an asynchronous cancel() to interrupt the handshake we're about to do.
             result = new RealConnection(connectionPool, selectedRoute);
             connectingConnection = result;
         }
     }
 
-    // 4.2、如果在连接池中找到可用的连接，直接返回该连接
+    // If we found a pooled connection on the 2nd time around, we're done.
     if (foundPooledConnection) {
         eventListener.connectionAcquired(call, result);
         return result;
     }
 
-    //5.1、调用RealConnection的connect方法进行Socket连接，这个在RealConnection中讲过
-    result.connect(connectTimeout, readTimeout, writeTimeout, pingIntervalMillis, connectionRetryEnabled, call, eventListener);
-    
+    // Do TCP + TLS handshakes. This is a blocking operation.
+    result.connect(connectTimeout, readTimeout, writeTimeout, pingIntervalMillis,
+                   connectionRetryEnabled, call, eventListener);
     connectionPool.routeDatabase.connected(result.route());
 
     Socket socket = null;
     synchronized (connectionPool) {
         connectingConnection = null;
-        //如果我们刚刚创建了同一地址的多路复用连接，释放这个连接并获取那个连接
+        // Last attempt at connection coalescing, which only occurs if we attempted multiple
+        // concurrent connections to the same host.
         if (connectionPool.transmitterAcquirePooledConnection(address, transmitter, routes, true)) {
+            // We lost the race! Close the connection we created and return the pooled connection.
             result.noNewExchanges = true;
             socket = result.socket();
             result = transmitter.connection;
         } else {
-            //5.2、把刚刚新建的连接放入连接池
             connectionPool.put(result);
-            //5.3、把刚刚新建的连接保存到Transmitter的connection字段
             transmitter.acquireConnectionNoEvents(result);
         }
     }
-    
     closeQuietly(socket);
+
     eventListener.connectionAcquired(call, result);
-    
-    //5.4、返回结果
     return result;
 }
 ```
 
-这个findConnection方法就是整个ConnectInterceptor的核心，我们忽略掉多IP操作和多路复用(HTTP2)，假设现在我们是第一次请求，连接池和Transmitter中没有该连接，所以跳过1、2、3，直接来到5，创建一个新的连接，然后把它放入连接池和Transmitter中；接着我们用同一个Call进行了第二次请求，这时连接池和Transmitter中有该连接，所以就会走1、2、3，如果Transmitter中的连接还可用就返回，否则从连接池获取一个可用连接返回，所以整个连接机制的大概过程如下：
 
-{% asset_img okhttp4.png okhttp %}
-
-Transmitter中的连接和连接池中的连接有什么区别？我们知道每创建一个Call，就会创建一个对应的Transmitter，一个Call可以发起多次请求（同步、异步），不同的Call有不同的Transmitter，连接池是在创建OkhttpClient时创建的，所以连接池是所有Call共享的，即连接池中的连接所有Call都可以复用，而Transmitter中的那个连接只是对应它相应的Call，只能被本次Call的所有请求复用。
-
-了解了okhttp的连接机制后，我们接着下一个拦截器CallServerInterceptor。
 
 ## CallServerInterceptor
 
@@ -1482,4 +1473,3 @@ public Response intercept(Chain chain) throws IOException {
 
 ## 结语
 
-结合上一篇文章，我们对okhttp已经有了一个深入的了解，首先，我们会在请求的时候初始化一个Call的实例，然后执行它的execute()方法或enqueue()方法，内部最后都会执行到getResponseWithInterceptorChain()方法，这个方法里面通过拦截器组成的责任链，依次经过用户自定义普通拦截器、重试拦截器、桥接拦截器、缓存拦截器、连接拦截器和用户自定义网络拦截器和访问服务器拦截器等拦截处理过程，来获取到一个响应并交给用户。okhttp的请求流程、缓存机制和连接机制是当中的重点，在阅读源码的过程中也学习到很多东西，下一次就来分析它的搭档Retrofit。
