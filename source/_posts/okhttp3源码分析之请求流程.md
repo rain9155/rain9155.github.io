@@ -390,7 +390,7 @@ public Response proceed(Request request, Transmitter transmitter, @Nullable Exch
 }
 ```
 
-proceed()方法中再次新建了一个RealInterceptorChain，传入了index + 1，而获取拦截器时是通过index获取，这样每次都能获取到下一个拦截器，然后调用下一个拦截器的intercept(Chain)方法，intercept(Chain)方法中就是拦截器的主要功能实现，里面会继续调用传入的RealInterceptorChain的proceed()方法，这样又会重复上述逻辑，我们把RealInterceptorChain看作一条链中的节点，这样就把每个拦截器通过一个个RealInterceptorChain连接起来，形成一条链，这就是典型的[责任链模式](https://rain9155.github.io/2019/09/07/%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/#more)，从节点的首部开始把请求传递下去，每一个拦截器都有机会处理这个请求，这又像是一个递归的过程，直到最后一个拦截器器处理完请求后，才开始逐层返回Resquese，拦截器才是Okhttp核心功能所在，关于拦截器介绍下篇文章再讲，这里只需要知道每一个拦截器都代表了一个功能。
+proceed()方法中再次新建了一个RealInterceptorChain，传入了index + 1，而获取拦截器时是通过index获取，这样每次都能获取到下一个拦截器，然后调用下一个拦截器的intercept(Chain)方法，intercept(Chain)方法中就是拦截器的主要功能实现，里面会继续调用传入的RealInterceptorChain的proceed()方法，这样又会重复上述逻辑，我们把拦截器看作一条链中的节点，这样每个拦截器就通过一个个RealInterceptorChain连接起来，形成一条链，这就是典型的[责任链模式](https://rain9155.github.io/2019/09/07/%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/#more)，从节点的首部开始把请求传递下去，每一个拦截器都有机会处理这个请求，这又像是一个递归的过程，直到最后一个拦截器器处理完请求后，才开始逐层返回Resquese，拦截器才是Okhttp核心功能所在，关于拦截器介绍下篇文章再讲，这里只需要知道每一个拦截器都代表了一个功能。
 
 经过对拦截器的简单介绍后，我们知道最后一个添加的拦截器才是把请求发送出去并且返回响应的地方，我们看getResponseWithInterceptorChain()方法，最后一个拦截器的添加是CallServerInterceptor，所以我们直接看CallServerInterceptor的intercept(Chain)方法实现，如下：
 

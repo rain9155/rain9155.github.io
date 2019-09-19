@@ -13,6 +13,8 @@ categories: 优秀开源库分析
 
 本篇文章继续通过源码来探讨okhttp的另外一个重要知识点：拦截器，在上一篇文章我们知道，在请求发送到服务器之前有一系列的拦截器对请求做了处理后才发送出去，在服务器返回响应之后，同样的有一系列拦截器对响应做了处理后才返回给发起请求的调用者，可见，拦截器是okhttp的一个重要的核心功能，在分析各个拦截器功能的同时又会牵扯出okhttp的缓存机制、连接机制。
 
+> 本文源码基于okhttp3.14.x
+
 okhttp项目地址：[okhttp](https://link.juejin.im/?target=https%3A%2F%2Fgithub.com%2Fsquare%2Fokhttp)
 
 <!--more-->
@@ -124,7 +126,7 @@ Response getResponseWithInterceptorChain() throws IOException {
     //添加负责发起请求获取响应的拦截器
     interceptors.add(new CallServerInterceptor(forWebSocket));
 
-    //构造首节点Chain
+    //构造第一个Chain
     Interceptor.Chain chain = new RealInterceptorChain(interceptors, transmitter, null, 0,
         originalRequest, this, client.connectTimeoutMillis(),
         client.readTimeoutMillis(), client.writeTimeoutMillis());
@@ -141,7 +143,7 @@ Response getResponseWithInterceptorChain() throws IOException {
   }
 ```
 
-getResponseWithInterceptorChain()干了三件事：1、添加拦截器到interceptors列表中；2、构造首节点Chain；3、调用Chain的proceed(Request)方法处理请求。下面分别介绍:
+getResponseWithInterceptorChain()干了三件事：1、添加拦截器到interceptors列表中；2、构造第一个Chain；3、调用Chain的proceed(Request)方法处理请求。下面分别介绍:
 
 ### 1、添加拦截器到interceptors列表中
 
@@ -155,9 +157,9 @@ getResponseWithInterceptorChain()干了三件事：1、添加拦截器到interce
 
 这几个默认的拦截器是本文的重点，在后面会分别介绍。
 
-### 2、构造首节点Chain
+### 2、构造第一个Chain
 
-Chain的实现类是RealInterceptorChain，我们要对它的传进来的前6个构造参数有个印象，如下：
+Chain是Interceptor的一个内部接口，它的实现类是RealInterceptorChain，我们要对它的传进来的前6个构造参数有个印象，如下：
 
 ```java
 public final class RealInterceptorChain implements Interceptor.Chain {
@@ -168,7 +170,7 @@ public final class RealInterceptorChain implements Interceptor.Chain {
         this.interceptors = interceptors;//interceptors列表
         this.transmitter = transmitter;//Transmitter对象，后面会介绍
         this.exchange = exchange;//Exchange对象，后面会介绍
-        this.index = index;//interceptor索性
+        this.index = index;//interceptor索性，用于获取interceptors列表中的interceptor
         this.request = request;//请求request
         this.call = call;//Call对象
         //...
@@ -178,7 +180,7 @@ public final class RealInterceptorChain implements Interceptor.Chain {
 }
 ```
 
-我们知道，为了让每个拦截器都有机会处理请求，okhttp使用了责任链模式来把各个拦截器串联起来，所以Chain你可以把它想象成一条链中的一个节点，而这里的这个Chain就是请求传递的起点，也就是责任链的首节点。
+在后面的拦截器中都可以通过Chain获取这些传进来的参数。我们知道，为了让每个拦截器都有机会处理请求，okhttp使用了责任链模式来把各个拦截器串联起来，拦截器就是责任链的节点，而Chain就是责任链中各个节点之间的连接点，负责把各个拦截器连接起来。那么是怎么连接的？看下面的Chain的proceed方法。
 
 ### 3、调用Chain的proceed(Request)方法处理请求
 
@@ -220,11 +222,11 @@ public final class RealInterceptorChain implements Interceptor.Chain {
 }
 ```
 
-proceed(Request)方法中会调用下一个拦截器的intercept(Chain)方法，从interceptors列表获取拦截器时是通过index获取的，而构造Chain时传入了index + 1，并在调用下一个拦截器的intercept(Chain)方法时传了进去，我们再回顾一下上面所讲的拦截器intercept(Chain)方法的模板，里面会再次调用传入的Chain的proceed(Request)方法，这样又会重复上述逻辑，这样就把每个拦截器通过一个个Chain连接起来，形成一条链，把Request沿着链传递下去，直到请求被处理，然后返回Response，响应同样的沿着链传递上去，如下：
+proceed方法里面首先会再新建一个Chain并且**index + 1**作为构造参数传了进去，然后通过index从interceptors列表中获取了一个拦截器，接着就会调用拦截器的intercept方法，并把刚刚新建的Chain作为参数传给拦截器，我们再回顾一下上面所讲的拦截器intercept方法的模板，intercept方法处理完Request逻辑后，会再次调用传入的Chain的proceed(Request)方法，这样又会重复Chain的proceed方法中的逻辑，由于index已经加1了，所以这次Chain就会通过index获取下一个拦截器，并调用下一个拦截器的intercept(Chain)方法，然后如此循环重复下去，这样就把每个拦截器通过一个个Chain连接起来，形成一条链，把Request沿着链传递下去，直到请求被处理，然后返回Response，响应同样的沿着链传递上去，如下：
 
 {% asset_img okhttp1.png okhttp %}
 
-从上图可知，责任链的尾节点就是CallServerInterceptor对应的Chain，CallServerInterceptor处于最底层，Request是按照interpretor的顺序正向处理，而Response是逆向处理的，每个interpretor都有机会处理Request和Response，一个完美的责任链模式的实现。
+从上图可知，责任链首节点就是RetryAndFollowUpInterceptor，尾节点就是CallServerInterceptor，Request按照拦截器的顺序正向处理，Response则逆向处理，每个拦截器都有机会处理Request和Response，一个完美的责任链模式的实现。
 
 知道了getResponseWithInterceptorChain()的整体流程后，下面分别介绍各个默认拦截器的功能。
 
