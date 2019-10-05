@@ -4,10 +4,11 @@
 
 # Site
 title: jianyu的博客
-subtitle:
-description: 每天进步一点点
-keywords:
-author: Jian Yu
+subtitle: 每天进步一点点
+description: 记录我学习的点点滴滴
+keywords: android
+author: rain9155
+email: jianyu9155@gmail.com
 language:
 timezone:
 
@@ -73,6 +74,32 @@ default_category: uncategorized
 category_map:
 tag_map:
 
+#设置feed
+feed:
+  type: atom
+  path: atom.xml
+  limit: 0
+
+#jsonContent配置，用于生成静态站点数据，用作站内搜索的数据源
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: true
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: false
+    tags: true
+
 # Date / Time format
 ## Hexo uses Moment.js to parse and display date
 ## You can customize the date format as defined in
@@ -88,7 +115,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
+theme: indigo
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
