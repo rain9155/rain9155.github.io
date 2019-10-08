@@ -2,7 +2,6 @@
 title: java线程
 tags: 
 - 线程
-- java
 categories: java
 date: 2019-07-19 12:25:50
 ---

@@ -122,6 +122,6 @@ theme: indigo
 deploy:
   type: git
   repository: 
-    - git@github.com:rain9155/rain9155.github.io.git
-    - git@git.dev.tencent.com:rain9155/rain9155.coding.me.git
+    - https://github.com/rain9155/rain9155.github.io.git
+    - https://git.dev.tencent.com/rain9155/rain9155.coding.me.git
   branch: master

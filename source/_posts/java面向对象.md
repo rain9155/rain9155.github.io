@@ -1,6 +1,6 @@
 ---
 title: java面向对象
-tags: java
+tags: 面向对象
 categories: java
 date: 2019-07-19 12:29:50
 ---

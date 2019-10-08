@@ -2,7 +2,6 @@
 title: java线程池
 tags: 
 - 线程池
-- java
 categories: java
 date: 2019-07-19 12:26:00
 ---

@@ -4,7 +4,7 @@ date: 2019-02-21 13:55:50
 tags: 
 - ThreadLocal
 - 源码
-categories: android
+categories: java
 ---
 
 ## 前言
@@ -47,7 +47,7 @@ main - 1
 Thread-0 - 2
 Thread-1 - null
 ```
-上面代码中，有三个线程。**对于同一个mThreadLoca，不同线程**，在主线程设置mThreadLocal的值为0，在子线程1设置mThreadLocal的值2，在子线程2没有设置mThreadLocal的值，从输出结果可以看出虽然在不同线程访问的是同一个ThreadLocal对象，但通过ThreadLocal获取的值却不一样。**对于不同的mThreadLocal和mThreadLocal2，同一线程**，在主线程分别设置mThreadLocal的值为0，mThreadLocal2的值为1，从输出结果可以看出在同一线程中，通过不同的ThreadLocal存值，则通过相应的ThreadLocal取出的值也不一样。
+上面代码中，有三个线程。**对于同一个mThreadLocal，不同线程**，在主线程设置mThreadLocal的值为0，在子线程1设置mThreadLocal的值2，在子线程2没有设置mThreadLocal的值，从输出结果可以看出虽然在不同线程访问的是同一个ThreadLocal对象，但通过ThreadLocal获取的值却不一样。**对于不同的mThreadLocal和mThreadLocal2，同一线程**，在主线程分别设置mThreadLocal的值为0，mThreadLocal2的值为1，从输出结果可以看出在同一线程中，通过不同的ThreadLocal存值，则通过相应的ThreadLocal取出的值也不一样。
 
 这里可以提出关于ThreadLocal的俩个问题：
 1、ThreadLocal 是如何做到同一个对象，却维护着不同线程的数据副本呢？

@@ -8,8 +8,6 @@ tags:
 categories: android
 ---
 
-
-
 ## 前言
 
 本主要了解一下Android系统信息的获取，apk应用信息的获取。
@@ -26,7 +24,6 @@ categories: android
 
 * SystemProperty
 
-   
 
 ###  1、android.os.Build
 android.os.Build包含了系统编译时的大量设备，配置信息，它里面的字段含义如下：
