@@ -65,22 +65,32 @@ HTTP协议提供了几种请求方式，大家熟知的请求方式有7种GET、
 
 ## HTTP的报文格式
 
-不同的请求方式，它们的请求格式（报文格式）可能是不一样的，但是通常来说一个HTTP的请求报文都是由请求行，请求头部，空行，请求数据4个部分组成(响应报文类似)，如图。
+用于HTTP协议交换的信息称为HTTP报文，客户端发出的HTTP报文叫做请求报文，服务端返回的HTTP报文交过响应报文，它们都是由多行数据构成的字符串文本，用CR + LF作为换行符，即回车符 + 换行符作为换行符，HTTP报文大体分为报文首部和报文主体两块，由第一个出现的空行(CR + LF)划分，如下：
 
-{% asset_img http4.png http4 %}
+{% asset_img http4.png http %}
+
+### 1、请求报文
+
+一个HTTP的请求报文通常由请求行，请求头部，空行(CR + LF)，请求数据4个部分组成，如图：
+
+{% asset_img http5.png http %}
 
 * **请求行**
-又叫起始行，就是报文的第一行，在请求报文中说明要以什么方式做什么请求，而在响应报文中粗略的说明了简略的报文执行结果。
-* **请求首部**
-又叫首部字段，起始行后由零个或多个首部字段，每个字段包含一个key和value，用冒号分割（如Connection：keep-Alive）。首部以一个空行结束。
+
+  又叫起始行，就是报文的第一行，在请求报文中说明要以什么方式做什么请求。
+
+* **请求头部**
+  又叫首部字段，起始行后由零个或多个首部字段，每个字段包含一个key和value，用冒号分割（如Connection：keep-Alive），首部以一个CR + LF结束，如果再细分，首部字段又可以分为请求首部字段、通用首部字段和实体首部字段。
+
 * **请求数据**
-又叫主体，其中可以包含任意类型的数据（如图片，视频等），而首部和起始行只能是文本形式。在请求主体中包括了要发送给Web服务器的数据，在响应主体中装载了要返回给客户端的数据。
-###  1、请求报文
-下面以GET、DELETE、PULL、POST举例。
+  又叫主体，其中可以包含任意类型的数据（如图片，视频等），而首部和起始行只能是文本形式，在请求主体中包括了要发送给Web服务器的数据。
+
+不同的请求方式，它们的请求报文格式可能有点差别的，有些请求方式它的请求数据为空，有些则不为空，但是请求行和请求头部是必须存在的，下面以GET、DELETE、PULL、POST举例：
 
 #### 1.1、GET、DELETE的请求报文
 
-对于GET和DELETE来说，它们的所有参数都是拼接在URL最后，第一个参数前通过"?"连接，然后请求参数按照"key=value"格式进行追加，每个请求参数之间通过"&"连接，如http://www.myhost.com/text/?id=1&name=rain，如果是GET请求表示获取http://www.myhost.com/text/ 下用户id为1，名为rain的文本，如果是DELETE请求表示删除该文本。
+对于GET和DELETE来说，它们的所有参数都是拼接在URL最后，第一个参数前通过"?"连接，然后请求参数按照"key=value"格式进行追加，每个请求参数之间通过"&"连接，如 **http://www.myhost.com/text/?id=1&name=rain**，如果是GET请求表示获取 **http://www.myhost.com/text/** 下用户id为1，名为rain的文本，如果是DELETE请求表示删除该文本。
+
 `注意：GET和DELETE的URL最长度为1024字节（1KB）`
 
 ```
@@ -88,11 +98,11 @@ GET /?id=1&name=rain HTTP/1.1
 Host: www.myhost.com
 Cache-Control: no-cache
 ```
-从上面的HTTP请求格式知，第一行为请求行，表明请求方式为GET，子路径为 /?id=1&name=rain，HTTP版本为1.1。后两行为请求头部，Host为主机地址，Cache-Control为no-cache。因为GET,DELETE的请求参数都在URL中，所以请求数据为空。
+从上面的HTTP请求格式知，第一行为请求行，表明请求方式为GET，子路径为 /?id=1&name=rain，HTTP版本为1.1。后两行为请求首部，Host为主机地址，Cache-Control为no-cache。因为GET,DELETE的请求参数都在URL中，所以请求数据为空。
 
 #### 1.2、PULL、POST的请求报文
 
-而对于PULL和POST来说，它们的报文格式一般是表单格式，也就是说请求参数存储在请求数据（主体）位置上：
+而对于PULL和POST来说，它们的报文格式一般是表单格式，也就是说请求参数存储在请求数据位置上：
 
 ```
 POST /local/ HTTP/1.1
@@ -117,12 +127,13 @@ Content-Transfer-Encoding:binary
 图片二进制数据，在此省略...
 --dRGP2cPPTxE6WRTssnh4jC7HJLcSde--
 ```
-上述的请求含义是向http://www.myhost.com/local/这个地址发送一个POST请求，请求的数据格式为multipart/from-data，报文的boundary值为dRGP2cPPTxE6WRTssnh4jC7HJLcSde，报文有两个请求参数：一个是名为username的文本，值为rain；一个是名为image的二进制参数，值为图片的二进制数据。
-请求参数是以两个横杠（--）加上boundary开始的，然后是请求参数的一些首部属性，如参数名，格式等，然后加上一个空行，最后才是参数的值，如上述的username=name。
+上述的请求含义是向 **http://www.myhost.com/local/** 这个地址发送一个POST请求，请求的数据格式为multipart/from-data，报文的boundary值为dRGP2cPPTxE6WRTssnh4jC7HJLcSde，报文有两个请求参数：一个是名为username的文本，值为rain；一个是名为image的二进制参数，值为图片的二进制数据。
+
+请求参数是以两个横杠（--）加上boundary开始的，然后是请求参数的一些首部属性，如参数名，格式等，然后加上一个空行，最后才是参数的值，如上述的username=name，其表示如下：
 
 ```
 --dRGP2cPPTxE6WRTssnh4jC7HJLcSde		//两横杠加boundary
-Content-Disposition：from-data；name=“username”//以下三个参数时首部属性
+Content-Disposition：from-data；name=“username”//以下三个参数是首部属性
 Content-Type：text/plain：charset=UTF-8
 Content-Transfer-Encoding: 8bit
 						//不可省略的空行
@@ -130,17 +141,37 @@ rain						//参数值
 ```
 POST和PULL都要遵守这种格式，每个参数以两横杠加boundary分隔，参数首部与值之间有一个空行。
 
->这里要注意，请求数据的最后是以两个横杆+boundary+两个横杠结束作为整个报文的结束符。如这里的- -dRGP2cPPTxE6WRTssnh4jC7HJLcSde- -
+请求数据的最后是以两个横杆+boundary+两个横杠结束作为整个报文的结束符，如上面报文的图片二进制数据最后的- -dRGP2cPPTxE6WRTssnh4jC7HJLcSde- -，如下：
+
+```
+--dRGP2cPPTxE6WRTssnh4jC7HJLcSde
+Content-Diaposition:from-data:name="image"
+filename="/storage/emulated/0/image/1234.png"
+Content-Type:application/octet-stream
+Content-Transfer-Encoding:binary
+
+图片二进制数据，在此省略...
+--dRGP2cPPTxE6WRTssnh4jC7HJLcSde--	//整个报文的结束符
+```
 
 ### 2、响应报文
-由状态行、消息报头、响应正文组成，如下：
-```
-<状态行>
-<响应报文首部>
-<空行>
-<响应报文内容>
-```
-可以看到与请求报文的格式类似，不同的就是第一行用状态信息代替了请求信息，格式如下：
+一个HTTP的响应报文通常由状态行、响应头部、空行(CR + LF)、响应主体组成，如下：
+
+{% asset_img http6.png http %}
+
+* **状态行**
+
+  在响应报文中粗略的说明了报文的执行结果。
+
+* **响应头部**
+
+  又叫首部字段，起始行后由零个或多个首部字段，每个字段包含一个key和value，首部以一个CR + LF结束，如果再细分，首部字段又可以分为响应首部字段、通用首部字段和实体首部字段。
+
+* **响应主体**
+
+  在响应主体中装载了服务端要返回给客户端的数据。
+
+可以看到响应报文与请求报文的格式类似，最大的不同的就是第一行用状态信息代替了请求信息，格式如下：
 ```
 HTTP-Version Status-Code Reason-Phrase CRLF
 ```
@@ -173,7 +204,9 @@ Content-Length:14
 * 500 Internal Server Error：服务器发生不可预估的错误
 * 503 Server Unavailable：服务器当前不能处理客户端请求，一段时间后可能恢复正常
 
-### 3、常见的头部
+## 常见的首部字段
+
+这里列举了一些在请求报文和响应报文中常见的首部：
 
 - Content-Type：请求数据的格式
 - Content-Length：消息长度
@@ -184,7 +217,7 @@ Content-Length:14
 - Connection：允许客户端和服务端指定与请求/响应连接相关的选项，如设置为Connection：Keep-Alive，表示保持连接
 - Transfer-Encoding：告知接收端为了保证报文的可靠传输性，对报文采用了什么的编码方式
 
-#### 3.1、Connection ：Keep-Alive工作原理 (长连接)
+### 1、Connection ：Keep-Alive工作原理 (长连接)
 
 从HTTP/1.1起，默认都开启了Keep-Alive保持连接特性，简单地说，当一个网页打开完成后，客户端和服务端之间用于传输HTTP数据的TCP连接不会关闭，如果客户端再次访问这个服务端上的网页，会继续使用这一条已经建立的TCP连接，Keep-Alive不会永久保持连接，它有一个保持时间，可以在不同服务器软件中设置这个时间。
 
