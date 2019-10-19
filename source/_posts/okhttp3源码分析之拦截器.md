@@ -82,7 +82,7 @@ public class MyInterceptor implements Interceptor {
 }
 ```
 
-上述就是一个拦截器的通用逻辑，首先我们继承Interceptor实现intercept(Chain)方法，完成我们自己的拦截逻辑，即根据需要进行1、2、3、4、5步，不管是自定义拦截器还是后面介绍的okhttp默认的拦截器大概都是这个模板实现，定义完拦截器后，我们在构造OkhttpChient时就可以通过addInterceptor(Interceptor)或addNetworkInterceptor(Interceptor)添加自定义拦截器，如下：
+上述就是一个拦截器的通用逻辑，首先我们继承Interceptor实现intercept(Chain)方法，完成我们自己的拦截逻辑，即根据需要进行1、2、3、4、5步，不管是自定义拦截器还是后面介绍的okhttp默认的拦截器大概都是这个模板实现，定义完拦截器后，我们在构造OkhttpClient时就可以通过addInterceptor(Interceptor)或addNetworkInterceptor(Interceptor)添加自定义拦截器，如下：
 
 ```java
 OkHttpClient client = new OkHttpClient.Builder()
@@ -226,7 +226,7 @@ proceed方法里面首先会再新建一个Chain并且**index + 1**作为构造�
 
 {% asset_img okhttp1.png okhttp %}
 
-从上图可知，责任链首节点就是RetryAndFollowUpInterceptor，尾节点就是CallServerInterceptor，Request按照拦截器的顺序正向处理，Response则逆向处理，每个拦截器都有机会处理Request和Response，一个完美的责任链模式的实现。
+从上图可知，当没有自定义拦截器时，责任链首节点就是RetryAndFollowUpInterceptor，尾节点就是CallServerInterceptor，Request按照拦截器的顺序正向处理，Response则逆向处理，每个拦截器都有机会处理Request和Response，一个完美的责任链模式的实现。
 
 知道了getResponseWithInterceptorChain()的整体流程后，下面分别介绍各个默认拦截器的功能。
 

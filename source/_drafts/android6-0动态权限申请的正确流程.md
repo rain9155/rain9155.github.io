@@ -149,3 +149,6 @@ WRITE_SYNC_SETTINGS
 参考资料：
 
 [Permissions](https://developer.android.google.cn/guide/topics/permissions/overview)
+
+[安卓系统权限，你真的了解吗？](https://mp.weixin.qq.com/s/w82temt7NjQb2eATONuEsA)
+
