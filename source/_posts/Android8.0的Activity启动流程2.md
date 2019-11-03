@@ -1,5 +1,5 @@
 ---
-title: Activity的启动流程（2）
+title: Android8.0的Activity启动流程(2)
 date: 2019-05-19 16:12:34
 tags: 
 - activity
@@ -8,7 +8,7 @@ categories: 四大组件
 ---
 
 ## 前言
-* 上一篇文章[Activity的启动流程（1）](https://rain9155.github.io/2019/05/19/Activity%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%EF%BC%881%EF%BC%89/)
+* 上一篇文章[Android8.0的Activity启动流程(1)](https://rain9155.github.io/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/)
 
 上一篇文章讲了应用进程请求AMS启动Activity过程和Activity在AMS中的启动过程，然后Activity启动的代码逻辑就从AMS所在进程，又重新回到了应用进程所在的ApplicationThread中。我们还留下了一个问题，**Activity的生命周期方法是如何被回调的？**，下面我们就带着这个疑问，去走一遍源码，看一下在应用进程中ApplicationThread启动Activity的过程。
 
@@ -547,7 +547,7 @@ public void callActivityOnResume(Activity activity) {
 
 所以现在我们知道了在应用进程中ApplicationThread启动Activity的过程。
 
-那么还有三个方法：onPause -> onStop -> onDestory 什么时候被回调呢？大家都知道Activity有7个生命周期方法，除去onRestart，其他3个都是一 一对应的，结合前面那篇文章[Activity的启动流程（1）](https://rain9155.github.io/2019/05/19/Activity%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%EF%BC%881%EF%BC%89/)我们知道：
+那么还有三个方法：onPause -> onStop -> onDestory 什么时候被回调呢？大家都知道Activity有7个生命周期方法，除去onRestart，其他3个都是一 一对应的，结合前面那篇文章[Android8.0的Activity启动流程(1)](https://rain9155.github.io/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/)我们知道：
 
 * 1、在AMS中含有ApplicatiThread的本地代理，所以AMS所在进程可以通过这个代理与ActivityThread的主线程通信，也就能调用ApplicatiThread的一些方法。
 

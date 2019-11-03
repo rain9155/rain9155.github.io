@@ -1,14 +1,18 @@
 ---
-title: Android消息机制native层
+title: Android消息机制(native层)
 date: 2019-02-21 13:51:51
 tags: 
 - handler
 - 源码
+- native
 categories: 消息机制
 ---
 
 ## 前言
-在[Android消息机制（java层）](https://rain9155.github.io/2019/02/21/Android消息机制java层)中讲到MessaeQueue是Android消息机制的Java层和native层的连接纽带，Android的java层和native层通过JNI调用打通，MessageQueue中有多个native方法，java层和native各有一套消息机制，实现不一样，本文讲解native层的Android消息机制。
+
+* 上一篇文章：[Android消息机制java层](https://rain9155.github.io/2019/02/21/Android%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6java%E5%B1%82/)
+
+在上一篇文章中讲到MessaeQueue是Android消息机制的Java层和native层的连接纽带，Android的java层和native层通过JNI调用打通，MessageQueue中有多个native方法，java层和native各有一套消息机制，实现不一样，本文讲解native层的Android消息机制。
 <!--more-->
 
 	本文基于Android8.0，相关源码文件如下:

@@ -1,5 +1,5 @@
 ---
-title: Activity的启动流程（1）
+title: Android8.0的Activity启动流程(1)
 date: 2019-05-19 16:11:17
 tags: 
 - activity
@@ -148,6 +148,10 @@ public class ActivityManagerService extends IActivityManager.Stub{
 ```
 
 所以继续回到Instrumentation的execStartActivity方法中，ActivityManager.getService()返回的是AMS的本地代理，注意AMS是在系统进程SystemServer中，所以注释1这里通过**Binder的IPC**，调用的其实是AMS的startActivity方法。
+
+整个过程的时序图如下：
+
+{% asset_img activity1.png activity %}
 
 **在这里开始，Activity的启动过程从应用进程转移到AMS中去**。
 
@@ -544,6 +548,10 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 正如这方法名所示，realStartActivity，兜兜转转，这里就是真正启动Activity的地方，注释1处app指的是传入的要启动的Activity的所在的应用程序进程，是从前面传过来的，这里把它赋值给了要启动的Activity的ActivityRecord的app字段去，这样就可以说要启动的Activity属于应用进程，我们再来看注释2这里，app.thread就是我们上面一直强调的ApplicationThread，所以这里通过**Binder的IPC**其实调用的是ApplicationThread中的scheduleLaunchActivity方法。
 
+整个过程的时序图如下：
+
+{% asset_img activity2.png activity %}
+
 **当前的代码逻辑执行在AMS所在进程，从这里开始Activity的启动流程最终又回到了应用进程所在的ApplicationThread中。**
 
 ## 总结
@@ -554,7 +562,7 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 从应用调用一个startActivity方法开始，应用进程开始请求AMS启动Activity，然后在AMS中Activity完成它的一系列准备，最后再回到应用进程中开始回调Activity的生命周期，本文回答了一半这个问题，即本文讲解了应用进程开始请求AMS启动Activity，然后在AMS中完成它的一系列准备的过程，这个过程用时序图表示如下：
 
-{% asset_img activity3.jpg activity3 %}
+{% asset_img activity3.png activity %}
 
 * **2、Activity的生命周期方法是如何被回调的？**
 
@@ -564,15 +572,15 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 答案是2个，前言已经讲过本文讨论的是普通Activity的启动流程，**即我们平时调用startActivity方法来启动一个Activity**，所以本文这个过程涉及的进程可以可以用下面这个图表示：
 
-{% asset_img activity1.png activity1 %}
+{% asset_img activity4.png activity %}
 
 图中AppProcess代表应用所在进程，systemServer代表AMS所在进程，两个进程之间通过Binder进行通信，实现了XX.Stub的类就可以进行Binder通信，如本文的ApplicationThread和AMS都实现了各自的Stub类，所以应用进程startActivity时请求AMS启动Activity，AMS准备好后，再发送scheduleLaunchActivity请求告诉应用可以开始启动Activity了。
 
 那么如果是前言所讲的第一种启动Activity的过程，**即在Launch界面点击一个应用图标启动应用程序**，那么会涉及多少个进程？答案是4个，如图：
 
-{% asset_img activity2.png activity2 %}
+{% asset_img activity5.png activity5 %}
 
-可以看到会涉及Launcher进程、SystemServer进程、App进程、Zygote进程。关于这些进程的简单信息可以看这篇[从进程的角度看Android的系统架构](https://blog.csdn.net/Rain_9155/article/details/88831678)
+可以看到会涉及Launcher进程、SystemServer进程、App进程、Zygote进程。关于这些进程的简单信息可以看这篇[从进程的角度看Android的系统架构](https://rain9155.github.io/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/)
 
 阅读源码真的是一个漫长的过程，又时候看别人写的那么简单，但是当自己去写，才发现要考虑的东西很多，所以这是一个日积月累的过程，所以阅读源码的时候，最好跟着前人的文章阅读，这样理解的更快。
 

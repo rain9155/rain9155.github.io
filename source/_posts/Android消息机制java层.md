@@ -1,5 +1,5 @@
 ---
-title: Android消息机制java层
+title: Android消息机制(java层)
 date: 2019-02-21 13:33:11
 tags: 
 - handler
@@ -231,7 +231,7 @@ next方法也是一个死循环，最主要的方法是nativePollOnce(),它是�
 
 	MessageQueue是消息机制的核心类，它里面有大量的native方法，Android有俩套消息机制（java层和native层，实现不一样），但本文只讲解java层的消息机制，不会涉及到native层。
 
-（[关于native层的查看Android消息机制（native层）](https://rain9155.github.io/2019/02/21/Android消息机制native层)）
+关于native层的查看[Android消息机制（native层）](https://rain9155.github.io/2019/02/21/Android%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6native%E5%B1%82/)。
 
 ### 3、消息的分发
 如果loop方法中next()返回了null，那么就会执行到这一句" msg.target.dispatchMessage(msg)

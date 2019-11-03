@@ -25,7 +25,7 @@ categories: Window机制
 
 ## Activity的Window创建 - Activity  :: attach()
 
-熟悉Activity的启动流程的都知道(不熟悉的可以查看这篇文章[Activity的启动流程](https://blog.csdn.net/Rain_9155/article/details/89961912))的Window的创建过程是在activity的attach方法中，它在调用Activity的onCreate方法前完成一些重要数据的初始化，如下：
+熟悉[Activity启动流程](https://rain9155.github.io/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/)的都知道Window的创建过程是在activity的attach方法中，它在调用Activity的onCreate方法前完成一些重要数据的初始化，如下：
 
 ```java
 //Activity.java
