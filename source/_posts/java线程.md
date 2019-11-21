@@ -1,5 +1,5 @@
 ---
-title: java线程
+title: java学习总结之线程
 tags: 
 - 线程
 categories: java
