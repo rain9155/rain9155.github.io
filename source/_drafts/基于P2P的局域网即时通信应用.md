@@ -7,7 +7,7 @@ tags: android
 
 ## 前言
 
-这是一个使用java语言开发的基于P2P的局域网即时通信Android应用，界面是高仿微信的聊天界面，在里面你将会学到java多线程并发编程、Socket编程、UDP广播、TCP连接等。
+这是一个使用java语言开发的基于P2P的局域网即时通信Android应用，界面是高仿微信的聊天界面，在里面你将会学到java多线程并发编程、Socket编程、UDP广播、TCP连接、还有图片加载相关知识等。
 
 项目地址：[P2P](https://github.com/rain9155/P2P)
 

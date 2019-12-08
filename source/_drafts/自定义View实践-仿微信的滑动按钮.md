@@ -8,6 +8,8 @@ categories: 自定义View
 
 前几天写过一篇文章[View的工作原理](https://juejin.im/post/5d35a5fc518825019b0a3678)，有原理不行，还要有实践，刚好把以前项目写过的仿微信滑动按钮控件封装一下，所以本文记录一下我实现这个控件的细节。
 
+地址：[SwitchButton](https://github.com/rain9155/SwitchButton)
+
 ## 效果图
 
 控件使用效果如下：

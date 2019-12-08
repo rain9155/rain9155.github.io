@@ -407,7 +407,9 @@ right - insets.right - lp.rightMargin,
 上面是RecyclerView的方向为VERTICAL的情况，当为HORIZONTAL方向的时候填充算法是不变的。但我们一般是图一的情况，从上往下填充。
 ## 总结
 一图胜千言，下图是LayoutManager循环布局所有的itemView。
+
 {% asset_img rv3.png 图三 %}
+
 可以看到RecyclerView将布局的职责分离到LayoutManager中，使得RecyclerView更加灵活，我们也可以自定义自己的LayoutManger，实现自己想要的布局。可以看到RecyclerView具有很强大的扩展性，所以深入学习这个控件是很有必要的。能看到这里的都是有毅力的人，本文只是RecyclerView学习的第一篇，以后会继续分析RecyclerView的缓存设计。
 
 参考资料：

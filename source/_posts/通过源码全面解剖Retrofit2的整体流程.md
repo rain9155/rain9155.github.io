@@ -564,7 +564,7 @@ class Platform {
 
 ```
 
-首先Platform的get方法通过[单例模式](https://blog.csdn.net/Rain_9155/article/details/82915760)返回了一个Platform实例，单例模式就是**保证单例对象的类在同一进程中，只有一个实例存在**，Platform实例通过findPlatform方法创建，可以看到findPlatform方法里面区分了Android、java和其他平台返回了不同的Platform实现，由于我这里是Android平台，只关注Android平台的实现，Android类如下：
+首先Platform的get方法通过[单例模式](https://rain9155.github.io/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/)返回了一个Platform实例，单例模式就是**保证单例对象的类在同一进程中，只有一个实例存在**，Platform实例通过findPlatform方法创建，可以看到findPlatform方法里面区分了Android、java和其他平台返回了不同的Platform实现，由于我这里是Android平台，只关注Android平台的实现，Android类如下：
 
 ```java
 //Platform.java
@@ -592,7 +592,7 @@ static class Android extends Platform {
 }
 ```
 
-Android继承自Platform，重写了它其中的两个方法：defaultCallbackExecutor方法和defaultCallAdapterFactory方法，defaultCallbackExecutor方法返回了一个MainThreadExecutor，它是一个[Executor](https://blog.csdn.net/Rain_9155/article/details/90757694)，它的execute方法的实现就是简单通过[Handler](https://blog.csdn.net/Rain_9155/article/details/86684083)把任务Runnable切换回主线程执行，就是说，线程池会把每一个线程提交的任务都切回主线程执行，我们再来看defaultCallAdapterFactory方法，这个方法返回了我们上面介绍过的ExecutorCallAdapterFactory，并把callbackExecutor传了进去，其实这个**callbackExecutor就是MainThreadExecutor**，待会在第3步构建Retrofit实例时就会讲到。
+Android继承自Platform，重写了它其中的两个方法：defaultCallbackExecutor方法和defaultCallAdapterFactory方法，defaultCallbackExecutor方法返回了一个MainThreadExecutor，它是一个[Executor](https://rain9155.github.io/2019/07/19/java%E7%BA%BF%E7%A8%8B%E6%B1%A0/)，它的execute方法的实现就是简单通过[Handler](https://blog.csdn.net/Rain_9155/article/details/86684083)把任务Runnable切换回主线程执行，就是说，线程池会把每一个线程提交的任务都切回主线程执行，我们再来看defaultCallAdapterFactory方法，这个方法返回了我们上面介绍过的ExecutorCallAdapterFactory，并把callbackExecutor传了进去，其实这个**callbackExecutor就是MainThreadExecutor**，待会在第3步构建Retrofit实例时就会讲到。
 
 **这里我们来小结一下：**
 

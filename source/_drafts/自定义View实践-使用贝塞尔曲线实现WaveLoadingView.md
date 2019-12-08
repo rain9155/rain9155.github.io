@@ -8,6 +8,8 @@ categories: 自定义View
 
 本文是自定义View实践第二篇，上一篇[仿微信滑动按钮](https://juejin.im/post/5d48e06d51882505723c9d30)实现了一个简单的滑动按钮，知道了一些自定义View的基本步骤，本文是使用贝塞尔曲线实现的一个加载中控件，所以阅读本文前你需要具备贝塞尔曲线的知识，懂得使用Android中相关的API。接下来进入正文讲解。
 
+地址：[WaveLoadingView](https://github.com/rain9155/WaveLoadingView)
+
 ## 灵感来源
 
 之前项目一直使用这个[WaveLoadingView](https://github.com/tangqi92/WaveLoadingView)来作为loading控件，我看它的波浪实现以为它的内部是使用贝塞尔曲线实现，直到某一天我看到它的源码时才发现不是，它的波浪实现也就是曲线实现其实是使用一个正弦函数**y = Asin(ωx + φ) + h**画出来的，当φ取两个不同的值，而A、ω、h保持相等时，就可以形成两条偏移量不同的正弦曲线，类似下面两条正弦曲线（一个φ等于0，一个φ等于2）：

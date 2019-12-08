@@ -21,6 +21,7 @@ Android的消息机制用于同进程的线程间通信，它是由MessageQueue�
 
 ## 消息机制概述
 Android应用的每个事件都会转化为一个系统消息即Message，消息中包含了事件的相关信息和消息的处理人即Handler，消息要通过Handler发送，最终被投递到一个消息队列中即MessageQueue，它维护了一个待处理的消息列表，然后通过Looper开启了一个消息循环不断地从这个队列中取出消息，当从消息队列取出一个消息后，Looper根据消息的处理人（target）将此消息分发给相应的Handle处理。它们的工作原理就像工厂的生产线，Looper是发动机，MessageQueue是传送带，Handler是工人，Message则是待处理的产品。整个过程如下图所示。
+
 {% asset_img handler1.png %}
 
 ## 消息机制架构图
