@@ -522,10 +522,10 @@ public Response intercept(Chain chain) throws IOException {
         //...
     }
 
-    //3、networkRequest不为null且cacheResponse不为null：因为cacheResponse不为null，所以根据网络请求得到的networkResponse和缓存的cacheResponse做比较，来决定是否更新cacheResponse
+    //3、networkRequest不为null且cacheResponse不为null：因为cacheResponse不为null，所以根据网络请求得到的networkResponse和缓存的cacheResponse做比较，来决定是否使用cacheResponse
     if (cacheResponse != null) {
-        if (networkResponse.code() == HTTP_NOT_MODIFIED) {//HTTP_NOT_MODIFIED等于304，304表示服务器缓存有更新，所以客户端要更新cacheResponse
-            //下面根据networkResponse更新(重新构造)cacheResponse
+        if (networkResponse.code() == HTTP_NOT_MODIFIED) {//HTTP_NOT_MODIFIED等于304，304表示服务器资源没有更新，所以客户端可以直接使用本地缓存cacheResponse
+            //下面根据cacheResponse构造Response返回，并且更新cacheResponse的头部信息
             Response response = cacheResponse.newBuilder()
                 .headers(combine(cacheResponse.headers(), networkResponse.headers()))
                 .sentRequestAtMillis(networkResponse.sentRequestAtMillis())
@@ -534,25 +534,25 @@ public Response intercept(Chain chain) throws IOException {
                 .networkResponse(stripBody(networkResponse))
                 .build();
             networkResponse.body().close();
-            //更新cacheResponse在本地缓存
+            //在本地缓存更新cacheResponse
             cache.trackConditionalCacheHit();
             cache.update(cacheResponse, response);
+            //返回构造的Response
             return response;
-        } else {//不需要更新cacheResponse，close掉它
+        } else {//服务器返回了200，服务器资源更新了，所以客户端cacheResponse无效，close掉它
             closeQuietly(cacheResponse.body());
         }
     }
 
-    //4、networkRequest不为null但cacheResponse为null：cacheResponse为null，没有缓存使用，所以从networkResponse读取网络响应，构造Response准备返回
+    //4、networkRequest不为null但cacheResponse为null或者服务器返回了200：cacheResponse为null，没有缓存使用，服务器返回了200，本地缓存失效，这两种情况都要从networkResponse读取网络响应，构造Response准备返回
     Response response = networkResponse.newBuilder()
         .cacheResponse(stripBody(cacheResponse))
         .networkResponse(stripBody(networkResponse))
         .build();
 
-    //把Response缓存到Cache中
-    if (cache != null) {
+    if (cache != null) {//如果Cache不为null，表示使用缓存
         if (HttpHeaders.hasBody(response) && CacheStrategy.isCacheable(response, networkRequest)) {
-            //cacheResponse为null，所以这里是第一次缓存，把Response缓存到Cache中
+            //把Response缓存到Cache中
             CacheRequest cacheRequest = cache.put(response);
             return cacheWritingResponse(cacheRequest, response);
         }

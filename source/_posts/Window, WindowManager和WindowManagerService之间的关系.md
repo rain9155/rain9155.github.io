@@ -324,7 +324,7 @@ public void setView(View view, WindowManager.LayoutParams attrs, View panelParen
 }
 ```
 
-注意这个传入的mInputChannel参数，它实现了Parcelable接口，用于接受WMS返回来的输入事件。
+注意这个传入的mInputChannel参数，它是InputChannel类型，它实现了Parcelable接口，用于接受WMS返回来的输入事件，在WMS中会创建两个InputChannel实例，一个会通过mInputChannel参数传回来，一个会放在WMS的WindowState中，WindowState中的InputChannel会交给InputDispatcher，这样应用端和InputDispatcher端就可以通过这两个InputChannel来进行事件的接收和发送。
 
 它们之间的类图关系如下：
 

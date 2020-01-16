@@ -62,9 +62,11 @@ public final class MotionEvent extends InputEvent implements Parcelable {
 
 我想大家都知道View的事件分发机制的起点是View的dispatchTouchEvent()方法，但是如果从View的dispatchTouchEvent()继续追溯上去，事件是从哪里来的呢？
 
-Android的输入设备有很多种，如屏幕、键盘、鼠标、轨迹球等，而屏幕是我们接触最多的设备，当用户手指触摸屏幕时就会产生触摸事件，这时Android的输入系统就会为这个触摸事件在/dev/input/路径下写入以event[NUMBER]为名的输入设备节点，这时输入系统中的EventHub就会监听到这个输入事件，然后InputReader就会把这个原始输入事件读取并经过加工后交给输入系统中的InputDispatcher，InputDispatcher会在Window列表中会找到合适的Window，然后把这个输入事件分发给合适的Window，然后Window就会把这个事件分发给顶级View，**然后顶级View就把这个输入事件在View树中层层分发下去，直到找到合适的View来处理这个事件，这来到了我们熟悉的View的事件分发机制**。
+Android的输入设备有很多种，如屏幕、键盘、鼠标、轨迹球等，而屏幕是我们接触最多的设备，当用户手指触摸屏幕时就会产生触摸事件，这时Android的输入系统就会为这个触摸事件在/dev/input/路径下写入以event[NUMBER]为名的输入设备节点，这时输入系统中的EventHub就会监听到这个输入事件，然后InputReader就会把这个原始输入事件读取并经过加工后交给输入系统中的InputDispatcher，InputDispatcher会在mWindowHandles列表（mWindowHandles列表在IMS中代表所有窗口）中会找到合适的WindowHandle(InputWindowHandle类型)，然后把输入事件经过WindowHandle中的InputChannel通过Socket发送给应用进程所在的ViewRootImp中的InputChannel，这时ViewRootImp会把接收到的事件通过内部类InputEventReceiver分发给ViewRootImp持有的顶级View，然后顶级View的dispatchTouchEvent方法就会回调，在该方法中会获取Window.Callback(Activity或Dialog等实现了这个接口)，然后把事件分发给Callback，这时Callback的dispatchTouchEvent方法回调，不同的实现类由不同的实现，在Activity的实现中，它会把事件交给PhoneWindow来分发，然后PhoneWindow又会把这个事件分发给顶级View，**然后顶级View就调用super.dispatchTouchEvent方法，把这个输入事件在View树中层层分发下去，直到找到合适的View来处理这个事件，这来到了我们熟悉的View的事件分发机制**。
 
-上面的一些名词如EventHub、InputReader、InputReader都是属于Android的输入系统，这部分是一个很复杂的知识，我只是概括了一下。所以我们只要知道，**输入系统监听到输入事件后，就会先交给Window，然后Window再交给顶级View，然后顶级View在把它分发下去**。(关于Window和View的关系可以看这篇文章[Window, WindowManager和WindowManagerService之间的关系](https://rain9155.github.io/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/))
+这个事件传输的大概过程：**IMS ->  ViewRootImp -> 顶级View -> 实现Window.Callback的类 -> Window -> 顶级View**。（更多细节可以查看[原来Android触控机制竟是这样的？](https://www.jianshu.com/p/b7cef3b3e703)）
+
+上面的一些名词如EventHub、InputReader、InputReader都是属于Android的输入系统，这部分是一个很复杂的知识，我只是概括了一下，所以我们只要知道，**输入系统监听到输入事件后，就会先交给Window，然后Window再交给顶级View，然后顶级View在把它分发下去**。(关于Window和View的关系可以看这篇文章[Window, WindowManager和WindowManagerService之间的关系](https://rain9155.github.io/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/))
 
 这个顶级View可能是View，也有可能是ViewGroup，具体情况看你添加Window到WMS时你的addView(View view, ViewGroup.LayoutParams params)方法中的View是View实例还是ViewGroup实例，所以本文接下来就分别分析View的事件分发和ViewGroup的事件分发。
 
@@ -462,7 +464,7 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
         final int actionMasked = action & MotionEvent.ACTION_MASK;
         //1、如果本次事件是ACTION_DOWN
         if (actionMasked == MotionEvent.ACTION_DOWN) {
-            //置空mFirstTouchTarget
+            //置空mFirstTouchTarget，mFirstTouchTarget是TouchTarget类型，是一个单链表结构
             cancelAndClearTouchTargets(ev);
             //清除mGroupFlags中的FLAG_DISALLOW_INTERCEPT标志位，这个标志等同于下面的disallowIntercept
             resetTouchState();
@@ -488,19 +490,28 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
         //...
         //检查本次事件是否是ACTION_CANCEL
         final boolean canceled = resetCancelNextUpFlag(this) || actionMasked == MotionEvent.ACTION_CANCEL;
+        //split默认为true
         final boolean split = (mGroupFlags & FLAG_SPLIT_MOTION_EVENTS) != 0;
+        //newTouchTarget用于记录本次事件的target
         TouchTarget newTouchTarget = null;
+        //表示事件是否已经分发给target对应的子View，默认为false
         boolean alreadyDispatchedToNewTouchTarget = false;
         //3、如果本次事件不取消并且不拦截，就寻找合适的子View处理
         if (!canceled && !intercepted) {
+            //取出按下手指的index
+            final int actionIndex = ev.getActionIndex(); // always 0 for down
+            //getPointerId表示根据index取出按下手指的id，第一根手指为0，第二根手指为1，以此类推
+    	   //idBitsToAssign与多点触控相关，本文不重点讨论
+            final int idBitsToAssign = split ? 1 << ev.getPointerId(actionIndex) : TouchTarget.ALL_POINTER_IDS;
             //...
-            //3.1、如果本次事件是ACTION_DOWN
+            //如果本次事件是ACTION_DOWN 或 ACTION_POINTER_DOWN 或ACTION_HOVER_MOVE
+            //本文重点关注ACTION_DOWN事件，ACTION_POINTER_DOWN与多点触控相关
             if (actionMasked == MotionEvent.ACTION_DOWN
                 || (split && actionMasked == MotionEvent.ACTION_POINTER_DOWN)
-                || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
-               
+                || actionMasked == MotionEvent.ACTION_HOVER_MOVE
+               ) {
 			  final int childrenCount = mChildrenCount;
-                //如果target是null并且ViewGroup有子View，就寻找某个子View当mFirstTouchTarget
+                //如果target是null并且ViewGroup有子View，就寻找某个子View当target
                 if (newTouchTarget == null && childrenCount != 0) {
                     final float x = ev.getX(actionIndex);
                     final float y = ev.getY(actionIndex);
@@ -519,11 +530,13 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
                         //...
                         //dispatchTransformedTouchEvent()里面会调用子View的dispatchTouchEvent()方法，在这个方法里把事件分发给子View
                          if (dispatchTransformedTouchEvent(ev, false, child, idBitsToAssign)) {
-                              //...
-                               //如果dispatchTransformedTouchEvent()返回true，表示找到子View消费本次事件了，就会走到这里, 所以这个子View就被当作mFirstTouchTarget，这里会调用addTouchTarget()方法为mFirstTouchTarget赋值
-                                newTouchTarget = addTouchTarget(child, idBitsToAssign);
-                                alreadyDispatchedToNewTouchTarget = true;
-                                break;
+                             //...
+                             //如果dispatchTransformedTouchEvent()返回true，表示找到子View消费本次事件了，就会走到这里, 所以这个子View就被当作target，这里会调用addTouchTarget()方法为这个子View创建一个TouchTarget，并把这个target插入mFirstTouchTarget链表的表头，并把表头返回赋值给newTouchTarget
+                             newTouchTarget = addTouchTarget(child, idBitsToAssign);
+
+                             //alreadyDispatchedToNewTouchTarget赋值为true，表示事件已经分发给target对应的子View
+                             alreadyDispatchedToNewTouchTarget = true;
+                             break;
                             }
 						//...
                     }//end...for（）
@@ -546,33 +559,38 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
                                                     TouchTarget.ALL_POINTER_IDS);
         } else { //有两种情况mFirstTouchTarget不为空，表示找到合适的子View为target：
             //1、本次事件是ACTION_DOWN，遍历完ViewGroup所有的子View后找到了合适的子View为target；
-            //2、本次事件是除了ACTION_DOWN以外的其他事件，但是在ACTION_DOWN时已经找到了合适的子View为target
-           //所以接下来就直接把事件分发给mFirstTouchTarget的child处理处理就行
+            //2、本次事件是除了ACTION_DOWN以外的其他事件，但是在ACTION_DOWN时已经找到了合适的子View为target，所以接下来就直接把事件分发给mFirstTouchTarget的child处理处理就行
             TouchTarget predecessor = null;
             TouchTarget target = mFirstTouchTarget;
-            //mFirstTouchTarget是一个单链表结构
+            //mFirstTouchTarget是一个单链表结构，下面是链表的遍历
             while (target != null) {
                 final TouchTarget next = target.next;
                 if (alreadyDispatchedToNewTouchTarget && target == newTouchTarget) {//情况1的处理
                     //因为在找到target时已经调用过dispatchTransformedTouchEvent()了，表示该target的View已经消费了该事件，handle直接等于true
                     handled = true;
                 } else {//情况2的处理
+                    //注意这个intercepted，如果为true，cancelChild就会为true，会导致子View收到一个ACTION_CANCEL, 表示子View的本次事件取消
                      final boolean cancelChild = resetCancelNextUpFlag(target.child)
-                                || intercepted;//注意这个intercepted，如果为true，cancelChild为true，会导致子View收到一个ACTION_CANCEL, 表示子View的本次事件取消
-                    //调用dispatchTransformedTouchEvent()方法把事件分发给target
+                                || intercepted;
+                    //调用dispatchTransformedTouchEvent()方法把事件分发给target对应的子View
                     if (dispatchTransformedTouchEvent(ev, cancelChild, target.child, target.pointerIdBits)) {
                         //handle的是否为true取决于子View的dispatchTouchEvent()返回值
                         handled = true;
                     }
-                    //清空这个子View对应的target，导致该事件序列的后序事件该子View都无法再收到
+                    //如果需要取消本次事件，清空这个子View对应的target，并把这个tareget从链表中取消，导致该事件序列的后序事件该子View都无法再收到
                      if (cancelChild) {
-                         //...
+                         if (predecessor == null) {
+                             mFirstTouchTarget = next;
+                         } else {
+                             predecessor.next = next;
+                         }
                          target.recycle();
                          target = next;
                          continue;
                      }
                 }
                 predecessor = target;
+                //继续分发给下一个target
                 target = next;
             }//end...while (target != null) 
             
@@ -582,6 +600,8 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
         
     }//end...if (onFilterTouchEventForSecurity(ev))
     
+    //...
+    return handled;
 }
 ```
 
@@ -629,16 +649,21 @@ if (actionMasked == MotionEvent.ACTION_DOWN || mFirstTouchTarget != null) {
  //检查本次事件是否是ACTION_CANCEL
 final boolean canceled = resetCancelNextUpFlag(this) || actionMasked == MotionEvent.ACTION_CANCEL;
 //...
+//newTouchTarget用于记录本次事件的target
+TouchTarget newTouchTarget = null;
+//表示事件是否已经分发给target对应的子View，默认为false
+boolean alreadyDispatchedToNewTouchTarget = false;
 //3、如果本次事件不取消并且不拦截，就寻找合适的子View处理
 if (!canceled && !intercepted) {
     //...
-    //如果本次事件是ACTION_DOWN
+    //如果本次事件是ACTION_DOWN 或 ACTION_POINTER_DOWN 或ACTION_HOVER_MOVE
+    //本文重点关注ACTION_DOWN事件，ACTION_POINTER_DOWN与多点触控相关
     if (actionMasked == MotionEvent.ACTION_DOWN
         || (split && actionMasked == MotionEvent.ACTION_POINTER_DOWN)
         || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
-
+		
         final int childrenCount = mChildrenCount;
-        //如果target是null并且ViewGroup有子View，就寻找某个子View当mFirstTouchTarget
+        //如果target是null并且ViewGroup有子View，就寻找某个子View当target
         if (newTouchTarget == null && childrenCount != 0) {
             final float x = ev.getX(actionIndex);
             final float y = ev.getY(actionIndex);
@@ -658,8 +683,10 @@ if (!canceled && !intercepted) {
                 //3.2、dispatchTransformedTouchEvent()里面会调用子View的dispatchTouchEvent()方法，在这个方法里把事件分发给子View
                 if (dispatchTransformedTouchEvent(ev, false, child, idBitsToAssign)) {
                     //...
-                    //3.3、如果dispatchTransformedTouchEvent()返回true，表示找到子View消费本次事件了，就会走到这里, 所以这个子View就被当作mFirstTouchTarget，这里会调用addTouchTarget()方法为mFirstTouchTarget赋值
+                    //3.3、如果dispatchTransformedTouchEvent()返回true，表示找到子View消费本次事件了，就会走到这里, 所以这个子View就被当作target，这里会调用addTouchTarget()方法为这个子View创建一个TouchTarget，并把这个target插入mFirstTouchTarget链表的表头，并把表头返回赋值给newTouchTarget
                     newTouchTarget = addTouchTarget(child, idBitsToAssign);
+
+                    //alreadyDispatchedToNewTouchTarget赋值为true，表示事件已经分发给target对应的子View
                     alreadyDispatchedToNewTouchTarget = true;
                     break;
                 }
@@ -699,7 +726,9 @@ private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
         event.setAction(oldAction);
         return handled;
     }
-    //...
+    
+    //...省略的是多点触控的处理
+    
     //2、如果cancel为false，进入这个if分支
     if (child == null) {//如果child为空
         //调用 super.dispatchTouchEvent(event)，表示ViewGroup自己决定是否处理本次事件
@@ -715,15 +744,17 @@ private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
 
 因为传入cancel为false，所以来带注释2的if分支，因为传入的child不为空，所以调用child.dispatchTouchEvent(event)，表示让子View决定是否处理本次事件，**到这里DOWN事件就传递给子View，如果子View是一个View，那么它的处理流程就像前面介绍的View的事件分发一样，如果子View是一个ViewGroup，那么它的处理流程就又是ViewGroup的事件分发**。
 
-好了，假设子View消费这个事件，返回true，则dispatchTransformedTouchEvent()返回true，ViewGrou找到了要消费这个DOWN事件的子View，这时进入注释3.3，调用addTouchTarget(child, idBitsToAssign)方法，如下：
+好了，假设子View消费这个事件，返回true，则dispatchTransformedTouchEvent()返回true，ViewGrou找到了要消费这个DOWN事件的子View，这时到了dispatchTouchEvent方法的注释3.3，调用addTouchTarget(child, idBitsToAssign)方法，如下：
 
 ```java
 //ViewGroup.java
 private TouchTarget addTouchTarget(@NonNull View child, int pointerIdBits) {
+    //首先为传进来的View获取一个target关联
     final TouchTarget target = TouchTarget.obtain(child, pointerIdBits);
+    //然后把这个target插入mFirstTouchTarget链表的表头
     target.next = mFirstTouchTarget;
-    //给mFirstTouchTarget赋值
-    mFirstTouchTarget = target;
+    mFirstTouchTarget = target;//mFirstTouchTarget重新移动到链表表头
+    //返回链表表头的target
     return target;
 }
 
@@ -731,11 +762,14 @@ private TouchTarget addTouchTarget(@NonNull View child, int pointerIdBits) {
 public static TouchTarget obtain(@NonNull View child, int pointerIdBits) {
     //...
     target.child = child;
+    target.pointerIdBits = pointerIdBits;
     return target;
 }
 ```
 
-如果找到了要消费这个DOWN事件的子View，那么这个子View就会被赋值给mFirstTouchTarget的child字段，这个就相当于做了一个记录，当下一个事件到来时，如果发现mFirstTouchTarget不为空，我就可以直接把事件分发给mFirstTouchTarget中的View，就不用再去遍历子View了。那么mFirstTouchTarget是什么？它是一个TouchTarget类型，如下：
+如果找到了要消费这个DOWN事件的子View，就会为这个子View创建一个target关联，同时这个子View会赋值给**target**的**child**字段，最后这个**target**就会插入链表的表头并返回，addTouchTarget方法返回后赋值给**newTouchTarget**字段。target的作用就是：做了一个记录，当下一个事件到来时，如果发现**mFirstTouchTarget**不为空，就会遍历链表找到对应的target，直接把事件分发给**target**中记录的View，就不用再去遍历ViewGroup中子View了。
+
+那么我们上面所谈到的target、mFirstTouchTarget、newTouchTarget是什么？它们都是**TouchTarget**类型，如下：
 
 ```java
 ///ViewGroup::TouchTarget
@@ -744,41 +778,49 @@ private static final class TouchTarget {
     public View child;
     //它的下一个结点
     public TouchTarget next;
+    //通过二进制位记录按在child上的手指数量，有多少个1就表示有多少根手指
+    //例如pointerIdBits = 001表示有一根手指，pointerIdBits = 011表示有两根手指，
+    public int pointerIdBits;
     //...
 }
 ```
 
-它是一个链表结构，为什么mFirstTouchTarget是一个链表？我的猜测是由于多点触控的存在，例如我5个手指可以同时触摸到列表的5个子View，如果5个子View都是要消费这个DOWN事件的话，那么就要用链表把它们记录起来，当下一个事件到来时，5个子View都能分发到事件。
+它是一个链表结构，其中child表示本次需要消费事件的View，next表示下一个结点，pointerIdBits表示按在child上的手指数量，**mFirstTouchTarget**就是这个链表的表头，链表由很多的**target**串联起来，**newTouchTarget**就是代表最新插入的target，为什么mFirstTouchTarget是一个链表？我的猜测是由于**多点触控**的存在，例如我5个手指可以同时触摸到列表的5个子View，如果5个子View都是要消费这个DOWN事件的话，那么就要用链表把它们记录起来，当下一个事件到来时，5个子View都能分发到事件，所以后面遇到target的字眼，时刻记住它是一个链表结构。
 
-好了，现在找到可以消费事件的子View了，并且mFirstTouchTarget也被赋值了，就一个break跳出for循环，直接来到dispatchTouchEvent()方法的注释4，如下：
+> 多点触控在事件分发中又是另外一个知识点，在多点触控中:
+> 1、如果多个手指依此按在同一个View中，那么这个View会先收到第一个手指的ACTION_DOWN事件，接着会收到其他手指的ACTION_POINTER_DOWN事件;
+> 2、如果多个手指依此按在不同的View中，那么每个View都会收到相应手指的ACTION_DOWN事件；
+> 在Android中，通过idBitsToAssign、mFirstTouchTarget 和 mFirstTouchTarget中的pointerIdBits配合实现多点触控的事件分发，有兴趣的可以自行了解[“事件分发只有一次 ACTION_DOWN，一次 ACTION_UP”严谨吗？](https://www.wanandroid.com/wenda/show/11287)。
+
+好了，现在已经找到了可以消费事件的子View，并通过addTouchTarget方法为这个子View关联了一个target插入了mFirstTouchTarget，并且mFirstTouchTarget在链表插入时也被移动到链表表头了，不为null了，接着就一个break跳出for循环，直接来到dispatchTouchEvent()方法的注释4，如下：
 
 ```java
-   //4、根据mFirstTouchTarget是否为null做出不同行为
+//4、根据mFirstTouchTarget是否为null做出不同行为
 if (mFirstTouchTarget == null) {
     //...
 } else {//有两种情况mFirstTouchTarget不为空，表示找到合适的子View为target：
     //1、本次事件是ACTION_DOWN，遍历完ViewGroup所有的子View后找到了合适的子View为target；
-    //2、本次事件是除了ACTION_DOWN以外的其他事件，但是在ACTION_DOWN时已经找到了合适的子View为target
-    //所以接下来就直接把事件分发给mFirstTouchTarget的child处理就行
+    //2、本次事件是除了ACTION_DOWN以外的其他事件，但是在ACTION_DOWN时已经找到了合适的子View为target，所以接下来就直接把事件分发给target的child处理就行
     TouchTarget predecessor = null;
     TouchTarget target = mFirstTouchTarget;
-    //mFirstTouchTarget是一个单链表结构
+    //mFirstTouchTarget是一个单链表结构，下面是链表的遍历
     while (target != null) {
         final TouchTarget next = target.next;
         if (alreadyDispatchedToNewTouchTarget && target == newTouchTarget) {//情况1的处理
             //因为在找到target时已经调用过dispatchTransformedTouchEvent()了，表示该target的View已经消费了该事件，handle直接等于true
             handled = true;
         } else {//情况2的处理
-            //...
+           //...
         }
         predecessor = target;
+        //继续分发给下一个target
         target = next;
     }//end...while (target != null) 
 
 }//end...if (mFirstTouchTarget == null)
 ```
 
-mFirstTouchTarget不为空，就来到else分支，然后因为是DOWN事件，在上面的for循环中找到子View消费事件后alreadyDispatchedToNewTouchTarget赋值为true并且mFirstTouchTarget等于newTouchTarget实例，就来到情况1的处理的if分支，这里直接返回了true，因为上面在for循环中target的View已经消费了该事件，handle直接等于true。
+mFirstTouchTarget不为空，就来到else分支，else分支中是一个链表的遍历，遍历所有的target，找到在上面的for循环消费了DOWN事件的子View对应的target，对应情况1的if分支，在上面的for循环中找到子View后，这个子View已经消费了DOWN事件，alreadyDispatchedToNewTouchTarget已经赋值为true，所以handle直接等于true。
 
 到这里在DOWN事件下ViewGroup不拦截的情况下分析完毕。上面是假设找到了子View并且子View消费了事件，这样当下一次事件到来时mFirstTouchTarget不为空，就直接把这个事件给子View；但是如果上面是找到子View而这个子View不消费这个DOWN事件，即子View的dispatchTouchEvent()方法返回false，那么dispatchTransformedTouchEvent()返回false，就导致无法为mFirstTouchTarget赋值，mFirstTouchTarget为空，当下一次事件序列到来时，ViewGroup会直接处理，而不再转发给子View。这里得出一个结论：**子View如果不消费ACTION_DOWN事件，那么同一事件序列的其他事件都不会再交给它来处理，而是交给它的父ViewGroup处理；子View一旦消费ACTION_DOWN事件，那么同一事件序列的其他事件都会交给它处理**。
 
@@ -806,7 +848,7 @@ if (mFirstTouchTarget == null) {//这一般有三种情况导致mFirstTouchTarge
 }//end...if (mFirstTouchTarget == null)
 ```
 
-很明显这里是情况3，所以没有找到子View，dispatchTransformedTouchEvent()方法的第三个参数为空，而第二个参数为false，因为不是ACTION_CANCEL事件，我们参考上面的dispatchTransformedTouchEvent()方法分析，如下：
+很明显这里是情况3，因为没有找到子View，dispatchTransformedTouchEvent()方法的第三个参数为空，而第二个参数为false，因为不是ACTION_CANCEL事件，我们参考上面的dispatchTransformedTouchEvent()方法分析，如下：
 
 ```java
 //ViewGroup.java
@@ -838,7 +880,7 @@ private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
 ```java
  //1、如果本次事件是ACTION_DOWN
 if (actionMasked == MotionEvent.ACTION_DOWN) {
-    //置空mFirstTouchTarget
+    //置空mFirstTouchTarget，mFirstTouchTarget是TouchTarget类型，是一个单链表结构
     cancelAndClearTouchTargets(ev);
     //清除mGroupFlags中的FLAG_DISALLOW_INTERCEPT标志位，这个标志等同于下面的disallowIntercept
     resetTouchState();
@@ -858,8 +900,8 @@ ACTION_DOWN事件的处理流程又可以分为两个流程即：**mFirstTouchTa
 #### 3.1、mFirstTouchTarget == null
 
 ```java
- //检查本次事件是否是ACTION_CANCEL
- final boolean canceled = resetCancelNextUpFlag(this) || actionMasked == MotionEvent.ACTION_CANCEL;
+//检查本次事件是否是ACTION_CANCEL
+final boolean canceled = resetCancelNextUpFlag(this) || actionMasked == MotionEvent.ACTION_CANCEL;
 //...   
 //4、根据mFirstTouchTarget是否为null做出不同行为
 if (mFirstTouchTarget == null) {//这一般有三种情况导致mFirstTouchTarget为空：
@@ -880,43 +922,47 @@ if (mFirstTouchTarget == null) {//这一般有三种情况导致mFirstTouchTarge
 #### 3.2、mFirstTouchTarget != null
 
 ```java
-   //4、根据mFirstTouchTarget是否为null做出不同行为
+//4、根据mFirstTouchTarget是否为null做出不同行为
 if (mFirstTouchTarget == null) {
     //...
 } else {//有两种情况mFirstTouchTarget不为空，表示找到合适的子View为target：
     //1、本次事件是ACTION_DOWN，遍历完ViewGroup所有的子View后找到了合适的子View为target；
-    //2、本次事件是除了ACTION_DOWN以外的其他事件，但是在ACTION_DOWN时已经找到了合适的子View为target
-    //所以接下来就直接把事件分发给mFirstTouchTarget的child处理就行
+    //2、本次事件是除了ACTION_DOWN以外的其他事件，但是在ACTION_DOWN时已经找到了合适的子View为target，所以接下来就直接把事件分发给target的child处理就行
     TouchTarget predecessor = null;
     TouchTarget target = mFirstTouchTarget;
-    //mFirstTouchTarget是一个单链表结构
+    //mFirstTouchTarget是一个单链表结构，下面是链表的遍历
     while (target != null) {
         final TouchTarget next = target.next;
         if (alreadyDispatchedToNewTouchTarget && target == newTouchTarget) {//情况1的处理
-           //...
+            //...
         } else {//情况2的处理
-             //4.1
-              final boolean cancelChild = resetCancelNextUpFlag(target.child)
-                                || intercepted;//注意这个intercepted，如果为true，cancelChild为true，会导致子View收到一个ACTION_CANCEL, 表示子View的本次事件取消
-                    //4.2、调用dispatchTransformedTouchEvent()方法把事件分发给target
-                    if (dispatchTransformedTouchEvent(ev, cancelChild, target.child, target.pointerIdBits)) {
-                        //handle的是否为true取决于子View的dispatchTouchEvent()返回值
-                        handled = true;
-                    } 
-                    //4.3、清空这个子View对应的target，导致该事件序列的后序事件该子View都无法再收到
-                     if (cancelChild) {
-                         //...
-                         target.recycle();
-                         target = next;
-                         continue;
-                     }
+            //4.1、注意这个intercepted，如果为true，cancelChild就会为true，会导致子View收到一个ACTION_CANCEL, 表示子View的本次事件取消
+            final boolean cancelChild = resetCancelNextUpFlag(target.child)
+                || intercepted;
+            //4.2、调用dispatchTransformedTouchEvent()方法把事件分发给target
+            if (dispatchTransformedTouchEvent(ev, cancelChild, target.child, target.pointerIdBits)) {
+                //handle的是否为true取决于子View的dispatchTouchEvent()返回值
+                handled = true;
+            } 
+            //4.3、如果需要取消本次事件，清空这个子View对应的target，并把这个tareget从链表中取消，导致该事件序列的后序事件该子View都无法再收到
+            if (cancelChild) {
+                if (predecessor == null) {
+                    mFirstTouchTarget = next;
+                } else {
+                    predecessor.next = next;
                 }
-                predecessor = target;
+                target.recycle();
                 target = next;
+                continue;
+            }
         }
         predecessor = target;
+        //继续分发给下一个target
         target = next;
-    }//end...while (target != null) 
+    }
+    predecessor = target;
+    target = next;
+}//end...while (target != null) 
 
 }//end...if (mFirstTouchTarget == null)
 ```
@@ -943,7 +989,9 @@ private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
         event.setAction(oldAction);
         return handled;
     }
-    //...
+    
+    //...省略多点触控处理
+    
     //2、如果cancel为false，进入这个if分支
     if (child == null) {
         //调用 super.dispatchTouchEvent(event)，表示ViewGroup自己决定是否处理本次事件
@@ -959,7 +1007,7 @@ private boolean dispatchTransformedTouchEvent(MotionEvent event, boolean cancel,
 
 可以看到如果cancel为true，进入注释1这个if分支，里面会set一个ACTION_CANCEL事件，然后传递给target记录的子View；如果cancel为false，进入注释2这个else分支，调用child.dispatchTouchEvent(event)，表示让target记录的子View决定是否处理本次事件，前面已经讲过了。
 
-好，现在我们走出dispatchTransformedTouchEvent()方法，来到注释4，如果cancelChild为true，就会调用TouchTarget的recycler()方法回收这个target，这样做的后果是什么呢？这样相当于清空了mFirstTouchTarget，当下一次事件到来时mFirstTouchTarget == null，ViewGroup直接处理事件，不会再分发给子View。
+好，现在我们走出dispatchTransformedTouchEvent()方法，来到注释4.3，如果cancelChild为true，就会调用TouchTarget的recycler()方法回收这个target，这样做的后果是什么呢？这样相当于清空了这个子View对应的target，并把这个tareget从链表中取消，导致该事件序列的后序事件该子View都无法再收到。
 
 到这里ViewGroup处理除了ACTION_DOWN以外事件的流程分析完毕。
 
@@ -1027,3 +1075,5 @@ View的事件分发小结和ViewGroup的事件分发小结都可以在源码中�
 [Android事件分发完全解析之事件从何而来](https://blog.csdn.net/qq_43660664/article/details/84026785)
 
 [通过流程图来分析Android事件分发](https://blog.csdn.net/u010707039/article/details/85211658#commentBox)
+
+[十分钟了解Android触摸事件原理（InputManagerService）](https://www.jianshu.com/p/f05d6b05ba17)

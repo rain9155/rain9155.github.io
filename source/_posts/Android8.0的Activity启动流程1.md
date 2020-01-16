@@ -580,7 +580,9 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 {% asset_img activity5.png activity5 %}
 
-可以看到会涉及Launcher进程、SystemServer进程、App进程、Zygote进程。关于这些进程的简单信息可以看这篇[从进程的角度看Android的系统架构](https://rain9155.github.io/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/)
+可以看到会涉及Launcher进程、SystemServer进程、App进程、Zygote进程(关于这些进程的简单信息可以看这篇[从进程的角度看Android的系统架构](https://rain9155.github.io/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/))，这整个过程如下：首先是点击App图标，此时是运行在Launcher进程,  Launcher通过AMS本地代理向AMS发起startActivity请求，AMS收到请求后，发现要启动的Activity的进程不存在，就通过Process.start方法向Zygote进程发送创建进程的请求，Zygote进程收到请求后，fork出新的子进程，即App进程，然后进入ActivityThread.main方法中，这时运行在App进程中，App进程通过AMS本地代理向AMS发起attachApplication请求，AMS接收到请求后，进行一些列准备工作(通知Activity创建Application)后，再通过ApplicationThread向App进程发送scheduleLaunchActivity请求，App进程收到请求后，后面就会进行Activity的生命周期回调。
+
+关于ApplicationThread中的scheduleLaunchActivity方法之后的流程就留到下一篇文章了。
 
 阅读源码真的是一个漫长的过程，又时候看别人写的那么简单，但是当自己去写，才发现要考虑的东西很多，所以这是一个日积月累的过程，所以阅读源码的时候，最好跟着前人的文章阅读，这样理解的更快。
 
