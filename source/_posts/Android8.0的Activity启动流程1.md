@@ -588,8 +588,9 @@ void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean ch
 
 参考文章：
 
-《Android开发艺术探索》
-
 [startActivity启动过程分析](http://gityuan.com/2016/03/12/start-activity/)
 
 [Android8.0 根Activity启动过程](http://liuwangshu.cn/framework/component/6-activity-start-1.html)
+
+[从Activity的启动流程理解Binder](https://www.cnblogs.com/jymblog/p/10917345.html)
+

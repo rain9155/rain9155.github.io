@@ -123,5 +123,5 @@ deploy:
   type: git
   repository: 
     - https://github.com/rain9155/rain9155.github.io.git
-    - https://git.dev.tencent.com/rain9155/rain9155.coding.me.git
+    - https://e.coding.net/rain9155/rain9155.coding.me.git
   branch: master

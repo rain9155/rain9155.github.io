@@ -565,4 +565,3 @@ public void callActivityOnResume(Activity activity) {
 
 [Android8.0 根Activity启动过程（后篇）](http://liuwangshu.cn/framework/component/7-activity-start-2.html)
 
-《Android源码分析与实战》

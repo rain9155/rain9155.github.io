@@ -205,6 +205,8 @@ Serializable和Parcelable都可以实现序列化，用于进程间的数据传�
 
 ClientActivity启动时会运行在默认的进程上，RemoteService启动时会运行在名为com.example.aidltest.remote的进程上，它们在本文分别代表为本地客户端和远程服务端。
 
+> 通过给四大组件指定”android:process“属性开启多进程时，进程名以 **:** 开头属于当前应用的**私有进程**，其他应用的组件不能和它跑在同一个进程中；不以 **:** 开头的进程属于**全局进程**，其他应用如果签名相同时，可以通过sharedUserId方式和它跑在同一个进程中，本文没有使用 **:** 开头，而是直接给新进程指定名字，所以新进程属于全局进程。
+
 ## 使用AIDL
 
 前面花了一点篇幅来讲解序列化和其他进程间通信的方式，主要是让大家有个心理准备，下面进入正文：
@@ -757,6 +759,8 @@ public class Proxy implements IUserManager {
 [Android系统中Parcelable和Serializable的区别](http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0204/2410.html)
 
 [关于Binder，作为应用开发者你需要知道的全部](https://www.jianshu.com/p/062a6e4f5cbe)
+
+[如何理解Android的多进程](https://blog.csdn.net/cmyperson/article/details/56278433)
 
 
 

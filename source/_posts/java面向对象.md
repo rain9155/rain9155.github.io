@@ -15,7 +15,7 @@ date: 2019-07-19 12:29:50
 
 ### 1、抽象类
 
-抽象类和抽象方法都用abstract关键字进行声明，抽象类不能被实例化，不能直接创建，抽象方法必须放在抽象类中。
+抽象类和抽象方法都用abstract关键字进行声明，抽象类不能被实例化，不能直接创建，抽象方法必须放在抽象类中，类中如果有抽象方法，这个类继续声明为抽象类，如下：
 
 ```java
 public abstract class Hero{
@@ -34,7 +34,7 @@ public abstract class LongRange extends Hero{}
 
 ### 2、接口
 
-接口被认为是一种特殊的抽象类，同样不能使用new实例化，包含常量和待实现的方法，java8以后接口中可以有方法的实现，如下：
+接口被认为是一种特殊的抽象类，同样不能使用new实例化，接口的字段和方法都默认为public，且不能声明为private或protected，接口只能包含常量(static final)和待实现的方法，java8以后接口中可以有方法的实现，如下：
 
 ```java
 interface Eat{
@@ -45,6 +45,8 @@ interface Eat{
 }
 ```
 
+> 在接口中，也可以定义内部类，但是只能是public static修饰的内部类，所以接口中只能定义静态内部类，但是在接口中定义内部类的用处不大，很少使用。
+
 ### 3、接口和抽象类的比较
 
 |        |               变量                |           成员方法            | 构造方法 |               使用场合               |
@@ -53,6 +55,154 @@ interface Eat{
 |  接口  | 所有变量必须是public static final | 所有方法必须是public abstract |    无    | 弱的“is a”关系（is kind of，是一类） |
 
 在很多情况下，接口优先于抽象类。因为接口没有抽象类严格的类层次结构要求，可以灵活地为一个类添加行为。并且从 Java 8 开始，接口也可以有默认的方法实现，使得修改接口的成本也变的很低，而且接口可以实现多继承。
+
+## 外部类和内部类
+
+把一个类放在另外一个类的内部，处于类内部的类就叫做内部类，包含内部类的类就叫做外部类，一个外部类不一定有内部类，但是一个内部类就一定有一个”依附“的外部类，内部类比外部类多使用3个修饰符：private、protected、static，外部类不能使用这3个修饰符，虽然外部类和内部类整体是一个类文件，但是编译之后，它会分别生成外部类的class文件和内部类的class文件，这说明在运行时外部类和内部类其实是两个独立的类，内部类可以分为：**非静态内部类**、**静态内部类**、**局部内部类**、**匿名内部类**。
+
+### 1、非静态内部类
+
+```java
+public class OuterClass {
+    
+    private String outer = "外部类私有变量";
+    private void outerMethod(){
+        System.out.println("外部类私有方法" );
+    }
+
+    public class InnerClass{
+        
+        public void innerMethod(){
+            //非静态内部类调用外部类的私有方法
+            outerMethod();
+            //非静态内部类访问外部类的私有变量
+            System.out.println(outer);
+        }
+        
+    }
+}
+```
+
+没有使用static修饰的就是非静态内部类，它依赖于**外部类实例**，要创建非静态内部类实例，必须先创建外部类实例，如下：
+
+```java
+public static void main(String[] args) {
+    OuterClass outerClass = new OuterClass();
+    //通过 外部类实例 调用非静态内部类的构造器
+    OuterClass.InnerClass innerClass = outerClass.new InnerClass();
+    innerClass.innerMethod();
+}
+```
+
+总的来说，非静态内部类有以下几个特点：
+
+- 1、非静态内部类属于外部类实例，必须依赖外部类实例才能够创建；
+- 2、非静态内部类编译之后，会保留一个外部类对象的引用(在构造方法中传入)；
+- 3、非静态内部类不能含有静态成员、静态方法和static语句块；
+- 4、非静态内部类中可以直接访问外部类的所有成员和方法(包括private的)，但是在外部类中不能直接访问内部类的任何成员和方法，必须先创建实例后才能访问(包括private的)。
+
+> 如果外部类和内部类的成员变量重名，可以通过**this**和**外部类.this**区分。
+
+### 2、静态内部类
+
+```java
+public class OuterClass {
+
+    private static String outer = "外部类私有变量";
+    private static void outerMethod(){
+        System.out.println("外部类私有方法" );
+
+    }
+
+    public static class InnerClass{
+
+        public void innerMethod(){
+            //静态内部类调用外部类的私有静态方法
+            outerMethod();
+            //静态内部类访问外部类的私有静态变量
+            System.out.println(outer);
+        }
+        
+    }
+}
+```
+
+使用static修饰的就是静态内部类，它依赖于**外部类**，创建静态内部类实例时，不需要先创建外部类实例，因为静态内部类依赖的是类而不是类实例，如下：
+
+```java
+public static void main(String[] args) {
+    //通过 外部类 调用静态内部类的构造器
+    OuterClass.InnerClass innerClass = new OuterClass.InnerClass();
+    innerClass.innerMethod();
+}
+```
+
+总的来说，静态内部类有以下几个特点：
+
+- 1、静态内部类属于类，而不属于类实例；
+- 2、静态内部类编译之后，不会含有外部类对象的引用；
+- 3、静态内部类可以包含静态成员、静态方法和static语句块，也能包含非静态的；
+- 4、静态内部类不能直接访问外部类的实例成员或方法，只能访问静态成员或方法(包括private的)，外部类可以直接通过类名访问静态内部类的静态成员或方法(包括private的)，如果要访问实例成员或方法，必须先创建实例后才能访问(包括private的)。
+
+> 外部类和内部类之间要访问对方的private/protected成员时，编译器会自动生成合适的“access method”静态方法来提供合适的可访问性，这样就绕开了原本的成员的可访问性不足的问题。
+
+### 3、局部内部类
+
+```java
+public class OuterClass {
+
+    public static void main(String[] args) {
+        //局部内部类
+       class InnerClass{
+            private String inner = "内部类私有变量";
+            private void innerMethod(){
+                System.out.println("内部类私有方法");
+            }
+       }
+
+       InnerClass innerClass = new InnerClass();
+       //访问局部内部类的私有变量
+       System.out.println(innerClass.inner);
+       //调用局部内部类的私有方法
+        innerClass.innerMethod();
+    }
+}
+```
+
+把一个类在方法里定义，这个类就是局部内部类，局部内部类只能在方法里面使用，它的作用域在方法之内，由于局部内部类不能在方法之外使用，所以它不能使用static和任何访问修饰符修饰，局部内部类在开发中很少用到，因为它的作用域太小了，不能被其他方法复用。
+
+### 4、匿名内部类
+
+```java
+public class OuterClass {
+
+    private void outerMethod(){
+        //创建匿名内部类
+        InnerClass innerClass = new InnerClass(){
+            @Override
+            public void innerMethod() {
+                System.out.println("内部类私有方法");
+            }
+        };
+        //调用匿名内部类的方法
+        innerClass.innerMethod();
+    }
+
+    public abstract class InnerClass{
+        int num = 1;
+        abstract void innerMethod();
+    }
+}
+```
+
+匿名内部类就是没有名字的内部类，它没有使用class关键字来定义类，而是在使用时直接创建接口或抽象父类的实现类来使用，匿名内部类一般在只使用一次的场景下使用，总的来说，匿名内部类有以下几个特点：
+
+- 1、匿名内部类不能继续声明为抽象类，它必须实现接口或抽象父类的所有抽象方法；
+- 2、匿名内部类不能定义构造器，因为它没有名字，但是它可以使用实例语句块来完成初始化；
+- 3、匿名内部类必须实现一个接口或抽象父类，但最多只能实现一个接口或抽象父类；
+- 4、匿名内部类编译之后，会保留一个外部类对象的引用。
+
+> 在java8之前，局部内部类或匿名内部类访问方法的局部变量时，这个局部变量必须使用final修饰，在java8之后，被局部内部类或匿名内部类访问的局部变量编译器会自动加上final，无需显式声明，但是如果局部变量在内部类中被修改，那么它还是要显式声明final，总之，在局部内部类或匿名内部类中使用局部变量时，必须按照有final修饰的方式来用(一次赋值，以后不能重复赋值)。
 
 ## 面向对象三大特性
 
@@ -90,13 +240,11 @@ interface Eat{
 
 在子类中提供一个对方法的新的实现。
 
-* 方法重写发生在通过继承而相关的不同类中
-* 方法重写具有相同的方法签名和返回值
-* 子类重写方法时子类方法访问权限大于父类的
-* 子类重写方法时子类抛出的异常类型是父类抛出异常的子类。
-* @Overiide称为重写标注，用来保证重写的方法和原方法的签名和返回值一致
-
-
+* 方法重写发生在通过继承而相关的不同类中；
+* 方法重写具有相同的方法签名和返回值；
+* 子类重写方法时子类方法访问权限大于父类的；
+* 子类重写方法时子类抛出的异常类型是父类抛出异常的子类；
+* @Overiide称为重写标注，用来保证重写的方法和原方法的签名和返回值一致。
 
 > 方法重载：方法重载是指在于同一个类中，一个方法与已经存在的方法名称上相同，但是参数类型、个数、顺序至少有一个不同。应该注意的是，返回值不同，其它都相同不算是重载。
 
@@ -195,4 +343,6 @@ ps: 在最终代码中，依赖关系主要表现为：
 参考资料：
 
 [看懂UML类图和时序图](https://www.jianshu.com/p/00cb3c4e6336)
+
+[为什么内部类的private变量可被外部类直接访问？](https://www.zhihu.com/question/54730071)
 
