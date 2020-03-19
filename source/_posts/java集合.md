@@ -554,7 +554,7 @@ foreach遍历底层其实还是通过迭代器遍历。
 
 其实还有两个很少用到，但在特殊场景却一定会用到它的两个集合没有讲到，分别是：PriorityQueue(优先级队列)、WeakHashMap(Key为弱引用的HashMap)，PriorityQueue可以指定比较器实现**小顶堆和大顶堆**，WeakHashMap可以用在**内存有限**的环境下，防止OOM，关于它们的具体使用可以自行查阅资料。
 
-本文主要简单介绍了集合框架中经常用到的集合类：ArrayList、LinkedList、HashMap、LinkedHashMap、TreeMap、HashSet、LinkedHashMap、TreeSet、ArrayDeque，和一些古老的容器类：Stack、Vector、HashTable，其中容器类已经不推荐使用了，它们都有各自的替代品，分别是：ArrayDeque、ArrayList、HashMap，本文还讲解的集合类之间各自的区别和使用场景，还有集合的迭代方式，在使用集合时，要善用**Collections和Arrays**工具类，它里面有很多对集合操作的工具方法，能在开发中简化我们的工作量。
+本文主要简单介绍了集合框架中经常用到的集合类：ArrayList、LinkedList、HashMap、LinkedHashMap、TreeMap、HashSet、LinkedHashSet、TreeSet、ArrayDeque，和一些古老的容器类：Stack、Vector、HashTable，其中容器类已经不推荐使用了，它们都有各自的替代品，分别是：ArrayDeque、ArrayList、HashMap，本文还讲解了集合类之间各自的区别和使用场景，还有集合的迭代方式，在使用集合时，要善用**Collections和Arrays**工具类，它里面有很多对集合操作的工具方法，能在开发中简化我们的工作量。
 
 以上就是本文的全部内容，如有错误，欢迎指出！
 
@@ -567,3 +567,5 @@ foreach遍历底层其实还是通过迭代器遍历。
 [Java集合类详解](https://blog.csdn.net/softwave/article/details/4166598)
 
 [Java ArrayDeque源码剖析](https://www.cnblogs.com/CarpenterLee/p/5468803.html)
+
+[Java中modCount的作用](https://blog.csdn.net/badguy_gao/article/details/78989637)

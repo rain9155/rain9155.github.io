@@ -14,7 +14,7 @@ categories: android
 
 什么？不会用Viewpager，可以看一下这个入门系列：[ViewPager 详解（一）---基本入门](https://blog.csdn.net/harvic880925/article/details/38453725)。
 
-场景一应该是很多人都遇到过的情况，界面整体使用Viewpager + Tablayout + Fragment组合，左右滑动界面以展示数据给用户，当你滑动到下一页的时候，Fragment已经有数据了，但是这个时候我希望开始加载数据而不是已经有了数据，特别是Viewpager 的适配器使用**FragmentPagerAdapter**的时候，因为这个适配器它会预加载好相邻的Fragment页面，这个预加载数量可以通过如下设置：
+场景一应该是很多人都遇到过的情况，界面整体使用Viewpager + Tablayout + Fragment组合，左右滑动界面以展示数据给用户，当你滑动到下一页的时候，Fragment已经有数据了，因为Viewpager默认会预加载好相邻的Fragment页面，这个预加载数量可以通过如下设置：
 
 ```java
 viewPager.setOffscreenPageLimit(0);

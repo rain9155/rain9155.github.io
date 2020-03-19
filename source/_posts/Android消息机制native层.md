@@ -262,7 +262,21 @@ enum {
 
 ```c++
 //system/core/libutils/Looper.cpp
-int Looper::pollInner(int timeoutMillis) {    
+int Looper::pollInner(int timeoutMillis) { 
+    //timeoutMillis等于-1，并且mNextMessageUptime不等于LLONG_MAX
+    //这说明java层没有消息但是native层有消息处理，这时在epoll_wait中，线程不能因为timeoutMillis等于-1而进入休眠，它还需要处理native层消息
+    //所以这里会根据mNextMessageUptime把timeoutMillis更新为大于0的值
+    if (timeoutMillis != 0 && mNextMessageUptime != LLONG_MAX) {
+        nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+        int messageTimeoutMillis = toMillisecondTimeoutDelay(now, mNextMessageUptime);
+        if (messageTimeoutMillis >= 0
+                && (timeoutMillis < 0 || messageTimeoutMillis < timeoutMillis)) {
+            //更新timeoutMillis为大于0的值，这个大于0的值就是需要等待多久后，才会到达native层消息的执行时间，等待timeoutMillis后，epoll_wait就会返回处理native层消息
+            timeoutMillis = messageTimeoutMillis;
+        }
+        //...
+    }
+    int result = POLL_WAKE;
     //...
     //事件集合(eventItems)，EPOLL_MAX_EVENTS为最大事件数量，它的值为16
     struct epoll_event eventItems[EPOLL_MAX_EVENTS];
@@ -296,6 +310,7 @@ int Looper::pollInner(int timeoutMillis) {
     
     //2、下面是处理Native的Message
     Done:;
+    //mNextMessageUptime如果没有值，会被赋值成LLONG_MAX，但是如果mNextMessageUptime已经有值，它还是保持原来的值
     mNextMessageUptime = LLONG_MAX;
     //mMessageEnvelopes是一个Vector集合，它代表着native中的消息队列
     while (mMessageEnvelopes.size() != 0) {
@@ -321,6 +336,7 @@ int Looper::pollInner(int timeoutMillis) {
             //result等于POLL_CALLBACK，表示某个监听事件被触发
             result = POLL_CALLBACK;
         } else {//消息还没到执行时间
+            //把消息的执行时间赋值给mNextMessageUptime
             mNextMessageUptime = messageEnvelope.uptime;
             //跳出循环，进入下一次轮询
             break;
@@ -329,6 +345,7 @@ int Looper::pollInner(int timeoutMillis) {
     //释放锁
     mLock.unlock();
     //...
+    return result;
 }
 ```
 pollInner方法很长，省略了一大堆代码，这里讲解一些核心的点，pollInner实际上就是从管道中读取事件，并且处理这些事件，pollInner方法可分为3部分：
@@ -344,7 +361,7 @@ pollInner方法很长，省略了一大堆代码，这里讲解一些核心的�
 > **maxevents**：events数量，该maxevents值不能大于创建epoll_create()时的size；
 > **timeout**：超时时间（毫秒，0会立即返回）.
 
-**epoll_wait**方法就是用来等待事件发生返回或者超时返回，它是一个阻塞方法， 如果**epoll_create**方法创建的epoll文件描述符（mEpollFd）所监听的任何事件发生，**epoll_wait**方法就会监听到，并把发生的事件从管道读取放入事件集合(eventItems)中，返回发生的事件数目eventCount，如果没有事件，epoll_wait方法就会让当前线程进入**休眠**，如果休眠timeout后还没有其他线程写入事件**唤醒**，就会返回，而此时返回的eventCount == 0，表示已经超时，timeout就是从java层一直传过来的**nextPollTimeoutMillis**，它的含义和nextPollTimeoutMillis一样，当timeout == -1时，表示java层的MessageQueue中没有消息，会一直等待下去，直到被唤醒，当timeout = 0时或到达timeout 时，它会立即返回；
+**epoll_wait**方法就是用来等待事件发生返回或者超时返回，它是一个阻塞方法， 如果**epoll_create**方法创建的epoll文件描述符（mEpollFd）所监听的任何事件发生，**epoll_wait**方法就会监听到，并把发生的事件从管道读取放入事件集合(eventItems)中，返回发生的事件数目eventCount，如果没有事件，epoll_wait方法就会让当前线程进入**休眠**，如果休眠timeout后还没有其他线程写入事件**唤醒**，就会返回，而此时返回的eventCount == 0，表示已经超时，timeout就是从java层一直传过来的**nextPollTimeoutMillis**，它的含义和nextPollTimeoutMillis一样，当timeout == -1时，表示native层的消息队列中没有消息，会一直等待下去，直到被唤醒，当timeout = 0时或到达timeout 时，它会立即返回。
 
 我们发现epoll机制只会把**发生了的事件**放入事件集合中，这样线程对事件集合的每一个事件的相应IO操作都有意义，这也是epoll机制高效的原因之一。
 
@@ -373,7 +390,7 @@ class Looper : public RefBase {
     //...
 }
 ```
-MessageEnvelope里面记录着收信人（handler，**MessageHandler**类型，是一个消息处理类），发信时间(uptime)，信件内容(message，**Message**类型)，Message结构体，消息处理类MessageHandler都定义在Looper.h文件中,  在java层中，消息队列是一个**链表**，在native层中，消息队列是一个C++的**Vector向量**，Vector存放的是MessageEnvelope元素，接下来就进入一个while循环，里面会判断消息是否达到执行时间，如果到达执行时间，就会取出信封中的**MessageHandler**和**Message**，把Message交给MessageHandler的**handlerMessage**方法处理。
+MessageEnvelope里面记录着收信人（handler，**MessageHandler**类型，是一个消息处理类），发信时间(uptime)，信件内容(message，**Message**类型)，Message结构体，消息处理类MessageHandler都定义在Looper.h文件中,  在java层中，消息队列是一个**链表**，在native层中，消息队列是一个C++的**Vector向量**，Vector存放的是MessageEnvelope元素，接下来就进入一个while循环，里面会判断消息是否达到执行时间，如果到达执行时间，就会取出信封中的**MessageHandler**和**Message**，把Message交给MessageHandler的**handlerMessage**方法处理；如果没有到达执行时间，就会更新**mNextMessageUptime**为消息的执行时间，这样在下一次**轮询**时，如果由于java层没有消息导致timeoutMillis等于-1，就会根据mNextMessageUptime更新timeoutMillis为需要等待执行的时间，超时后返回继续处理native层消息队列的头部信息。
 
 我们跟着MessageQueue#nativePollOnce()一路走下来，小结一下：
 * 1、当在java层通过Looper启动消息循环后，就会走到MessageQueue的nativePollOnce方法，在该方法native实现中，会把保存在java层的mPtr再转换为NativeMessageQueue；

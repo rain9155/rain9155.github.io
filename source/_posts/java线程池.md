@@ -109,15 +109,15 @@ ThreadPoolExecutor是线程池的真正实现，它的构造方法提供了一�
 
 BlockingQueue 大致有四个实现类，如下：
 
-* **ArrayBlockingQueue**：规定大小的基于数据结构的 BlockingQueue，即有界队列，其构造函数必须带一个 int 参数来指明其大小，其所含的对象是以 FIFO(先入先出)顺序排序的，如果队列满了调用给定的拒绝策略；
+* **ArrayBlockingQueue**：规定大小的基于数组结构的 BlockingQueue，即有界队列，其构造函数必须带一个 int 参数来指明其大小，其所含的对象是以 FIFO(先入先出)顺序排序的，如果队列满了调用给定的拒绝策略；
 * **LinkedBlockingQueue**： 大小不定的基于链表结构的 BlockingQueue，既可以有界也可以无界，若其构造函数带一个规定大小的参数，生成的 BlockingQueue 有大小限制，若不带大小参数，所生成的 BlockingQueue 的大小由 Integer.MAX_VALUE 来决定，其所含的对象是以 FIFO(先入先出)顺序排序的；所以如果该队列是无界的，则可以忽略给定的拒绝策略，因为它永远都不会满，同时还可以忽略maximumPoolSize 参数，因为起当核心线程都在忙的时候，新的任务被放在队列上，永远不会有大于 corePoolSize 的线程被创建；
 * **PriorityBlockingQueue**：优先级队列，类似于 LinkedBlockQueue，可以有界也可以无界，但其所含对象的排序不是 FIFO，而是依据对象的自然排序顺序或者是构造函数的 Comparator 决定的顺序；
 * **SynchronousQueue**：特殊的 BlockingQueue，对其的操作必须是放和取交替完成的，因为其特殊的操作，所以如果有一个任务要插入队列，那么它必须要等到另一个移除任务的操作，所以使用该队列会直接把任务提交给线程池，而不会将任务加入队列，如果线程池没有任何可用的线程处理，就调用给定的拒绝策略。
 
 BlockingQueue 的常用方法：
 
-- add(object)：把 object 加到 BlockingQueue 里，即如果 BlockingQueue 可以容纳，则返回 true，否则报异常；
-- offer(object)：表示如果可能的话，将 object 加到 BlockingQueue 里，即如果 BlockingQueue 可以容纳，则返回 true，否则返回 false；
+- add(object)：把 object 加到 BlockingQueue 里，如果 BlockingQueue 可以容纳，则返回 true，否则报异常；
+- offer(object)：把 object 加到 BlockingQueue 里，如果 BlockingQueue 可以容纳，则返回 true，否则返回 false；
 - put(object)：把 object 加到 BlockingQueue 里，如果 BlockQueue 没有空间，则调用此方法的线程被阻断直到 BlockingQueue 里面有空间再继续；
 - take()：取走 BlockingQueue 里排在首位的对象，若 BlockingQueue 为空，阻断进入等待状态直到 Blocking 有新的对象被加入为止；
 - poll(time)：取走 BlockingQueue 里排在首位的对象，若不能立即取出，则可以等 time 参数规定的时间，取不到时返回 null。
