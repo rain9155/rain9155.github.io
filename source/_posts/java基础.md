@@ -211,7 +211,7 @@ public AbstractStringBuilder append(String str) {
 
 分别使用+、concat方法、StringBuffer和StringBuilder的append方法来拼接字符串，各自的效率怎么样？在单线程环境下的一个for循环中拼接大量字符串，经过测试，它们的效率高低如下：
 
-**StringBuilder < StringBuffer < concat < +**
+**StringBuilder > StringBuffer > concat > +**
 
 +效率最低，这是因为每次拼接字符串时，都会new一个StringBuilder对象来拼接，频繁的新建对象是很耗时的，而StringBuffer每次append都需要进行同步，所以它的效率比StringBuilder低。
 
@@ -329,8 +329,8 @@ hashCode()用来返回一个对象的hash值，它是一个native方法，它主
 
 {% asset_img error1.png error1 %}
 
-* 1、RuntimeException和Error以及它们的子类都称为免检异常
-* 2、除了免检异常，其他异常都称为必检异常
+* 1、RuntimeException和Error以及它们的子类都称为免检异常, 这种异常一般是由程序逻辑错误引起的，对于这种异常，可以选择捕获处理，也可以不处理；
+* 2、除了免检异常，其他异常都称为必检异常，这种异常跟程序运行的上下文环境有关，即使程序设计无误，仍然可能因使用的问题而引发，所以Java强制要求我们必须对这些异常进行处理.
 
 由于免检异常可能在程序的任何一个地方出现，为了避免过多的使用try-catch块，java语言不强制要求编写代码捕获免检异常，也不要求在方法头显示声明免检异常。
 
