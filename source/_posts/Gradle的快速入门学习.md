@@ -1,9 +1,11 @@
 ---
-
 title: Gradle的快速入门学习
 tags: cradle
 Categories: grade
+date: 2020-06-26 22:36:22
+categories:
 ---
+
 
 ## 前言
 
@@ -143,9 +145,26 @@ println person.age//输出：21
 
 ### 1、Window平台
 
-* 1、在Gradle的[安装页面](https://gradle.org/releases/)选择一个Gradle版本，下载它的binary-only或complete版本，binary-only版本表示下载的Gradle压缩包只包含Gradle的源码，complete版本表示下载的Gradle压缩包包含Gradle的源码和源码文档说明；
-* 2、下载好Gradle后，把它解压到特定目录，如我这里为：D:/
-* 3、打开cmd，输入`gradle -v`校验是否配置成功.
+* 1、在Gradle的[安装页面](https://gradle.org/releases/)选择一个Gradle版本，下载它的binary-only或complete版本，binary-only版本表示下载的Gradle压缩包只包含Gradle的源码，complete版本表示下载的Gradle压缩包包含Gradle的源码和源码文档说明，这里我下载了gradle-6.5-bin版本；
+* 2、下载好Gradle后，把它解压到特定目录，如我这里解压到：D:/gradle，然后像配置java环境一样把D:/gradle/gradle-6.5/bin路径添加到系统的PATH变量下；
+* 3、打开cmd，输入`gradle -v`校验是否配置成功，输出以下类似信息则配置成功.
+
+```groovy
+C:\Users\HY>gradle -v
+
+------------------------------------------------------------
+Gradle 6.5
+------------------------------------------------------------
+
+Build time:   2020-06-02 20:46:21 UTC
+Revision:     a27f41e4ae5e8a41ab9b19f8dd6d86d7b384dad4
+
+Kotlin:       1.3.72
+Groovy:       2.5.11
+Ant:          Apache Ant(TM) version 1.10.7 compiled on September 1 2019
+JVM:          10.0.2 ("Oracle Corporation" 10.0.2+13)
+OS:           Windows 10 10.0 amd64
+```
 
 ### 2、Mac平台
 
@@ -203,7 +222,7 @@ gradle-wrapper.properties中各个字段解释如下：
 
 使用Gradle Wrapper后，就可以统一项目在不同用户电脑上的Gradle版本，同时不必让运行这个Gradle项目的人安装配置Gradle环境，提高了开发效率。
 
-## Gradle的项目配置
+## Gradle的多项目配置
 
 现在我们创建的Gradle项目默认已经有一个根项目了，它的build.gradle文件就处于Gradle项目的根目录下，如果我们想要添加多个子项目，这时就需要通过settings.gradle进行配置。
 
@@ -234,13 +253,7 @@ BUILD SUCCESSFUL in 540ms
 1 actionable task: 1 executed
 ```
 
-可以看到，4个子项目依赖于根项目，接下来我们来配置项目，配置项目一般在当前项目的build.gradle中进行，
-
-
-
-
-
-但是如果有多个项目时，而每个项目的某些配置又一样，那么在每个项目的build.gradle进行相同的配置是很浪费时间，而Gradle的Project接口为我们提供了allprojects和subprojects方法，在根项目的build.gradle中使用这两个方法可以全局的为所有子项目进行配置，allprojects和subprojects的区别是：**allprojects的配置包括根项目而subprojects的配置不包括根项目**，例如:
+可以看到，4个子项目依赖于根项目，接下来我们来配置项目，配置项目一般在当前项目的build.gradle中进行，可以通过buildscript方法配置，但是如果有多个项目时，而每个项目的某些配置又一样，那么在每个项目的build.gradle进行相同的配置是很浪费时间，而Gradle的Project接口为我们提供了allprojects和subprojects方法，在根项目的build.gradle中使用这两个方法可以全局的为所有子项目进行配置，allprojects和subprojects的区别是：**allprojects的配置包括根项目而subprojects的配置不包括根项目**，例如:
 
 ```groovy
 //根项目的build.gradle
@@ -762,7 +775,7 @@ outerExt {}中嵌套了inner{}，其中inner是一个方法，参数类型为Act
 - 1、定义嵌套的DSL对应的bean类，如这里为InnerExt；
 - 2、定义一个带ObjectFactory类型参数的构造，并使用@Inject注解（@Inject是javax包下的，ObjectFactory是属于Gradle的model包下的类，通过@Inject注解的构造会被Gradle调用来实例化该类，并注入ObjectFactory实例）；
 - 3、在构造中通过ObjectFactory对象的newInstance方法来创建bean类实例（通过ObjectFactory实例化的对象可以被闭包配置）；
-- 4、定义一个方法，该方法的参数类型为Action，泛型类型为嵌套的DSL对应的bean类，方法名随便起，如这里为inner，然后在      方法中调用Action的execute方法，传入bean类实例.
+- 4、定义一个方法，该方法的参数类型为Action，泛型类型为嵌套的DSL对应的bean类，方法名随便起，如这里为inner，然后在方法中调用Action的execute方法，传入bean类实例.
 
 上面4步就是嵌套DSL时需要在自定义Plugin中做的事，Gradle还为我们提供了更灵活的命名嵌套DSL，通过[NamedDomainObjectContainer](https://docs.gradle.org/current/dsl/org.gradle.api.NamedDomainObjectContainer.html#org.gradle.api.NamedDomainObjectContainer)实现，它类似于android中buildType{}, 如下：
 
@@ -869,19 +882,83 @@ uploadArchives{
 
 现在MyPlugin插件已经发布成功了，我发布MyPlugin的1.0和2.0两个版本到两个不同的本地目录中，接下来让我们使用这个插件。
 
-在
+在subproject_4/build.gradle中添加如下：
 
+```groovy
+//subproject_4/build.gradle
 
+buildscript {
+    repositories { 
+        //添加maven本地repo
+        mavenLocal()
+        
+        //添加maven远端repo
+	   //mavenCentral()
+        
+        //添加uploadArchives上传时指定的本地路径
+        maven {
+            url uri('../repo')
+        }
+    }
 
+    dependencies {
+        //定义插件jar的classpath路径，gradle编译时会扫描该classpath下的所有jar文件
+        //classpath 'com.example.customplugin:myplugin:1.0'
+        classpath 'com.example.customplugin:myplugin:2.0'
+    }
+}
+```
 
+这里使用了Project的buildscript方法，在该方法中可以使用repositories方法和dependencies方法指定当前项目构建时依赖的仓库和类路径，项目在构建时会去repositories定义的仓库地址寻找classpath指定路径下的所有jar文件，如我这里repositories方法中指定了mavenLocal()和maven {url uri('../repo')}，其中mavenLocal()对应maven的本地仓库即/.m/repository，如果你通过uploadArchives上传到了远端，则可以新增mavenCentral()，它代表maven的远端地址，而dependencies方法中则通过classpath指定了插件在仓库下的类路径，这里我指定了MyPlugin 2.0的类路径: com.example.customplugin:myplugin:2.0，它在maven {url uri('../repo')}仓库下。
 
+现在我们可以通过apply plugin使用MyPlugin了，在subproject_4/build.gradle中添加如下：
 
+```groovy
+//引用插件
+apply plugin: 'myplugin'
+
+//使用DSL配置插件的属性
+outerExt{
+    name 'rain'
+    message 'hello'
+
+    inner{
+        name '9155'
+        message 'word'
+    }
+}
+
+//执行gradle showExt，输出：
+//outerExt = [name = rain, message = hello], innerExt = [name = 9155, message = word]
+```
+
+其中apply plugin后面的插件名就是我们在gradle_plugin/src/main/resources/META-INF/gradle-plugins目录下编写的properties文件的名称。
 
 > 在最新版的Gradle中，本文所使用的[maven插件](https://docs.gradle.org/current/userguide/maven_plugin.html#sec:maven_tasks)已经被废弃了，Gradle提供了[maven-publish插件](https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:tasks)来替代，但是它的整体发布过程是类似。
 
 ## 结语
 
+本文通过Gradle的特点、项目结构、生命周期、Task、自定义Plugin等来全面的学习Gradle，掌握上面的知识已经足够让你入门Gradle，但是如果你想要更进一步的学习Gradle，掌握本文的知识点是完全不足的，你可能还需要熟悉掌握Project中各个api的使用、能独立的自定义一个有完整功能的Plugin、能熟练地编写Gradle脚本来管理项目等，下面有一份Gradle DSL Reference，你可以在需要来查找Gradle相关配置项的含义和用法：
 
+[Gradle DSL Reference](https://docs.gradle.org/current/dsl/index.html)
+
+对于android开发者，我们引入的android插件中也有很多配置项，下面的Android  Plugin DSL Reference，你可以在需要来查找android 插件相关配置项的含义和用法：
+
+[Android Plugin DSL Reference](https://google.github.io/android-gradle-dsl/current/index.html)
+
+本文的源码位置：
+
+[GradleDemo](https://github.com/rain9155/GradleDemo)
+
+以上就是本文的全部内容，希望大家有所收获！
+
+参考内容：
+
+[Gradle官网](https://docs.gradle.org/current/userguide/userguide.html)
+
+[Gradle学习系列](https://www.cnblogs.com/davenkin/p/gradle-learning-1.html)
+
+[Gradle插件从入门到进阶](https://juejin.im/post/5ccf02e36fb9a0322e73a3db#heading-52)
 
 
 
