@@ -214,7 +214,7 @@ gradle-wrapper.properties中各个字段解释如下：
 
 | 字段名           | 解释                                                         |
 | ---------------- | ------------------------------------------------------------ |
-| distributionBase | 下载的Gradle的压缩包解压后的主目录，为GRADLE_USER_HOME，在window中它表示**C:/用户/你电脑登录的用户名/.gradle/路径**，在mac中它表示**～/.gradle/路径** |
+| distributionBase | 下载的Gradle的压缩包解压后的主目录，为GRADLE_USER_HOME，在window中它表示**C:/用户/你电脑登录的用户名/.gradle/**，在mac中它表示**～/.gradle/** |
 | distributionPath | 相对于distributionBase的解压后的Gradle的路径，为wrapper/dists |
 | distributionUrl  | Grade压缩包的下载地址，在这里可以修改下载的Gradle的版本和版本类型(binary或complete)，例如gradle-6.5-all.zip表示Gradle 6.5的complete版本，gradle-6.5-bin.zip表示Gradle 6.5的binary版本 |
 | zipStoreBase     | 同distributionBase，不过是表示存放下载的Gradle的压缩包的主目录 |
