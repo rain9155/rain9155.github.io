@@ -1,6 +1,6 @@
 ---
 title: Gradle的快速入门学习
-tags: cradle
+tags: gradle
 Categories: grade
 date: 2020-06-26 22:36:22
 categories:
