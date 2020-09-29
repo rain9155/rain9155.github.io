@@ -1104,7 +1104,7 @@ visitEnd
 
 ## 结语
 
-这个gradle插件还是很简陋，还可以继续扩展它，例如耗时阀值支持ns、发现耗时函数时把函数的调用栈打印出来等，不过本文的目的还是主要学习自定义个gradle插件的过程，还有asm和transform知识， 其实android gradle api从3.6开始很多apk打包时用到的内置transform基本都变成了直接使用Task来实现，如DesugarTransform -> DesugarTask, MergeClassesTransform -> MergeClassesTask等，可能是为了提高构建效率，这也说明了transform并不是一个新的东西，它只是android gradle api提供给外部，方便外部操作字节码的工具，同时android gradle api中也有很多apk构建时用的的插件，如[AppPlugin](https://android.googlesource.com/platform/tools/base/+/refs/tags/gradle_3.4.0/build-system/gradle-core/src/main/java/com/android/build/gradle/AppPlugin.java)、[LibrayPlugin](https://android.googlesource.com/platform/tools/base/+/refs/tags/gradle_3.4.0/build-system/gradle-core/src/main/java/com/android/build/gradle/LibraryPlugin.java)等，我们编写gradle插件时也可以选择一个作为参考。
+这个gradle插件还是很简陋，还可以继续扩展它，例如耗时阀值支持ns、发现耗时函数时把函数的调用栈打印出来等，不过本文的目的还是主要学习自定义个gradle插件的过程，还有asm和transform知识， 其实android gradle api从3.6开始很多apk打包时用到的内置transform基本都变成了直接使用Task来实现，如DesugarTransform -> DesugarTask, MergeClassesTransform -> MergeClassesTask等，可能是为了提高构建效率，这也说明了transform本质是依赖task来完成的，它只是android gradle api提供给外部，方便外部操作字节码的工具，同时android gradle api中也有很多apk构建时用的的插件，如[AppPlugin](https://android.googlesource.com/platform/tools/base/+/refs/tags/gradle_3.4.0/build-system/gradle-core/src/main/java/com/android/build/gradle/AppPlugin.java)、[LibrayPlugin](https://android.googlesource.com/platform/tools/base/+/refs/tags/gradle_3.4.0/build-system/gradle-core/src/main/java/com/android/build/gradle/LibraryPlugin.java)等，我们编写gradle插件时也可以选择一个作为参考。
 
 以上就是本文的全部内容！
 
