@@ -1,8 +1,10 @@
 ---
 title: 自定义View实践-仿微信的滑动按钮
-tags: view
-categories: 自定义View
+tags: 自定义view
+categories: 开源项目
+date: 2019-08-06 18:30:02
 ---
+
 
 ## 前言
 

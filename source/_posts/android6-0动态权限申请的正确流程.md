@@ -1,8 +1,10 @@
 ---
 title: android6.0动态权限申请的正确流程
-tags: 权限
-categories: android
+tags: android
+categories: 开源项目
+date: 2019-06-06 18:13:59
 ---
+
 
 ## 前言
 

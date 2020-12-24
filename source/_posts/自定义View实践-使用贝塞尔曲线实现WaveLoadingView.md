@@ -1,8 +1,10 @@
 ---
 title: 自定义View实践-使用贝塞尔曲线实现一个loading控件
-tags: view
-categories: 自定义View
+tags: 自定义view
+categories: 开源项目
+date: 2019-08-23 18:19:46
 ---
+
 
 ## 前言
 
@@ -14,7 +16,7 @@ categories: 自定义View
 
 ## 效果图
 
-{% asset_img waveloadingview1.gif waveloadingview %}
+{% asset_img waveloading1.gif waveloading %}
 
 可以看到，WaveLoadingView除了用于loading外，还可以用于显示进度的场景。
 
@@ -38,7 +40,7 @@ categories: 自定义View
 
 当A、ω、h取一定的值，φ取不同的值时，就可以让曲线在水平方向移动起来，如下：
 
-{% asset_img waveloadingview2.gif waveloadingview %}
+{% asset_img waveloading2.gif waveloading %}
 
 上面是A = 2，ω = 0.8， h = 0， φ不断变化的正弦曲线。
 
@@ -54,13 +56,13 @@ categories: 自定义View
 
 下面我们取P0 = **(x0,  y0)** = **(-20,  0)**，P1 = **(x1,  y1)** = **(-10,  20)**，P2 = **(x2,  y2)** = **(0,  0)**，然后把这3个点的值代入二阶贝塞尔曲线函数，形成的曲线如下：
 
-{% asset_img waveloadingview3.png waveloadingview %}
+{% asset_img waveloading3.png waveloading %}
 
 **图一**
 
 这样就画出了一条曲线（那两条直线是用于辅助的），接下来我们继续取P3 = **(x3, y3)** = **(10,  -20)**，P4 = **(x4,  y4)** = **(20,  0)**，然后把P2、P3、P4**再次代入**二阶贝塞尔曲线函数，形成的曲线如下：
 
-{% asset_img waveloadingview4.png waveloadingview %}
+{% asset_img waveloading4.png waveloading %}
 
 **图二**
 
@@ -79,7 +81,7 @@ path.rQuadTo(x1, y1, x2, y2)//相对坐标
 
 再贴一次图一的贝塞尔曲线：
 
-{% asset_img waveloadingview3.png waveloadingview %}
+{% asset_img waveloading3.png waveloading %}
 
 **图一**
 
@@ -192,21 +194,21 @@ override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
 
 控件作画的范围大小和控件大小关系如下：
 
-{% asset_img waveloadingview5.png  waveloadingview3 %}
+{% asset_img waveloading5.png waveloading %}
 
 绿色框就是控件作画的范围大小，红色框就是控件大小，也就是说每次控件大小确定之后，我只取中间的部分绘制，很多人会有疑问？为什么只取中间的部分绘制，而不在整个控件范围绘制？这是因为**当控件的父布局是ConstraintLayout，控件宽或高取match_parent时**，会出现以下情况：
 
-{% asset_img waveloadingview6.png  waveloadingview4 %}
+{% asset_img waveloading6.png waveloading %}
 
 **图1** ：控件大小：layout_width = "match_parent" ， layout_height = "200dp"
 
-{% asset_img waveloadingview7.png  waveloadingview5 %}
+{% asset_img waveloading7.png waveloading %}
 
 **图2**：控件大小：layout_width = "200dp" ， layout_height = "match_parent"
 
 蓝色框就是手机屏幕，黑色背景就是控件大小，你还记得我上面在onMeasure()方法讲过，如果控件的形状是圆形，那么控件的测量宽高应该相等的，并取最小值为基准，所以如果控件大小输入是layout_width = "match_parent" ，layout_height = "200dp" 或 layout_width = "200dp" ，layout_height = "match_parent"，经过测量后控件大小应该是**宽 = 高 = 200dp**，效果应该都是如下图：
 
-{% asset_img waveloadingview8.png  waveloadingview6 %}
+{% asset_img waveloading8.png waveloading %}
 
 **图3**
 
@@ -309,7 +311,7 @@ private fun preDrawWavePath() {
 
 preDrawWavePath() 中把波浪路径的信息保存在path中，下面一张图很好的说明波浪的整个路径，如下：
 
-{% asset_img waveloadingview9.png  waveloadingview7 %}
+{% asset_img waveloading9.png waveloading %}
 
 我把控件大小充满了父容器，所以控件的作画范围就是绿色框的大小，波浪的波长就是一个画布的宽度即绿色框的宽度，我把波浪的起始点移到屏幕范围外，从起始点开始，画了三个波长，把波浪画出屏幕的范围，从而方便的待会的波浪的上下移动，最后记得使用path.close()把波浪的路径关闭，使整个波浪围起来。
 
@@ -333,7 +335,7 @@ private fun drawWave(canvas: Canvas?) {
 
 使用canvas的drawPath()方法直接把波浪画在画布上，这时在屏幕上显示的效果如下：
 
-{% asset_img waveloadingview10.png  waveloadingview8 %}
+{% asset_img waveloading10.png waveloading %}
 
 这样就画出了一条波浪了，第二条波浪呢？可以再用另外一个Path按照上述preDrawWavePath()方法的流程再画一条，只要波浪的起始点坐标不同就行，但我没有用这种办法，我是通过Canvas的translate()方法平移画布，利用两次平移的偏移量不一样，画出了第二条，如下：
 
@@ -371,9 +373,9 @@ private fun drawWave(canvas: Canvas?) {
 
 熟悉Canvas的save()、restore()方法都知道，每调用一次save()，可以理解为画布的一次入栈（保存），每调用一次restore()，可以理解为画布的出栈（恢复），画布3是默认就有的，画布1、2是我保存生成的，所以上述画布1，2，3之间是独立的，互不影响的，而canvasSlowOffsetX和canvasFastOffsetX两个值是不一样的，这样就造成了画布2和3平移时偏移量不一样，所以**用同一个Path画在两个偏移量不一样的画布上就可以形成两条波浪**，效果图如下：
 
-{% asset_img waveloadingview11.png  waveloadingview9 %}
+{% asset_img waveloading11.png waveloading %}
 
-### 4、让波浪动起来
+4、让波浪动起来
 
 让波浪移动起来很简单，使用一个无限循环动画，在动画的进度回调中计算画布的偏移量，然后调用invalidate()就行，如下：
 

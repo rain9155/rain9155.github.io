@@ -1,7 +1,8 @@
 ---
 title: 发布开源库到jitpack
 tags: jitpack
-categories: jitpack
+categories: 其他
+date: 2019-06-10 18:47:41
 ---
 
 ## 前言

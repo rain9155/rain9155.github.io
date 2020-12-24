@@ -1,8 +1,10 @@
 ---
 title: 发布开源库到jcenter
 tags: jcenter
-categories: jcenter
+categories: 其他
+date: 2019-06-05 18:41:30
 ---
+
 
 ## 前言
 
