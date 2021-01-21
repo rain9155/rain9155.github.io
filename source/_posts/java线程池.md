@@ -145,27 +145,37 @@ RejectedExecutionHandler 同样是一个接口，里面只有一个**rejectedExe
 
 ## 三、线程池的生命周期
 
-线程池的生命周期包含3种状态，如下：
+线程池的生命周期包含**5**种状态，如下：
 
-### 1、运行
+### 1、RUNNING
 
-线程池创建后就进入运行状态，这个时候可以向线程池提交任务，可以通过ThreadPoolExecutor的execute方法或submit方法，只有处于运行的状态才能提交任务。
+线程池创建后就进入RUNNING状态，这个时候可以向线程池提交任务，可以通过ThreadPoolExecutor的**execute**方法或**submit**方法，只有处于RUNNING的状态的线程池才能提交任务。
 
 **execute方法**用于提交不需要返回值的任务，所以无法判断任务是否被线程池执行成功；而**submit方法**用于提交需要返回值的任务，这时线程池会返回一个Future类型的对象，通过这个Future对象可以判断任务是否执行成功，并且可以通过Future的get方法来获取返回值，get方法会阻塞当前线程直到任务完成，而使用get（long timeout，TimeUnit unit）方法则会阻塞当前线程timeout时间后立即返回，这时候有可能任务没有执行完，当线程池的任务还没有执行完时，会报超时异常。
 
-### 2、关闭
+### 2、SHUTDOWN
 
-当调用ThreadPoolExecutor的shutdown或shutdownNow方法后，便会进入关闭状态，这时意味线程池不再接受新的任务，这时isShutdown方法返回true。
+当调用ThreadPoolExecutor的**shutdown**方法后，便会进入SHUTDOWN状态，这时意味线程池不再接受新的任务，isShutdown方法会返回true，但此时线程池会把阻塞队列中保存的所有任务执行完毕后，再中断所有线程。
 
-调用**shutdown方法**会中断没有正在执行任务的线程，而正在执行任务的线程，会等待线程执行完毕后再关闭线程池；但是如果调用的是**shutdownNow方法**，它不管你是空闲线程还是正在执行任务的线程，它都会立即中断。
+### 3、STOP
 
-shutdown方法和shutdownNow方法方法中断线程的原理都是通过调用线程的**interrupt方法**，所以如果你的没有正确处理中断事件，你的线程还是不会马上停止，而是等到线程执行完毕或抛出异常后才停止，如何正确中断一个线程? 可以查看我的上一篇文章[java学习总结之线程](https://rain9155.github.io/2019/07/19/java%E7%BA%BF%E7%A8%8B/);
+如果调用的是ThreadPoolExecutor的**shutdownNow方法**，便会进入STOP状态，这时线程池也不能再接受新的任务，isShutdown方法也会返回true，它会中断线程池中的所有线程，不管你是空闲线程还是正在执行任务的线程，同时也不会处理阻塞队列中保存的任务。
 
-> 可以看到，线程池关闭的时候会把所有线程中断，并让线程池处于关闭状态，这时你的线程池就无法再次提交任何任务了，所以如果你只是想中断线程池中的一个或几个任务，可以通过使用 submit方法来提交任务，它会返回一个 Future<?> 对象，通过调用该对象的 cancel(true) 方法就可以中断这个任务。
+shutdown方法和shutdownNow方法方法中断线程的原理都是通过调用线程的**interrupt方法**，所以如果你的没有正确处理中断事件，你的线程还是不会马上停止，而是等到线程执行完毕或抛出异常后才停止，如何正确中断一个线程? 可以查看我的上一篇文章[java学习总结之线程](https://rain9155.github.io/2019/07/19/java%E7%BA%BF%E7%A8%8B/)。
 
-### 3、终止
+> 可以看到，线程池SHUTDOWN或STOP的时候最终都会把所有线程中断，并关闭线程池，这时你的线程池就无法再次提交任何任务了，所以如果你只是想中断线程池中的一个或几个任务，可以通过使用 submit方法来提交任务，它会返回一个 Future<?> 对象，通过调用该对象的 cancel(true) 方法就可以中断这个任务。
 
-在关闭状态的线程池执行完所有已经提交的任务后，就变为终止状态，这时调用isTerminated方法会返回true。
+### 4、TIDYING
+
+处于SHUTDOWN或STOP状态的线程池的工作线程数为0时，线程池便会进入TIDYING状态，这是一个过渡状态，很快就会进入TERMINATED状态。
+
+### 5、TERMINATED
+
+在TIDYING状态的线程池调用**terminated**方法后，就变为TERMINATED状态，这时调用isTerminated方法会返回true。
+
+线程池的生命周期转换如下：
+
+{% asset_img executor4.png executor%}
 
 ## 四、线程池的分类
 
@@ -308,3 +318,6 @@ ScheduleThreadPool适用于资源有限，需要有限个线程执行周期任�
 
 有关线程池的基础知识先介绍到这里了，希望大家有所收获！
 
+参考资料：
+
+[Java线程池实现原理及其在美团业务中的实践](https://mp.weixin.qq.com/s/baYuX8aCwQ9PP6k7TDl2Ww)
