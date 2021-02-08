@@ -5,8 +5,6 @@ categories: kotlin
 date: 2021-01-21 10:52:18
 ---
 
-
-
 ## 前言
 
 从kotlin1.1开始，协程就被添加到kotlin中作为实验性功能，直到kotlin1.3，协程在kotlin中的api已经基本稳定下来了，现在kotlin已经发布到了1.4，为协程添加了更多的功能并进一步完善了它，所以我们现在在kotlin代码中可以放心的引入kotlin协程并使用它，其实[协程](https://zh.wikipedia.org/wiki/%E5%8D%8F%E7%A8%8B)并不是kotlin独有的功能，它是一个广泛的概念，[协作式多任务](https://zh.wikipedia.org/wiki/%E5%8D%8F%E4%BD%9C%E5%BC%8F%E5%A4%9A%E4%BB%BB%E5%8A%A1)的实现，除了kotlin外，很多语言如Go、Python等都通过自己的方式实现了协程，本文阅读前希望你已经知道如何使用kotlin协程，如果不熟悉可以阅读一下官方文档：
