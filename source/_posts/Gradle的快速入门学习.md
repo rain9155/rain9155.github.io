@@ -577,6 +577,10 @@ BUILD SUCCESSFUL in 611ms
 
 我们自定义的Task本质上就是一个类，除了直接在build.gradle文件中编写自定义Task，还可以在Gradle项目的根目录下新建一个buildSrc目录，在buildSrc/src/main/[java/kotlin/groovy]目录中定义编写自定义Task，可以采用java、kotlin、groovy三种语句之一，或者在一个独立的项目中编写自定义Task，在后面自定义Plugin时会讲到这几种方式。
 
+### 4、Task的输出
+
+
+
 ## 自定义Plugin
 
 Plugin可以理解为一系列Task的集合，通过实现**Plugin<T>**接口的**apply**方法就可以自定义Plugin，自定义的Plugin本质上也是一个类，所以和Task类似，在Gradle中也提供了3种方式来编写自定义Plugin：
@@ -944,7 +948,7 @@ outerExt{
 
 对于android开发者，我们引入的android插件中也有很多配置项，下面的Android  Plugin DSL Reference，你可以在需要来查找android 插件相关配置项的含义和用法：
 
-[Android Plugin DSL Reference](https://google.github.io/android-gradle-dsl/current/index.html)
+[Android Plugin DSL Reference](https://developer.android.com/reference/tools/gradle-api)
 
 本文的源码位置：
 
