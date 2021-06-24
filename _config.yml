@@ -122,5 +122,5 @@ theme: indigo
 deploy:
   type: git
   repository: 
-    - https://github.com/rain9155/rain9155.github.io.git
+    - git@github.com:rain9155/rain9155.github.io.git
   branch: master
