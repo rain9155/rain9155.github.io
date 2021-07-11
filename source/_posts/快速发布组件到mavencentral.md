@@ -286,7 +286,9 @@ gradle publish
 
 参考资料：
 
-[JCenter 服务更新](https://developer.android.google.cn/studio/build/jcenter-migration?hl=zh_cn)
+[JCenter service update](https://developer.android.google.cn/studio/build/jcenter-migration)
 
 [The Central Repository Documentation](https://central.sonatype.org/publish/publish-guide/)
+
+[Use the Maven Publish plugin](https://developer.android.com/studio/build/maven-publish-plugin)
 
