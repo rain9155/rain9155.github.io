@@ -253,7 +253,7 @@ BUILD SUCCESSFUL in 540ms
 1 actionable task: 1 executed
 ```
 
-可以看到，4个子项目依赖于根项目，接下来我们来配置项目，配置项目一般在当前项目的build.gradle中进行，可以通过buildscript方法配置，但是如果有多个项目时，而每个项目的某些配置又一样，那么在每个项目的build.gradle进行相同的配置是很浪费时间，而Gradle的Project接口为我们提供了allprojects和subprojects方法，在根项目的build.gradle中使用这两个方法可以全局的为所有子项目进行配置，allprojects和subprojects的区别是：**allprojects的配置包括根项目而subprojects的配置不包括根项目**，例如:
+可以看到，4个子项目依赖于根项目，接下来我们来配置项目，配置项目一般在当前项目的build.gradle中进行，可以通过buildscript方法、repositories方法、dependencies方法等Project接口提供的方法进行配置，但是如果有多个项目时，而每个项目的某些配置又一样，那么在每个项目的build.gradle进行相同的配置是很浪费时间，而Gradle的Project接口为我们提供了allprojects和subprojects方法，在根项目的build.gradle中使用这两个方法可以全局的为所有子项目进行配置，allprojects和subprojects的区别是：**allprojects的配置包括根项目而subprojects的配置不包括根项目**，例如:
 
 ```groovy
 //根项目的build.gradle
@@ -575,11 +575,7 @@ BUILD SUCCESSFUL in 611ms
 1 actionable task: 1 executed
 ```
 
-我们自定义的Task本质上就是一个类，除了直接在build.gradle文件中编写自定义Task，还可以在Gradle项目的根目录下新建一个buildSrc目录，在buildSrc/src/main/[java/kotlin/groovy]目录中定义编写自定义Task，可以采用java、kotlin、groovy三种语句之一，或者在一个独立的项目中编写自定义Task，在后面自定义Plugin时会讲到这几种方式。
-
-### 4、Task的输出
-
-
+我们自定义的Task本质上就是一个类，除了直接在build.gradle文件中编写自定义Task，还可以在Gradle项目的根目录下新建一个buildSrc目录，在buildSrc/src/main/[java/kotlin/groovy]目录中定义编写自定义Task，可以采用java、kotlin、groovy三种语句之一，或者在一个独立的项目中编写自定义Task然后发布到远程仓库托管平台，在后面自定义Plugin时会讲到这几种方式。
 
 ## 自定义Plugin
 
@@ -615,31 +611,30 @@ class MyPlugin implements Plugin<Project>{
   
 	@Override
   void apply(Project project){
-    //通过project的ExtensionContainer的create方法创建一个名为outerExt的扩展，扩展对应的类为OuterExt
-    //create方法返回OuterExt实例，我们可以在apply方法中使用OuterExt实例
-    def outerExt = project.extensions.create('outerExt', OuterExt.class)
-		
-    //通过project的task方法创建一个名为showExt的Task
-		project.task('showExt'){
-			doLast{
-        //使用OuterExt实例
-				println "outerExt = $outerExt"
-			}
-		}
+      //通过project的ExtensionContainer的create方法创建一个名为outerExt的扩展，扩展对应的类为OuterExt
+      OuterExt outerExt = project.extensions.create('outerExt', OuterExt.class)
+      
+      //通过project的task方法创建一个名为showExt的Task
+      project.task('showExt'){
+          doLast{
+              //使用OuterExt实例
+              println "outerExt = ${outerExt}"
+          }
+      }
   }
   
   /**
    * 自定义插件的扩展对应的类
    */
   static class OuterExt{
-		def name
-		def message
-    
-    @Override
-		String toString(){
-			return "[name = $name, message = $message]"
-		}
-	}
+      
+      String message
+      
+      @Override
+      String toString(){
+          return "[message = ${message}]"
+      }
+  }
 }
 ```
 
@@ -655,7 +650,7 @@ android {
 }
 ```
 
-它并不是一个名为android的方法，它而是android插件中名为android的扩展，该扩展对应一个bean类，该bean类中有compileSdkVersion、buildToolsVersion等方法，所以配置android就是在配置andorid对应的bean类，现在回到我们的MyPlugin中，MyPlugin也定义了一个bean类：OuterExt，该bean类有name和messag两个字段，Groovy会自动为我们生成get/set方法，而apply方法中通过project实例的ExtensionContainer的create方法创建一个名为outerExt的扩展，扩展对应的bean类为OuterExt，扩展的名字可以随便起，其中[ExtensionContainer](https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/ExtensionContainer.html)类似于TaskContainer，它也是Project中的一个容器，这个容器存放Project中所有的扩展，通过ExtensionContainer的create方法可以创建一个扩展，create方法返回的是扩展对应的类的实例，这样我们使用MyPlugin就可以这样使用，如下：
+它并不是一个名为android的方法，它而是android插件中名为android的扩展，该扩展对应一个bean类，该bean类中有compileSdkVersion、buildToolsVersion等方法，所以配置android就是在配置andorid对应的bean类，现在回到我们的MyPlugin中，MyPlugin也定义了一个bean类：OuterExt，该bean类有messag字段，Groovy会自动为我们生成messag的get/set方法，而apply方法中通过project实例的ExtensionContainer的create方法创建一个名为outerExt的扩展，扩展对应的bean类为OuterExt，扩展的名字可以随便起，其中[ExtensionContainer](https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/ExtensionContainer.html)类似于TaskContainer，它也是Project中的一个容器，这个容器存放Project中所有的扩展，通过ExtensionContainer的**create**方法可以创建一个扩展，create方法返回的是扩展对应的类的实例，这样我们使用MyPlugin就可以这样使用，如下：
 
 ```groovy
 //subproject_4/build.gradle
@@ -663,12 +658,11 @@ android {
 apply plugin: com.example.plugin.MyPlugin
 
 outerExt {
-    name 'rain9155'
     message 'hello'
 }
 
 //执行gradle showExt, 输出:
-//outerExt = [name = rain9155, message = hello]
+//outerExt = [message = hello]
 ```
 
 扩展的特点就是可以通过闭包来配置扩展对应的类，这样就可以通过扩展outerExt来配置我们的Plugin，很多自定义Plugin都是都通过添加扩展这种方式来配置自定义的Plugin，很多人就问了，那么类似于android的嵌套DSL如何实现，如下：
@@ -690,64 +684,67 @@ android {
 }
 ```
 
-android{}中有嵌套了一个defaultConfig{}，但是defaultConfig并不是一个扩展，而是一个名为defaultConfig的方法，参数为[Action](https://docs.gradle.org/current/javadoc/org/gradle/api/Action.html)类型，它是一个接口，里面只有一个execute方法，这里就我参考android 插件的内部实现实现了嵌套DSL，原理就不深入探究了，嵌套DSL可以简单的理解为**扩展对应的类中再定义一个类**，MyPlugin的实现如下：
+android{}中有嵌套了一个defaultConfig{}，但是defaultConfig并不是一个扩展，而是一个名为defaultConfig的方法，参数为[Action](https://docs.gradle.org/current/javadoc/org/gradle/api/Action.html)类型，它是一个接口，里面只有一个execute方法，这里就我参考android 插件的内部实现实现了嵌套DSL，嵌套DSL可以简单的理解为**扩展对应的类中再定义一个类**，MyPlugin的实现如下：
 
 ```groovy
 package com.example.plugin
 
 import org.gradle.api.*
-import org.gradle.api.model.*//新引入
+import org.gradle.api.model.* //新引入
+import javax.inject.Inject //新引入
 
 class MyPlugin implements Plugin<Project>{
 
 	@Override
 	void apply(Project project){
-    //创建名为outerExt的扩展，扩展对应的类为OuterExt，create方法返回的是OuterExt实例
-		def outerExt = project.extensions.create('outerExt', OuterExt.class)
+        
+		OuterExt outerExt = project.extensions.create('outerExt', OuterExt.class)
 
 		project.task('showExt'){
 			doLast{
-        //使用OuterExt实例和InnerExt实例
-				println "outerExt = $outerExt, innerExt = ${outerExt.innerExt}"
+                //使用OuterExt实例和InnerExt实例
+                println "outerExt = ${outerExt}, innerExt = ${outerExt.innerExt}"
 			}
 		}
 	}
 
-  static class OuterExt{
-    def name
-    def message
-    //再定义一个类
-    InnerExt innerExt
+    static abstract class OuterExt{
 
-    //使用@Inject注解带ObjectFactory类型参数的构造
-    @javax.inject.Inject
-    public OuterExt(ObjectFactory objectFactory){
-      //通过objectFactory的newInstance方法创建InnerExt类实例
-      innerExt = objectFactory.newInstance(InnerExt.class)
+        String message
+
+        //嵌套类
+        InnerExt innerExt
+
+        //定义一个使用@Inject注解的、抽象的获取ObjectFactory实例的get方法
+        @Inject
+        abstract ObjectFactory getObjectFactory()
+
+        OuterExt(){
+            //通过ObjectFactory的newInstance方法创建嵌套类innerExt实例
+            this.innerExt = getObjectFactory().newInstance(InnerExt.class)
+        }
+
+        //定义一个方法，方法名为可以随意起，方法的参数类型为Action，泛型类型为嵌套类InnerExt
+        void inner(Action<InnerExt> action){
+            //调用Action的execute方法，传入InnerExt实例
+            action.execute(innerExt)
+        }
+
+        @Override
+        String toString(){
+            return "[message = ${message}]"
+        }
+
+        static class InnerExt{
+
+            String message
+
+            @Override
+            String toString(){
+                return "[message = $message]"
+            }
+        }
     }
-
-    //定义一个方法，该方法的参数类型为Action，泛型类型为InnerExt
-    //其中方法名为可以随意起，它会在build.gradle中使用到
-    void inner(Action<InnerExt> action){
-      //调用Action的execute方法，传入InnerExt实例
-      action.execute(innerExt)
-    }
-
-    @Override
-    String toString(){
-      return "[name = $name, message = $message]"
-    }
-
-    static class InnerExt{
-      def name
-      def message
-
-      @Override
-      String toString(){
-        return "[name = $name, message = $message]"
-      }
-    }
-  }
 }
 ```
 
@@ -758,30 +755,29 @@ class MyPlugin implements Plugin<Project>{
 
 apply plugin: com.example.plugin.MyPlugin
 
-//嵌套DSL
 outerExt {
-  name 'rain'
   message 'hello'
 
   //使用inner方法
   inner{
-    name '9155'
     message 'word'
   }
 }
 
 //执行gradle showExt, 输出:
-//outerExt = [name = rain, message = hello], innerExt = [name = 9155, message = word]
+//outerExt = [message = hello], innerExt = [message = word]
 ```
 
-outerExt {}中嵌套了inner{}，其中inner是一个方法，参数类型为Action，Gradle内部会把inner方法后面的闭包配置给InnerExt类，总的来说，定义嵌套DSL的大概步骤如下：
+outerExt {}中嵌套了inner{}，其中inner是一个方法，参数类型为Action，Gradle内部会把inner方法后面的闭包配置给InnerExt类，这是Gradle中的一种转换机制，总的来说，定义嵌套DSL的大概步骤如下：
 
 - 1、定义嵌套的DSL对应的bean类，如这里为InnerExt；
-- 2、定义一个带ObjectFactory类型参数的构造，并使用@Inject注解（@Inject是javax包下的，ObjectFactory是属于Gradle的model包下的类，通过@Inject注解的构造会被Gradle调用来实例化该类，并注入ObjectFactory实例）；
-- 3、在构造中通过ObjectFactory对象的newInstance方法来创建bean类实例（通过ObjectFactory实例化的对象可以被闭包配置）；
-- 4、定义一个方法，该方法的参数类型为Action，泛型类型为嵌套的DSL对应的bean类，方法名随便起，如这里为inner，然后在方法中调用Action的execute方法，传入bean类实例.
+- 2、定义一个使用@Inject注解的、抽象的获取ObjectFactory实例的get方法，或者定义一个使用@Inject注解的带ObjectFactory类型参数的构造，@Inject是javax包下的，[ObjectFactory](https://docs.gradle.org/current/javadoc/org/gradle/api/model/ObjectFactory.html)是属于Gradle的model包下的类，当Gradle实例化OuterExt时，它会自动注入通过@Inject注解的实例，例如这里就自动注入了ObjectFactory实例，需要注意的是通过@Inject注解的方法或构造必须是public的；
+- 3、在构造中通过ObjectFactory对象的newInstance方法来创建bean类实例，通过ObjectFactory实例化的对象可以被闭包配置；
+- 4、定义一个方法，该方法的参数类型为Action，泛型类型为嵌套的DSL对应的bean类，方法名随便起，如这里为inner，然后在方法中调用Action的**execute**方法，传入bean类实例.
 
-上面4步就是嵌套DSL时需要在自定义Plugin中做的事，Gradle还为我们提供了更灵活的命名嵌套DSL，通过[NamedDomainObjectContainer](https://docs.gradle.org/current/dsl/org.gradle.api.NamedDomainObjectContainer.html#org.gradle.api.NamedDomainObjectContainer)实现，它类似于android中buildType{}, 如下：
+上面4步就是定义嵌套DSL时需要在自定义Plugin中做的事，还有一点要注意的是，对于扩展对应的bean类，如果你把它定义在自定义的Plugin的类文件中，一定要用**static**修饰，如这里的OuterExt类、InnerExt类使用了static修饰，或者把它们定义在单独的类文件中。
+
+除了以上这种为单个对象配置的方式，Gradle还为我们提供了更为灵活地对多个相同类型对象进行配置的方式，又名命名对象容器，它类似于android中buildType{}, 如下：
 
 ```groovy
 android {
@@ -797,23 +793,194 @@ android {
 }
 ```
 
-上面buildTypes中定义了2个命名空间，分别为：release、debug，每个命名空间都会生成一个 BuildType 配置，在不同的场景下使用，并且我还可以根据使用场景定义更多的命名空间如：test、testDebug等，buildTypes{}中的命名空间**数量不定**，命名空间的**名字不定**，这是因为buildTypes内部是通过NamedDomainObjectContainer容器实现的，大家有兴趣可以自己查阅相关实现，这里就不展开了。
+上面buildTypes中定义了2个命名空间，分别为：release、debug，每个命名空间都会生成一个BuildType配置，在不同的场景下使用，并且我还可以根据使用场景定义更多的命名空间如：test、testDebug等，buildTypes{}中的命名空间的**数量不定**、**名字不定**，这是因为buildTypes是通过[NamedDomainObjectContainer](https://docs.gradle.org/current/dsl/org.gradle.api.NamedDomainObjectContainer.html#org.gradle.api.NamedDomainObjectContainer)容器实现的，下面在前面的基础上实现OuterExt对应的命名对象容器：
 
-> 还有一点要注意的是，对于扩展对应的bean类，如果你把它定义在自定义的Plugin的类文件中，一定要用**static**修饰，如这里的OuterExt类、InnerExt类使用了static修饰，或者把它们定义在单独的类文件中。
+```groovy
+package com.example.plugin
+
+import org.gradle.api.*
+import org.gradle.api.model.*
+import javax.inject.Inject
+
+class MyPlugin implements Plugin<Project>{
+
+	@Override
+	void apply(Project project){
+        
+        //通过project的ObjectFactory的domainObjectContainer方法创建OuterExt的Container实例
+        NamedDomainObjectContainer<OuterExt> outerExtContainer = project.objects.domainObjectContainer(OuterExt.class)
+        
+        //然后再通过project的ExtensionContainer的add方法添加名称和OuterExt的Container实例的映射
+		project.extensions.add('outerExts', outerExtContainer)
+        
+        //通过project的task方法创建一个名为showExts的Task
+        project.task('showExts'){
+            doLast{
+                //遍历OuterExt的Container实例，逐个输出配置的值
+                outerExtContainer.each{ext ->
+                    println "${ext.name}: outerExt = ${ext}, innerExt = ${ext.innerExt}"
+                }
+            }
+        }
+	}
+
+    static abstract class OuterExt{
+
+        String message
+
+        InnerExt innerExt
+
+        @Inject
+        abstract ObjectFactory getObjectFactory()
+
+        //NamedDomainObjectContainer要求它的元素必须要有一个只可读的、名为name的常量字符串
+        private final String name
+
+        //只可读的name表示name要私有的，并且提供一个get方法，name的值在构造函数中注入
+        String getName(){
+            return this.name
+        }
+
+        //通过@Inject注解带有String类型参数的构造
+        @Inject
+        OuterExt(String name){
+            //在构造中为name赋值
+            this.name = name
+            this.innerExt = getObjectFactory().newInstance(InnerExt.class)
+        }
+
+        void inner(Action<InnerExt> action){
+            action.execute(innerExt)
+        }
+
+        @Override
+        String toString(){
+            return "[message = ${message}]"
+        }
+
+        static class InnerExt{
+
+            String message
+
+            @Override
+            String toString(){
+                return "[message = ${message}]"
+            }
+        }
+    }
+}
+```
+
+使用MyPlugin就可以这样使用，如下：
+
+```groovy
+//subproject_4/build.gradle
+
+apply plugin: com.example.plugin.MyPlugin
+
+outerExts{
+    
+    //定义名为ext1的命名空间
+	ext1{
+		message 'hello'
+
+		inner{
+			message 'word'
+		}
+	}
+
+    //定义名为ext2的命名空间
+	ext2{
+		message 'hello'
+
+		inner{
+			message 'word'
+		}
+	}
+}
+
+//执行gradle showExts, 输出:
+//ext1: outerExt = [message = hello], innerExt = [message = word]
+//ext2: outerExt = [message = hello], innerExt = [message = word]
+```
+
+outerExts可以想象为一个容器，然后容器的元素就是OuterExt，放进容器中的元素都要有一个名字，这个名字是任意的，上面我们通过DSL在outerExts扩展中配置了两个OuterExt，一个名为ext1，一个名为ext2，然后我们在Plugin中就可以通过遍历outerExts获取每个元素对应的配置，所以总的来说，定义命名对象容器作为扩展的大概步骤如下：
+
+- 1、首先要确定NamedDomainObjectContainer容器的元素类型，如我这里为OuterExt类，容器中的每个元素必须要有一个只可读的、名为name的常量字符串，然后提供一个使用@Inject注解的带有String类型参数的构造，在构造中为name赋值，这个name就对应你在DSL中填写的命名，如我这里为ext1、ext2，当我们在DSL中添加命名空间时，其实就是在往容器中添加元素，这时Gradle会自动调用元素带有String类型参数的构造来实例化它，并在构造中传入命名字符串；
+
+- 2、通过Project的getObjects方法获取ObjectFactory实例，调用ObjectFactory的**domainObjectContainer**方法创建容器实例，前面讲过通过ObjectFactory实例化的对象可以被闭包配置，如我这里创建的容器为NamedDomainObjectContainer\<OuterExt\>；
+
+- 3、然后再通过Project的getExtensions方法获取ExtensionContainer实例，调用ExtensionContainer的**add**方法添加扩展名和容器实例的映射，如我这里添加了名为outerExts的扩展，扩展对应的类为NamedDomainObjectContainer\<OuterExt\>.
+
+上面3步就是定义命名对象容器作为扩展时需要在自定义Plugin中做的事，1、2步骤是如何定义一个命名对象容器，2步骤是把命名对象容器添加为一个扩展，但是往往命名对象容器只是作为某个扩展中的一个嵌套DSL，而不是直接作为扩展，这时我们只需要结合前面讲过的定义扩展步骤、定义嵌套DSL步骤和这里的1、2步骤就行，这时我们就可以实现下面的DSL写法：
+
+```groovy
+//扩展
+outerExt{
+    message 'hello'
+
+    //通过命名对象容器配置
+    exts{
+        ext1{
+            message 'word'
+        }
+
+        ext2{
+            message 'word'
+        }
+    }
+}
+```
+
+这时我们已经很接近android gradle plugin提供的android{}扩展的DSL写法了，在自定义Plugin中如何实现就留给大家自己实现了，只要结合一下前面所讲过的方法就行，上面所介绍的扩展、嵌套DSL、命名对象容器已经能满足自定义Plugin开发时获取配置的大部分场景了。
 
 ### 2、在独立项目中编写
 
-在独立项目中编写和在buildSrc目录下编写是一样的，只是多了一个发布过程，这里我为了方便就不新建一个独立项目了，而是在GradleDemo中新增一个名为gradle_plugin的子项目，然后在gradle_plugin下新建一个src/main/groovy和src/main/resources目录，接着把刚刚在buildSrc编写的com.example.plugin.MyPlugin复制到src/main/groovy下，最后在GradleDemo新建一个repo目录，当作待会发布插件时的仓库，此时GradleDemo结构如下：
+在独立项目中编写和在buildSrc目录下编写是一样的，只是多了一个**发布**过程，这里我为了方便就不新建一个独立项目了，而是在GradleDemo中新增一个名为gradle_plugin的子项目，然后在gradle_plugin下新建一个src/main/groovy和src/main/resources目录，接着把刚刚在buildSrc编写的com.example.plugin.MyPlugin复制到src/main/groovy下，最后在GradleDemo新建一个repo目录，当作待会发布插件时的仓库，此时GradleDemo结构如下：
 
 {% asset_img gradle5.png gradle1 %}
+
+在Gradle中有两种方式在脚本中引入一个Plugin，一种是在buildScript中引入类路径，然后通过apply plugin引入插件，如下
+
+```groovy
+//build.gradle
+buildscript {
+	repositories {
+		//定义插件所属仓库
+	}
+
+	dependencies {
+		classpath '插件类路径'
+	}
+}
+
+apply plugin: '插件id'
+```
+
+一种是直接通过plugins DSL引入，如下：
+
+```groovy
+//setting.gradle
+pluginManagement{
+    repositories{
+        //定义插件所属仓库
+    }
+}
+
+//build.gradle
+plugins{
+    id '插件id' version '插件版本'
+}
+```
+
+两种方式分别对应着两种类型的发布方式，下面分别介绍：
+
+#### 2.1、自定义META-INF发布
 
 因为gradle_plugin项目中的MyPlugin.groovy使用了Gradle的相关api，如Project等，所以你要在gradle_plugin/build.gradle中引进Gradle api，打开gradle_plugin/build.gradle，添加如下：
 
 ```groovy
 //gradle_plugin/build.gradle
-
-//应用groovy插件
-apply plugin: 'groovy'
 
 dependencies {
     //这样gradle_plugin/src/main/groovy/中就可以使用Gradle和Groovy语法
@@ -821,124 +988,187 @@ dependencies {
 }
 ```
 
-现在MyPlugin已经有了，我们需要给插件起一个名字，在gradle_plugin/src/main/resources目录下新建**META-INF/gradle-plugins**目录，然后在该目录下新建一个**XX.properties**文件，XX就是你想要给插件起的名字，就是apply plugin后填写的插件名字，例如andorid 插件名叫com.android.application，所以它的properties文件为com.android.application.properties，这里我给我的MyPlugin插件起名为**myplugin**，所以我新建myplugin.properties，如下：
+现在MyPlugin已经有了，我们需要给插件起一个名字，在gradle_plugin/src/main/resources目录下新建**META-INF/gradle-plugins**目录，然后在该目录下新建一个**XX.properties**文件，XX就是你想要给插件起的名字，就是apply plugin后填写的插件名字，也称为插件id，例如andorid gradle plugin的插件id叫com.android.application，所以它的properties文件为com.android.application.properties，这里我给我的MyPlugin插件起名为**myplugin**，所以我新建myplugin.properties，如下：
 
 {% asset_img gradle6.png gradle1 %}
 
 打开myplugin.properties文件，添加如下：
 
 ```groovy
-#在这里定义自定义插件的实现类，而插件的名字为properties文件的名字，如这里为：myplugin, 则引用插件时为apply plugin：'myplugin'
+# 在这里指明自定义插件的实现类
 implementation-class=com.example.plugin.MyPlugin
 ```
 
 通过implementation-class指明你要发布的插件的实现类，如这里为com.example.plugin.MyPlugin，接下来我们就来发布插件。
 
-发布插件你可以选择你要发布到的仓库，如maven、lvy，我们最常用的就是maven了，所以这里我选择maven，Gradle提供了[maven插件](https://docs.gradle.org/current/userguide/maven_plugin.html#sec:maven_tasks)来帮助我们发布到maven，而maven又有本地仓库和远端仓库这两种类型的仓库，所以maven插件提供了install和uploadArchives这两种任务来帮助我们发布插件到maven的本地仓库和maven的远端仓库，在你的gradle/build.gradle添加如下：
+发布插件你可以选择你要发布到的仓库，如maven、lvy，我们最常用的就是maven了，所以这里我选择maven，Gradle提供了[maven-publish插件](https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven)来帮助我们发布到maven仓库，在gradle_plugin/build.gradle添加如下：
 
 ```groovy
 //gradle_plugin/build.gradle
 
-//应用maven插件
-apply plugin: 'maven'
-
-//通过install任务上传自定义插件的jar文件和pom文件到maven本地repo, maven本地repo路径在mac下为～/.m/repository/，在window下为：C:/用户/用户名/.m/repository/
-install {
-    repositories.mavenInstaller {
-        //通过pom配置自定义插件的group、artifact和version，通过classpath引用自定义插件时为：groupId:artifactId:version
-        pom{
-            groupId = 'com.example.customplugin'
-            artifactId = 'myplugin'
-            version = '1.0'
-        }
-    }
+plugins{
+    //引入maven-publish, maven-publish属于Gradle核心插件，核心插件可以省略version
+    id 'maven-publish'
 }
 
-//通过uploadArchives任务上传自定义插件的jar文件和pom文件, 可以上传到本地指定目录地址或远端repo地址
-uploadArchives{
-    repositories.mavenDeployer{
-        pom{
-            groupId = 'com.example.customplugin'
-            artifactId = 'myplugin'
-            version = '2.0'
-        }
+//publishing是maven-publish提供的扩展，通过repositories定义发布的maven仓库位置，可以指定本地目录地址或远端repo地址
+publishing.repositories {
+    //这里我指定了项目根目录下的repo目录
+    maven {
+        url '../repo'
+    }
+    
+    //可以指定远端repo地址
+    //maven{
+    //    url 'https://xxx'
+    //    credentials {
+    //        username 'xxx'
+    //        password xxx
+    //   }
+    //}
+}
 
-        //上传到本地
-        repository(url: uri('../repo'))
-
-        //上传到远端
-        //repository(url: uri('http://remote/repo')){
-        //    authentication(userName: "name", password: "***")
-        //}
+//通过publications定义发布的组件
+publishing.publications  {
+    //类似于命令容器对象，添加名为myplugin的的发布
+    myplugin(MavenPublication){
+        //配置自定义插件的groupId、artifactId和version
+        groupId = 'com.example.customplugin'
+        artifactId = 'myplugin'
+        version = '1.0'
+        //通过from引入打包jar的components
+        from components.java
     }
 }
 ```
 
-其中pom{}通过groupId、artifactId和version配置的是插件的classpath路径，即引用插件的路径，我们会在dependencies{}使用**classpath 'com.example.customplugin:myplugin:1.0'**来引用我们发布的插件。
+我们首先通过repositories{}定义了发布仓库，这里为本地目录，然后在publications{}中定义了名为myplugin的[发布](https://docs.gradle.org/current/dsl/org.gradle.api.publish.maven.MavenPublication.html)，它会被maven-publish插件用来生成发布任务，在其中通过groupId、artifactId和version配置了插件的**GAV**坐标，这样发布后我们就可以通过GAV坐标引用插件，即在dependencies{}中使用**groupId:artifactId:version**的形式来引用我们发布的插件，同时还引入了components.java，它是java插件为我们提供的把代码打包成jar的能力，当你做完这一切后，同步Gradle项目，maven-publish插件会为我们生成两种类型的发布任务：**publishXXPublicationToMavenRepository**和**publishXXPublicationToMavenLocal**，publishXXPublicationToMavenRepository任务表示把插件发布到maven远程仓库中，publishXXPublicationToMavenLocal任务表示把插件发布到maven本地仓库，其中XX就是在publications{}定义的发布名字，如我这里为myplugin。
 
-接着在Gradle项目所处目录的命令行输入`gradle install  `来执行install任务，任务执行成功后，在maven本地repo（mac下为～/.m/repository/，在window下为：C:/用户/用户名/.m/repository/）中会看到上传的插件jar和pom文件，如下：
+接着在Gradle项目所处目录的命令行输入`gradle publishMypluginPublicationToMavenLocal`把myplugin插件发布到maven本地仓库，任务执行成功后，在maven本地仓库(mac下为～/.m/repository/，在window下为：C:/用户/用户名/.m/repository/)中会看到发布的插件jar和pom文件，如下：
 
 {% asset_img gradle7.png gradle1 %}
 
-接着在Gradle项目所处目录的命令行输入`gradle uploadArchives`来执行uploadArchives任务，这里我指定uploadArchives上传的地址为本地GradleDemo/repo目录处，你也可以替换为你的远端maven地址，uploadArchives任务执行成功后，在GradleDemo/repo/中会看到上传的插件jar和pom文件，如下：
+接着在Gradle项目所处目录的命令行输入`gradle publishMypluginPublicationToMavenRepository`把myplugin插件发布到maven远程仓库，任务执行成功后，在GradleDemo/repo/中会看到发布的插件jar和pom文件，如下：
 
 {% asset_img gradle8.png gradle1 %}
 
-现在MyPlugin插件已经发布成功了，我发布MyPlugin的1.0和2.0两个版本到两个不同的本地目录中，接下来让我们使用这个插件。
-
-在subproject_4/build.gradle中添加如下：
+现在MyPlugin插件已经发布成功了，接下来让我们使用这个插件，在subproject_4/build.gradle中添加如下：
 
 ```groovy
 //subproject_4/build.gradle
 
 buildscript {
     repositories { 
-        //添加maven本地repo
+        //添加maven本地仓库
         mavenLocal()
         
-        //添加maven远端repo
-	   //mavenCentral()
-        
-        //添加uploadArchives上传时指定的本地路径
+        //添加发布时指定的maven远程仓库
         maven {
             url uri('../repo')
         }
+        
+        //可以添加maven中央仓库
+        //mavenCentral()
     }
 
     dependencies {
-        //定义插件jar的classpath路径，gradle编译时会扫描该classpath下的所有jar文件
-        //classpath 'com.example.customplugin:myplugin:1.0'
-        classpath 'com.example.customplugin:myplugin:2.0'
+        //classpath填写插件的GAV坐标，gradle编译时会扫描该classpath下的所有jar文件并引入
+        classpath 'com.example.customplugin:myplugin:1.0'
     }
 }
 ```
 
-这里使用了Project的buildscript方法，在该方法中可以使用repositories方法和dependencies方法指定当前项目构建时依赖的仓库和类路径，项目在构建时会去repositories定义的仓库地址寻找classpath指定路径下的所有jar文件，如我这里repositories方法中指定了mavenLocal()和maven {url uri('../repo')}，其中mavenLocal()对应maven的本地仓库即/.m/repository，如果你通过uploadArchives上传到了远端，则可以新增mavenCentral()，它代表maven的远端地址，而dependencies方法中则通过classpath指定了插件在仓库下的类路径，这里我指定了MyPlugin 2.0的类路径: com.example.customplugin:myplugin:2.0，它在maven {url uri('../repo')}仓库下。
-
-现在我们可以通过apply plugin使用MyPlugin了，在subproject_4/build.gradle中添加如下：
+这里使用了Project的**buildscript**方法，通过该方法可以为当前项目的build.gradle脚本导入外部依赖，在该方法中可以使用repositories方法和dependencies方法指定外部依赖的所在仓库和类路径，当前项目在构建时会去repositories定义的仓库地址寻找classpath指定路径下的所有jar文件并引入，如我这里repositories方法中指定了mavenLocal()和maven {url uri('../repo')}，其中mavenLocal()对应maven的本地仓库即/.m/repository，maven {url uri('../repo')}就是刚刚发布时指定的maven远程仓库，如果你通过发布任务发布插件到了maven中央仓库，则可以新增mavenCentral()，它代表maven中央仓库的远端地址，而dependencies方法中则通过classpath指定了myplugin插件在仓库下的类路径即GAV坐标: com.example.customplugin:myplugin:1.0，现在我们可以通过apply plugin使用myplugin了，在subproject_4/build.gradle中添加如下：
 
 ```groovy
-//引用插件
+//subproject_4/build.gradle
+
+//通过插件id引用插件
 apply plugin: 'myplugin'
 
 //使用DSL配置插件的属性
 outerExt{
-    name 'rain'
     message 'hello'
 
     inner{
-        name '9155'
         message 'word'
     }
 }
 
 //执行gradle showExt，输出：
-//outerExt = [name = rain, message = hello], innerExt = [name = 9155, message = word]
+//outerExt = [message = hello], innerExt = [message = word]
 ```
 
-其中apply plugin后面的插件名就是我们在gradle_plugin/src/main/resources/META-INF/gradle-plugins目录下编写的properties文件的名称。
+其中apply plugin后面的插件id就是我们在gradle_plugin/src/main/resources/META-INF/gradle-plugins目录下编写的properties文件的名称。
 
-> 在最新版的Gradle中，本文所使用的[maven插件](https://docs.gradle.org/current/userguide/maven_plugin.html#sec:maven_tasks)已经被废弃了，Gradle提供了[maven-publish插件](https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:tasks)来替代，但是它的整体发布过程是类似。
+现在已经成功发布了一个插件并引入使用，但是上面的发布过程和引入插件过程不免有点繁琐，Gradle为我们提供了[java-gradle-plugin](https://docs.gradle.org/current/userguide/java_gradle_plugin.html#java_gradle_plugin)用于简化我们的发布过程，同时根据java-gradle-plugin发布的插件使用时只需要直接引入插件id就行，而无需在buildscript中指定classpath。
+
+#### 2.2、使用java-gradle-plugin生成META-INF发布
+
+还是上面MyPlugin的例子，我们在gradle_plugin/build.gradle中引入java-gradle-plugin插件，通过java-gradle-plugin提供的**gradlePlugin{}**扩展配置插件的META-INF信息，同时通过Project的**setGroup**方法和**setVersion**方法定义插件发布的groupId和version，我们还要引入maven-publish插件，因为要依赖它提供的发布能力，如下:
+
+```groovy
+//gradle_plugin/build.gradle
+
+plugins{
+    //用来生成插件元数据(META-INF)和插件标记工件(Plugin Marker Artifact)
+    id 'java-gradle-plugin'
+    //用来生成发布插件任务
+    id 'maven-publish'
+}
+
+//通过maven-publish提供的publishing.repositories{}定义发布的maven仓库位置
+publishing.repositories{
+    maven {
+        url '../repo'
+    }
+}
+
+//插件发布的groupId
+group = 'com.example.customplugin'
+
+//这里没有定义artifactId，maven-publish会自动取当前项目的名字作为artifactId，这里为gradle_plugin
+
+//插件发布的version
+version = '2.0'
+
+//通过java-gradle-plugin提供的gradlePlugin{}配置插件
+gradlePlugin {
+    plugins {
+        //配置myplugin插件
+        myplugin{
+            //插件id
+            id = 'com.example.customplugin.myplugin'
+            //插件实现类
+            implementationClass = 'com.example.plugin.MyPlugin'
+        }
+
+        //myplugin2{
+        //    id = 'xxx'
+        //    implementationClass = 'xxx'
+        //}
+        //以此类推可以配置多个插件
+    }
+}
+```
+
+通过在gradlePlugin{}中的配置，执行发布任务时java-gradle-plugin会自动为我们生成插件的META-INF信息并打包进插件的jar中，同时java-gradle-plugin会自动为我们在dependencies引入gradleApi()，除此之外，执行发布任务时java-gradle-plugin还为插件生成了一个**插件标记工件 **- [Plugin Marker Artifact](https://docs.gradle.org/current/userguide/plugins.html#sec:plugin_markers)，它的作用就是用来定位插件的位置，我们在**plugins DSL**中通过插件id来引用插件时并不需要定义插件的classpath即GAV坐标就可以直接使用插件，那么Gradle是如何根据插件id定位到插件的呢？答案就是插件标记工件，它跟插件发布时一起发布，它里面只有一个pom文件，pom文件里面依赖了插件真正的GAV坐标，这样通过插件id来引用插件时就会先下载这个pom文件，从而解析到插件的GAV坐标，再根据插件的GAV坐标把插件的jar文件引入，那么Gradle又是如何定位到插件标记工件的呢？答案就是使用插件id按一定的规则生成插件标记工件的GAV坐标，插件标记工件的GAV生成规则为**pluginId:pluginId.gradle.plugin:pluginVersion**，如这里myplugin的插件标记工件生成的GAV为com.example.customplugin.myplugin:com.example.customplugin.myplugin.gradle.plugin:2.0，发布插件时会同时把插件标记工件发布到生成的GAV处，然后通过插件id引用时又根据插件id拼接出相同的GAV从而定位到插件标记工件，这么说有点绕，让我们执行发布任务看看生成的产物就懂了。
+
+我们在Gradle项目所处目录的命令行输入`gradle publishPluginMavenPublicationToMavenRepository publishMypluginPluginMarkerMavenPublicationToMavenRepository`来执行插件发布任务和插件标记工件发布任务，这两个任务都是maven-publish根据java-gradle-plugin定义的发布过程为我们生成好的，除此之外还生成了发布到maven本地仓库的任务，这里只以发布到maven远程仓库任务做示例，两个任务执行成功后，在GradleDemo/repo/中会看到发布的插件和插件标识工件，如下：
+
+{% asset_img gradle9.png gradle1 %}
+
+可以看到在repo下发布了两个组件，一个为插件，artifactId为gradle_plugin，一个为插件标识工件，artifactId为com.example.customplugin.myplugin.gradle.plugin，它们都处于com.example.customplugin空间下，版本都为2.0，而插件标识工件
+
+
+
+> 上面发布时为了讲解原理把发布任务逐个执行，其实maven-publish还为我们生成了更为方便的publishAllPublicationsToMavenRepository 、publishToMavenLocal、publish发布任务，只需要执行一个任务就可以把多个发布任务同时执行：
+>
+> 执行publishAllPublicationsToMavenRepository任务表示执行所有发布到maven远程仓库的任务；
+>
+> 执行publishToMavenLocal任务表示执行所有发布到maven本地仓库的任务；
+>
+> 执行publish任务表示执行publishAllPublicationsToMavenRepository和publishToMavenLocal任务
 
 ## 结语
 
@@ -963,14 +1193,6 @@ outerExt{
 [Gradle学习系列](https://www.cnblogs.com/davenkin/p/gradle-learning-1.html)
 
 [Gradle插件从入门到进阶](https://juejin.im/post/5ccf02e36fb9a0322e73a3db#heading-52)
-
-
-
-
-
-
-
-
 
 
 

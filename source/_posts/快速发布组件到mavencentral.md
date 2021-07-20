@@ -188,7 +188,7 @@ $ gpg -o D:/File/keystore/1A32FB02.gpg --export-secret-key 1A32FB02
 
 ## 发布到OSSRH
 
-现在万事俱备，可以发布组件了，发布组件使用`maven-publish`插件，我们主要发布的内容有组件的aar或jar文件、sources文件、javadoc文件，pom文件，还有这些文件的签名文件，以.asc为后缀，签名要使用`signing`插件，为了简化发布过程，我已经把发布过程编写成了一个gradle脚本 - [publication.gradle](https://github.com/rain9155/MavenPublishScript/blob/main/script/publication.gradle)，使用时只需要apply进来，然后填写发布的基本信息，执行发布任务就可以自动生成发布所需的所有文件并发布到OSSRH中，下面简单介绍如何使用这个gradle脚本。
+现在万事俱备，可以发布组件了，发布组件使用`maven-publish`插件，我们主要发布的内容有组件的aar或jar文件、sources文件、javadoc文件，pom文件，还有这些文件的签名文件，以.asc为后缀，签名要使用`signing`插件，为了简化发布过程，我已经把发布过程编写成了一个gradle脚本 - [MavenPublishScript](https://github.com/rain9155/MavenPublishScript)，使用时只需要apply进来，然后填写发布的基本信息，执行发布任务就可以自动生成发布所需的所有文件并发布到OSSRH中，下面简单介绍如何使用这个gradle脚本。
 
 首先在你的组件的build.gradle中apply该脚本：
 ```groovy
@@ -196,24 +196,27 @@ apply from: 'https://raw.githubusercontent.com/rain9155/MavenPublishScript/main/
 ```
 接下来准备好你在前面注册的Sonatype账号、申请好的groupId、生成好的gpg私钥信息，然后在组件的gradle.properties(没有则创建)中添加组件信息，其中GAV坐标是必填信息，其他是可选信息：
 ```groovy
-# GAV坐标
-GROUPID=申请好的groupId，例如io.github.rain9155
-ARTIFACTID=组件名，例如mavenpublishscript
-VERSION=组件版本，例如1.0.0，版本加SNAPSHOT后缀可发布到maven远程snapshot地址，如1.0.0-SNAPSHOT
+### GAV坐标
+publish.groupId=io.github.rain9155
+publish.artifactId=mavenpublishscript
+publish.version=1.0.0
 
-# 可选信息
-DESCRIPTION=gradle发布组件到MavenCentral脚本，支持aar和jar发布
-URL=https://github.com/rain9155/MavenPublishScript
-LICENSENAME=The Apache License, Version 2.0
-LICENSEURL=http://www.apache.org/licenses/LICENSE-2.0.txt
-DEVELOPERNAME=rain9155
-DEVELOPEREMAIL=jianyu9155@gmail.com
+### 下面都是可选信息
+# 基本描述
+publish.description=发布组件到Maven仓库的gradle脚本，支持aar和jar发布
+publish.url=https://github.com/rain9155/MavenPublishScript
+# 开发者信息
+publish.developerName=rain9155
+publish.developerEmail=jianyu9155@gmail.com
+# license信息
+publish.licenseName=The Apache License, Version 2.0
+publish.licenseUrl=http://www.apache.org/licenses/LICENSE-2.0.txt
 # scm信息，格式参考http://maven.apache.org/scm/scm-url-format.html
-SCMURL=https://github.com/rain9155/MavenPublishScript/tree/master
-SCMCONNECTION=scm:git:git://github.com/rain9155/MavenPublishScript.git
-SCMDEVELOPERCONNECTION=scm:git:ssh://github.com:rain9155/MavenPublishScript.git
-# 如果发布的是android组件，为true时，支持根据flavor动态生成组件名称，规则为ARTIFACTID-{flavorName}，默认为false
-APPENDFLAVORNAME=true
+publish.scmUrl=https://github.com/rain9155/MavenPublishScript/tree/master
+publish.scmConnection=scm:git:git://github.com/rain9155/MavenPublishScript.git
+publish.scmDeveloperConnection=scm:git:ssh://github.com:rain9155/MavenPublishScript.git
+# 如果发布的是android组件，当为false时不根据flavor动态生成组件的artifactId，如果你不想组件的artifactId拼接flavorName，可以设置为false，默认为true
+publish.artifactId.isAppendFavorName=false
 ```
 然后在项目根目录的local.properties(没有则创建)中添加gpg签名信息和ossrh账号信息，记得要把local.properties从你的版本控制中移除，避免泄漏你的签名信息和账号信息：
 ```groovy
