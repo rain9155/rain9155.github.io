@@ -239,7 +239,7 @@ include ':subproject_1', ':subproject_2', ':subproject_3', ':subproject_4'
 这样就完成了子项目的添加，打开命令行，切换到GradleDemo目录处，输入`gradle projects`，执行projects任务展示所有项目之间的依赖关系，如下：
 
 ```groovy
-# chenjianyu @ FVFCG2HJL414 in ~/GradleDemo 
+# in ~/GradleDemo 
 $ gradle projects     
 
 > Task :projects
@@ -406,7 +406,7 @@ tasks.create(name: 'task3'){
 以上就是创建Task最常用的几种方式，创建Task之后，就可以执行它，执行一个Task只需要把task名称接在`gradle`命令后，如下我在命令行输入`gradle task1`执行了task1:
 
 ```groovy
-# chenjianyu @ FVFCG2HJL414 in ~/GradleDemo 
+# in ~/GradleDemo 
 $ gradle task1   
 
 > Task :subproject_1:task1
@@ -420,7 +420,7 @@ BUILD SUCCESSFUL in 463ms
 如果你想精简输出的信息，只需要添加`-q`参数，如：`gradle -q task1`，这样输出就只包含task1的输出：
 
 ```groovy
-# chenjianyu @ FVFCG2HJL414 in ~/GradleDemo 
+# in ~/GradleDemo 
 $ gradle -q task1
 one
 two
@@ -506,7 +506,7 @@ task4.dependsOn task3
 上述的依赖关系是task3 -> task4 -> task5，依赖的Task先执行，所以当我在命令行输入`gradle task5`执行task5时，输出：
 
 ```groovy
-# chenjianyu @ FVFCG2HJL414 in ~/GradleDemo 
+# in ~/GradleDemo 
 $ gradle task5  
 
 > Task :subproject_2:task3
@@ -550,7 +550,7 @@ class MyTask extends DefaultTask{
 }
 ```
 
-在MyTask中，通过**@TaskAction**注解的方法就是该Task的action，action是Task最主要的组成，它表示Task的一个执行动作，当Task中有多个action时，多个action的执行顺序按照**@TaskAction**注解的方法的放置顺序，所以执行一个Task的过程就是：doFirst方法 -> action方法 -> doLast方法，在MyTask中定义了两个action，接下来我们使用这个Task，如下：
+在MyTask中，通过**@TaskAction**注解的方法就是该Task的action，action是Task最主要的组成，它表示Task的一个执行动作，当Task中有多个action时，多个action的执行顺序按照**@TaskAction**注解的方法放置的逆顺序，所以执行一个Task的过程就是：doFirst方法 -> action方法 -> doLast方法，在MyTask中定义了两个action，接下来我们使用这个Task，如下：
 
 ```groovy
 //subproject_3/build.gradle
@@ -564,7 +564,7 @@ task myTask(type: MyTask){
 在定义Task时通过**type**指定Task的类型，同时还可以通过闭包配置MyTask中的message参数，在命令行输入`gradle myTask`执行这个Task，如下：
 
 ```groovy
-# chenjianyu @ FVFCG2HJL414 in ~
+# in ~/GradleDemo 
 $ gradle myTask        
 
 > Task :subproject_3:myTask
@@ -576,6 +576,28 @@ BUILD SUCCESSFUL in 611ms
 ```
 
 我们自定义的Task本质上就是一个类，除了直接在build.gradle文件中编写自定义Task，还可以在Gradle项目的根目录下新建一个buildSrc目录，在buildSrc/src/main/[java/kotlin/groovy]目录中定义编写自定义Task，可以采用java、kotlin、groovy三种语句之一，或者在一个独立的项目中编写自定义Task然后发布到远程仓库托管平台，在后面自定义Plugin时会讲到这几种方式。
+
+### 4、让Task支持增量式构建
+
+上述我们自定义的Task每次执行时，它的action都会被执行，进行全量构建，其实Gradle支持增量式构建的Task，增量式构建就是当Task的输入和输出没有变化时，跳过action的执行，当Task输入或输出发生变化时，在action中只对发生变化的输入或输出进行处理，这样就可以避免一个没有变化的Task被反复构建，还有当Task发生变化时只处理变化部分，这样就会提高整个Gradle的构建效率，大大缩短整个Gradle的构建时间，所以当我们编写复杂的Task时，让Task支持增量式构建是很有必要的，让Task支持增量式构建只需要做到两步：
+
+1、让Task的inputs和outputs参与Gradle的[Up-to-date检查](https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:up_to_date_checks)；
+
+2、让Task的action支持[增量式构建](https://docs.gradle.org/current/userguide/custom_tasks.html#incremental_tasks);
+
+下面我们通过这两步自定义一个简单的、支持增量式构建的Copy任务，这个Copy任务的作用是把输入的文件复制到输出的位置中：
+
+首先我们要让Task的inputs和outputs参与Gradle的Up-to-date检查，每一个Task都有inputs和outputs属性，它们的类型分别为[TaskInputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskInputs.html)和[TaskOutputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskOutputs.html)，inputs和outputs可以是文件、文件夹、Project的某个Property等，我们可以在自定义Task时通过**注解**让Task的inputs和outputs参与Gradle的Up-to-date检查，它是编写增量式Task的前提，Gradle提供了很多注解让我们指定Task的inputs和outputs，常用的如下：
+
+| 注解 | 对应的类型 | 含义 |
+| ---- | ---------- | ---- |
+|      |            |      |
+
+
+
+最后，当Task是增量构建时，我们还要让Task的action支持增量式构建，
+
+
 
 ## 自定义Plugin
 
@@ -1052,7 +1074,7 @@ publishing.publications  {
 
 {% asset_img gradle8.png gradle1 %}
 
-现在MyPlugin插件已经发布成功了，接下来让我们使用这个插件，在subproject_4/build.gradle中添加如下：
+现在MyPlugin 1.0已经发布成功了，接下来让我们使用这个插件，在subproject_4/build.gradle中添加如下：
 
 ```groovy
 //subproject_4/build.gradle
@@ -1158,9 +1180,48 @@ gradlePlugin {
 
 {% asset_img gradle9.png gradle1 %}
 
-可以看到在repo下发布了两个组件，一个为插件，artifactId为gradle_plugin，一个为插件标识工件，artifactId为com.example.customplugin.myplugin.gradle.plugin，它们都处于com.example.customplugin空间下，版本都为2.0，而插件标识工件
+可以看到在repo下发布了两个组件，一个为插件，artifactId为gradle_plugin，一个为插件标识工件，artifactId为com.example.customplugin.myplugin.gradle.plugin，它们都处于com.example.customplugin空间下，版本都为2.0，而插件标识工件中并没有jar文件只有pom文件，我们打开它的pom文件，如下：
 
+{% asset_img gradle10.png gradle1 %}
 
+可以看到依赖了真正的插件的GAV坐标，为com.example.customplugin:gradle_plugin:2.0，这样通过插件id引用时就可以根据插件标识工件定位到插件，通过java-gradle-plugin这种方式发布插件时还有一点要注意的是，插件的id最好以groupId为前缀，这样才能保证插件标识工件和插件发布时都处于同一个仓库路径。
+
+现在MyPlugin 2.0已经发布成功了，接下来让我们使用这个插件，需要通过plugins DSL引用的插件不需要定义classpath，但还是要定义仓库位置，我们在settings.gradle中添加如下：
+
+```groovy
+//一定要放在settings.gradle中的第一行
+pluginManagement{
+    repositories{
+        //添加发布时指定的maven远程仓库
+        maven {
+            url uri('repo')
+        }
+    }
+}
+```
+
+plugins DSL通过**pluginManagement{}**管理插件仓库还有插件，而且pluginManagement{}必须要放在settings.gradle脚本的头部，然后我们可以通过plugins DSL使用myplugin了，在subproject_4/build.gradle中添加如下：
+
+```groovy
+//通过插件id引用插件
+ plugins{
+ 	id 'com.example.customplugin.myplugin' version '2.0'
+ }
+
+//使用DSL配置插件的属性
+outerExt{
+	message 'hello'
+
+	inner{
+		message 'word'
+	}
+}
+
+//执行gradle showExt，输出：
+//outerExt = [message = hello], innerExt = [message = word]
+```
+
+plugins DSL根据插件id寻找插件时默认会先从Gradle中央仓库 - [Gradle Plugin Portal](https://plugins.gradle.org/)找，找不到再从pluginManagement中指定的仓库找。
 
 > 上面发布时为了讲解原理把发布任务逐个执行，其实maven-publish还为我们生成了更为方便的publishAllPublicationsToMavenRepository 、publishToMavenLocal、publish发布任务，只需要执行一个任务就可以把多个发布任务同时执行：
 >
@@ -1193,6 +1254,8 @@ gradlePlugin {
 [Gradle学习系列](https://www.cnblogs.com/davenkin/p/gradle-learning-1.html)
 
 [Gradle插件从入门到进阶](https://juejin.im/post/5ccf02e36fb9a0322e73a3db#heading-52)
+
+[Gradle 源码分析](https://juejin.cn/post/6844903858641043463#heading-30)
 
 
 
