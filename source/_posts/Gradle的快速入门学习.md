@@ -149,7 +149,7 @@ println person.age//输出：21
 * 2、下载好Gradle后，把它解压到特定目录，如我这里解压到：D:/gradle，然后像配置java环境一样把D:/gradle/gradle-6.5/bin路径添加到系统的PATH变量下；
 * 3、打开cmd，输入`gradle -v`校验是否配置成功，输出以下类似信息则配置成功.
 
-```groovy
+```bash
 C:\Users\HY>gradle -v
 
 ------------------------------------------------------------
@@ -238,7 +238,7 @@ include ':subproject_1', ':subproject_2', ':subproject_3', ':subproject_4'
 
 这样就完成了子项目的添加，打开命令行，切换到GradleDemo目录处，输入`gradle projects`，执行projects任务展示所有项目之间的依赖关系，如下：
 
-```groovy
+```bash
 # in ~/GradleDemo 
 $ gradle projects     
 
@@ -405,7 +405,7 @@ tasks.create(name: 'task3'){
 
 以上就是创建Task最常用的几种方式，创建Task之后，就可以执行它，执行一个Task只需要把task名称接在`gradle`命令后，如下我在命令行输入`gradle task1`执行了task1:
 
-```groovy
+```bash
 # in ~/GradleDemo 
 $ gradle task1   
 
@@ -419,7 +419,7 @@ BUILD SUCCESSFUL in 463ms
 
 如果你想精简输出的信息，只需要添加`-q`参数，如：`gradle -q task1`，这样输出就只包含task1的输出：
 
-```groovy
+```bash
 # in ~/GradleDemo 
 $ gradle -q task1
 one
@@ -505,7 +505,7 @@ task4.dependsOn task3
 
 上述的依赖关系是task3 -> task4 -> task5，依赖的Task先执行，所以当我在命令行输入`gradle task5`执行task5时，输出：
 
-```groovy
+```bash
 # in ~/GradleDemo 
 $ gradle task5  
 
@@ -563,7 +563,7 @@ task myTask(type: MyTask){
 
 在定义Task时通过**type**指定Task的类型，同时还可以通过闭包配置MyTask中的message参数，在命令行输入`gradle myTask`执行这个Task，如下：
 
-```groovy
+```bash
 # in ~/GradleDemo 
 $ gradle myTask        
 
@@ -579,7 +579,7 @@ BUILD SUCCESSFUL in 611ms
 
 ### 4、让Task支持增量式构建
 
-上述我们自定义的Task每次执行时，它的action都会被执行，进行全量构建，其实Gradle支持增量式构建的Task，增量式构建就是当Task的输入和输出没有变化时，跳过action的执行，当Task输入或输出发生变化时，在action中只对发生变化的输入或输出进行处理，这样就可以避免一个没有变化的Task被反复构建，还有当Task发生变化时只处理变化部分，这样就会提高整个Gradle的构建效率，大大缩短整个Gradle的构建时间，所以当我们编写复杂的Task时，让Task支持增量式构建是很有必要的，让Task支持增量式构建只需要做到两步：
+上述我们自定义的Task每次执行时，它的action都会被执行，进行全量构建，其实Gradle支持增量式构建的Task，增量式构建就是**当Task的输入和输出没有变化时，跳过action的执行，当Task输入或输出发生变化时，在action中只对发生变化的输入或输出进行处理**，这样就可以避免一个没有变化的Task被反复构建，还有当Task发生变化时只处理变化部分，这样就会提高整个Gradle的构建效率，大大缩短整个Gradle的构建时间，所以当我们编写复杂的Task时，让Task支持增量式构建是很有必要的，让Task支持增量式构建只需要做到两步：
 
 1、让Task的inputs和outputs参与Gradle的[Up-to-date检查](https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:up_to_date_checks)；
 
@@ -587,15 +587,151 @@ BUILD SUCCESSFUL in 611ms
 
 下面我们通过这两步自定义一个简单的、支持增量式构建的Copy任务，这个Copy任务的作用是把输入的文件复制到输出的位置中：
 
-首先我们要让Task的inputs和outputs参与Gradle的Up-to-date检查，每一个Task都有inputs和outputs属性，它们的类型分别为[TaskInputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskInputs.html)和[TaskOutputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskOutputs.html)，inputs和outputs可以是文件、文件夹、Project的某个Property等，我们可以在自定义Task时通过**注解**让Task的inputs和outputs参与Gradle的Up-to-date检查，它是编写增量式Task的前提，Gradle提供了很多注解让我们指定Task的inputs和outputs，常用的如下：
+首先我们要让Copy任务的inputs和outputs参与Gradle的Up-to-date检查，每一个Task都有inputs和outputs属性，它们的类型分别为[TaskInputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskInputs.html)和[TaskOutputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskOutputs.html)，inputs和outputs可以是文件、文件夹、Project的某个Property等，我们可以在自定义Task时通过**注解**指定Task的inputs和outputs，通过注解指定的inputs和outputs会参与Gradle的Up-to-date检查，它是编写增量式Task的前提，Up-to-date检查是指Gradle每次执行Task前都会检查Task的输入和输出，如果一个Task的输入和输出自上一次构建以来没有发生变化，Gradle就判定这个Task是可以跳过执行的，这时你就会看到Task构建旁边会有一个**UP-TO-DATE**文本，Gradle提供了很多注解让我们指定Task的inputs和outputs，常用的如下：
 
 | 注解 | 对应的类型 | 含义 |
 | ---- | ---------- | ---- |
 |      |            |      |
 
+我们自定义Task时可以使用表中的注解来指定输入和输出，还有一点要注意的是这些注解只有声明在属性的get方法中才有效果，前面讲过groovy的字段默认都生成了get/set方法，而如果你是用java自定义Task的，要记得声明在属性的get方法中，我们来看Copy任务的实现，如下：
+
+```groovy
+//subproject_3/build.gradle
+
+class CopyTask extends DefaultTask{
+
+  //使用@InputFiles注解指定输入
+  @InputFiles
+  FileCollection from
+
+  //使用@OutputDirectory注解指定输出
+  @OutputDirectory
+  Directory to
+
+  //复制过程：把from的文件复制到to文件夹
+  @TaskAction
+  void execute(){
+    File file = from.getSingleFile()
+    if(file.isDirectory()){
+      from.getAsFileTree().each {
+        copyFileToDir(it, to)
+      }
+    }else{
+      copyFileToDir(from, to)
+    }
+  }
+
+  private static void copyFileToDir(File src, Directory dir){
+    File dest = new File("${dir.getAsFile().path}/${src.name}")
+    if(!dest.exists()){
+      dest.createNewFile()
+    }
+    dest.withOutputStream {
+      it.write(new FileInputStream(src).getBytes())
+    }
+  }
+}
+```
+
+这里Copy任务只使用了@InputFiles和@OutputDirectory，通过@InputFiles指定Copy任务复制的来源文件，通过@OutputDirectory指定Copy任务复制的目标文件夹，然后在action方法中执行复制步骤，然后我们来使用这个Copy任务，如下：
+
+```groovy
+//subproject_3/build.gradle
+
+task copyTask(type: CopyTask){
+    from = files('from')
+    to = layout.projectDirectory.dir('to')
+}
+```
+
+为了使用这个Copy任务，我在subproject_3目录下创建了一个from文件夹，里面只有一个名为text1.txt的文本文件，然后把from文件夹指定为Copy任务的输入，to文件夹指定为Copy任务的输出，在命令行输入`gradle copyTask`执行这个Task，如下：
+
+```bash
+# in ~/GradleDemo 
+$ gradle copyTask
+
+> Task :subproject_3:copyTask
+
+BUILD SUCCESSFUL in 2s
+1 actionable task: 1 executed
+```
+
+任务执行成功后就可以把from文件夹中的文件复制到to文件夹，此时结构如下：
+
+```
+subproject_3
+|_ build.gradle
+|_ from
+|  |_ text1.txt 
+|_ to
+   |_ text1.txt
+```
+
+接着我们再次在命令行输入`gradle copyTask`执行这个Task，如下：
+
+```bash
+# in ~/GradleDemo 
+$ gradle copyTask
+
+> Task :subproject_3:copyTask UP-TO-DATE
+
+BUILD SUCCESSFUL in 634ms
+1 actionable task: 1 up-to-date
+```
+
+再次执行时由于Copy任务的输入和输出都没有变化，所以Gradle判定为UP-TO-DATE，跳过执行。
+
+目前Copy任务已经支持Up-to-date检查，但还不支持增量构建，即如果此时我们往from文件夹新增一个text2.txt文件，由于Copy任务的输入发生变化，这时重新执行Copy任务时就会重新执行action方法，进行全量构建，把text1.txt、text2.txt文件复制到to文件夹中，你会发现text1.txt被重复复制了，我们希望的是每次from中新增或修改文件时，只对新增或修改的文件进行复制，而之前没有变化的文件不进行复制，所以要做到这一步，还要让Task的action方法支持增量构建，要让Task的action方法支持增量式构建，只需要让action方法带一个[InputChanges](https://docs.gradle.org/current/dsl/org.gradle.work.InputChanges.html#org.gradle.work.InputChanges)类型的参数就可以，带**InputChanges**类型参数的action方法表示这是一个增量任务操作方法，该参数告诉Gradle，该action方法仅需要处理更改的输入，此外，Task还需要通过使用**@Incremental或@SkipWhenEmpty**来指定至少一个增量文件输入属性，我们继续看Copy任务的实现，如下：
+
+```groovy
+//subproject_3/build.gradle
+
+class CopyTask extends DefaultTask{
+
+  //新增@Incremental注解
+  @Incremental
+  @InputFiles
+  FileCollection from
+
+  @OutputDirectory
+  Directory to
+
+  //带有InputChanges类型参数的action方法
+  @TaskAction
+  void executeIncremental(InputChanges inputChanges) {
+    println "execute: isIncremental = ${inputChanges.isIncremental()}"
+    inputChanges.getFileChanges(from).each {change ->
+      if(change.fileType != FileType.DIRECTORY){
+        println "changeType = ${change.changeType}, changeFile = ${change.file.name}"
+        if(change.changeType != ChangeType.REMOVED){
+          copyFileToDir(change.file, to)
+        }
+      }
+    }
+  }
+
+  //...
+}
+```
+
+Copy任务中通过@Incremental指定了需要增量处理的输入，然后在action方法中通过InputChanges进行增量复制文件，我们可以通过InputChanges的**getFileChanges**方法获取变化的文件，该方法接收一个FileCollection类型的参数，传入的参数必须要通过@Incremental或@SkipWhenEmpty注解，getFileChanges方法返回的是一个[FileChange](https://docs.gradle.org/current/javadoc/org/gradle/work/FileChange.html)列表，FileChange持有变化的文件File、文件类型[FileType](https://docs.gradle.org/current/javadoc/org/gradle/api/file/FileType.html)和文件的变化类型[ChangeType](https://docs.gradle.org/current/javadoc/org/gradle/work/ChangeType.html)，这样我们就可以根据**变化的文件、ChangeType、FileType**进行增量输出，ChangeType有三种取值：
+
+- ADDED：表示这个文件是新增的；
+- MODIFIED：表示这个文件被修改了；
+- REMOVED：表示这个文件被删除了.
+
+同时并不是每次执行都是增量构建，我们可以通过InputChanges的**isIncremental**方法判断本次构建是否是增量构建，当处于以下情况时，Task会以非增量形式即全量执行：
+
+- 该Task是第一次执行；
+- 该Task只有输入没有输出；
+- 该Task的upToDateWhen条件返回了false；
+- 自上次构建以来，该Task的某个输出文件已更改。
+- 自上次构建以来，该Task的某个属性输入发生了变化，例如一些基本类型的属性；
+- 自上次构建以来，该Task的某个非增量文件输入发生了变化，非增量文件输入是指没有使用@Incremental或@SkipWhenEmpty注解的文件输入；
 
 
-最后，当Task是增量构建时，我们还要让Task的action支持增量式构建，
+
+
 
 
 
@@ -1180,9 +1316,13 @@ gradlePlugin {
 
 {% asset_img gradle9.png gradle1 %}
 
-可以看到在repo下发布了两个组件，一个为插件，artifactId为gradle_plugin，一个为插件标识工件，artifactId为com.example.customplugin.myplugin.gradle.plugin，它们都处于com.example.customplugin空间下，版本都为2.0，而插件标识工件中并没有jar文件只有pom文件，我们打开它的pom文件，如下：
+可以看到在repo下发布了两个组件，一个为插件，artifactId为gradle_plugin，一个为插件标识工件，artifactId为com.example.customplugin.myplugin.gradle.plugin，它们都处于com.example.customplugin空间下，版本都为2.0，我们看一下插件标识工件里面的内容，如下：
 
 {% asset_img gradle10.png gradle1 %}
+
+可以看到插件标识工件中并没有jar文件只有pom文件，我们打开它的pom文件，如下：
+
+{% asset_img gradle11.png gradle1 %}
 
 可以看到依赖了真正的插件的GAV坐标，为com.example.customplugin:gradle_plugin:2.0，这样通过插件id引用时就可以根据插件标识工件定位到插件，通过java-gradle-plugin这种方式发布插件时还有一点要注意的是，插件的id最好以groupId为前缀，这样才能保证插件标识工件和插件发布时都处于同一个仓库路径。
 
