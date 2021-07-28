@@ -587,13 +587,31 @@ BUILD SUCCESSFUL in 611ms
 
 下面我们通过这两步自定义一个简单的、支持增量式构建的Copy任务，这个Copy任务的作用是把输入的文件复制到输出的位置中：
 
-首先我们要让Copy任务的inputs和outputs参与Gradle的Up-to-date检查，每一个Task都有inputs和outputs属性，它们的类型分别为[TaskInputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskInputs.html)和[TaskOutputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskOutputs.html)，inputs和outputs可以是文件、文件夹、Project的某个Property等，我们可以在自定义Task时通过**注解**指定Task的inputs和outputs，通过注解指定的inputs和outputs会参与Gradle的Up-to-date检查，它是编写增量式Task的前提，Up-to-date检查是指Gradle每次执行Task前都会检查Task的输入和输出，如果一个Task的输入和输出自上一次构建以来没有发生变化，Gradle就判定这个Task是可以跳过执行的，这时你就会看到Task构建旁边会有一个**UP-TO-DATE**文本，Gradle提供了很多注解让我们指定Task的inputs和outputs，常用的如下：
+首先我们要让Copy任务的inputs和outputs参与Gradle的Up-to-date检查，每一个Task都有inputs和outputs属性，它们的类型分别为[TaskInputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskInputs.html)和[TaskOutputs](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskOutputs.html)，Task的inputs和outputs主要有以下三种类型：
 
-| 注解 | 对应的类型 | 含义 |
-| ---- | ---------- | ---- |
-|      |            |      |
+- 可序列化类型：可序列化类型是指实现了Serializable的类或者一些基本类型如int、string等；
+- 文件类型：文件类型是指标准的[java.io.File](https://docs.oracle.com/javase/8/docs/api/java/io/File.html)或者Gradle衍生的文件类型如[FileCollection](https://docs.gradle.org/current/javadoc/org/gradle/api/file/FileCollection.html)、[FileSystemLocation](https://docs.gradle.org/current/javadoc/org/gradle/api/file/FileSystemLocation.html)等；
+- 自定义类型：自定义类型是指自己定义的类，这个类含有Task的部分输入和输出属性，或者说任务的部分输入和输出属性嵌套在这个类中.
 
-我们自定义Task时可以使用表中的注解来指定输入和输出，还有一点要注意的是这些注解只有声明在属性的get方法中才有效果，前面讲过groovy的字段默认都生成了get/set方法，而如果你是用java自定义Task的，要记得声明在属性的get方法中，我们来看Copy任务的实现，如下：
+我们可以在自定义Task时通过**注解**指定Task的inputs和outputs，通过注解指定的inputs和outputs会参与Gradle的Up-to-date检查，它是编写增量式Task的前提，Up-to-date检查是指Gradle每次执行Task前都会检查Task的输入和输出，如果一个Task的输入和输出自上一次构建以来没有发生变化，Gradle就判定这个Task是可以跳过执行的，这时你就会看到Task构建旁边会有一个**UP-TO-DATE**文本，Gradle提供了很多注解让我们指定Task的inputs和outputs，**常用**的如下：
+
+| 注解                                                         | 对应的类型                                         | 含义                                                         |
+| ------------------------------------------------------------ | -------------------------------------------------- | ------------------------------------------------------------ |
+| @[Input](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/Input.html) | 可序列化类型                                       | 指单个输入可序列化的值，如基本类型int、string或者实现了Serializable的类 |
+| @[InputFile](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/InputFile.html) | 文件类型                                           | 指单个输入文件，不表示文件夹，如File、RegularFile等          |
+| @[InputDirectory](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/InputDirectory.html) | 文件类型                                           | 指单个输入文件夹，不表示文件，如File、Directory等            |
+| @[InputFiles](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/InputFiles.html) | 文件类型                                           | 指多个输入的文件或文件夹，如FileCollection、FileTree等       |
+| @[OutputFile](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/OutputFile.html) | 文件类型                                           | 指单个输出文件，不表示文件夹，如File、RegularFile等          |
+| @[OutputDirectory](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/OutputDirectory.html) | 文件类型                                           | 指单个输出文件夹，不表示文件，如File、Directory等            |
+| @[OutputFiles](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/OutputFiles.html) | 文件类型                                           | 指多个输出的文件，如FileCollection、Map<String, File>等      |
+| @[OutputDirectories](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/OutputDirectories.html) | 文件类型                                           | 指多个输出的文件夹，如FileCollection、Map<String, File>等    |
+| @[Nested](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/Nested.html) | 自定义类型                                         | 指一种自定义的类，这个类它可能没有实现Serializable，但这个类里面至少有一个属性使用本表中的一个注解标记，即这个类会含有Task的输入或输出 |
+| @[Internal](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/Internal.html) | 任何类型                                           | 它可以用在可序列化类型、文件类型、还有自定义类型上，它指该属性只在Task的内部使用，即不是Task的输入也不是Task的输出，通过@Internal注解的属性不参与Up-to-date检查 |
+| @[Optional](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/Optional.html) | 任何类型                                           | 它可以用在可序列化类型、文件类型、还有自定义类型上，它指该属性是可选的，通过@Optional注解的属性可以不为它赋值，关闭校验 |
+| @[Incremental](https://docs.gradle.org/current/javadoc/org/gradle/work/Incremental.html) | Provider\<FileSystemLocation\> 或者 FileCollection | 它和@InputFiles或@InputDirectory一起使用，它用来指示Gradle跟踪文件属性的更改，通过@Incremental注解的文件属性可以通过InputChanges的getFileChanges方法查询文件的更改，帮助实现增量构建Task |
+| @[SkipWhenEmpty](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/SkipWhenEmpty.html) | 文件类型                                           | 它和@InputFiles或@InputDirectory一起使用，它用来告诉Gradle如果相应的文件或文件夹为空就跳过该Task，通过@SkipWhenEmpty注解的所有输入属性如果都为空，就会导致Gradle跳过这个Task，从而在控制台产出一个**NO-SOURCE**输出结果 |
+
+我们自定义Task时可以使用表中的注解来指定输入和输出，其中@InputXX是用来指定输入属性，@OuputXX是用来指定输出属性，@Nested是用来指定自定义类，这个类里面至少含有一个使用@InputXX或@OuputXX指定的属性，而@Internal和@Optional是可以用来指定输入或输出的，最后的@Incremental和@SkipWhenEmpty是用来与@InputFiles或@InputDirectory一起使用的，用于支持增量式构建任务，后面会讲，还有一点要注意的是这些注解只有声明在属性的get方法中才有效果，前面讲过groovy的字段默认都生成了get/set方法，而如果你是用java自定义Task的，要记得声明在属性的get方法中，我们来看Copy任务的实现，如下：
 
 ```groovy
 //subproject_3/build.gradle
@@ -656,7 +674,7 @@ BUILD SUCCESSFUL in 2s
 1 actionable task: 1 executed
 ```
 
-任务执行成功后就可以把from文件夹中的文件复制到to文件夹，此时结构如下：
+任务执行成功后就可以把from文件夹中的文件复制到to文件夹，此时文件结构如下：
 
 ```
 subproject_3
@@ -688,29 +706,49 @@ BUILD SUCCESSFUL in 634ms
 
 class CopyTask extends DefaultTask{
 
-  //新增@Incremental注解
-  @Incremental
-  @InputFiles
-  FileCollection from
+    //新增@Incremental注解
+    @Incremental
+    @InputFiles
+    FileCollection from
 
-  @OutputDirectory
-  Directory to
+    @OutputDirectory
+    Directory to
 
-  //带有InputChanges类型参数的action方法
-  @TaskAction
-  void executeIncremental(InputChanges inputChanges) {
-    println "execute: isIncremental = ${inputChanges.isIncremental()}"
-    inputChanges.getFileChanges(from).each {change ->
-      if(change.fileType != FileType.DIRECTORY){
-        println "changeType = ${change.changeType}, changeFile = ${change.file.name}"
-        if(change.changeType != ChangeType.REMOVED){
-          copyFileToDir(change.file, to)
+    // @TaskAction
+    // void execute(){
+    //    File file = from.getSingleFile()
+    //    if(file.isDirectory()){
+    //        from.getAsFileTree().each {
+    //            copyFileToDir(it, to)
+    //        }
+    //    }else{
+    //        copyFileToDir(from, to)
+    //    }
+    // }
+
+    //带有InputChanges类型参数的action方法
+    @TaskAction
+    void executeIncremental(InputChanges inputChanges) {
+        println "execute: isIncremental = ${inputChanges.isIncremental()}"
+        inputChanges.getFileChanges(from).each {change ->
+            if(change.fileType != FileType.DIRECTORY){
+                println "changeType = ${change.changeType}, changeFile = ${change.file.name}"
+                if(change.changeType != ChangeType.REMOVED){
+                    copyFileToDir(change.file, to)
+                }
+            }
         }
-      }
     }
-  }
 
-  //...
+    private static void copyFileToDir(File src, Directory dir){
+        File dest = new File("${dir.getAsFile().path}/${src.name}")
+        if(!dest.exists()){
+            dest.createNewFile()
+        }
+        dest.withOutputStream {
+            it.write(new FileInputStream(src).getBytes())
+        }
+    }
 }
 ```
 
@@ -729,11 +767,85 @@ Copy任务中通过@Incremental指定了需要增量处理的输入，然后在a
 - 自上次构建以来，该Task的某个属性输入发生了变化，例如一些基本类型的属性；
 - 自上次构建以来，该Task的某个非增量文件输入发生了变化，非增量文件输入是指没有使用@Incremental或@SkipWhenEmpty注解的文件输入；
 
+当Task处于非增量构建时，即InputChanges的isIncremental方法返回false时，通过InputChanges的getFileChanges方法能获取到所有的输入文件，并且每个文件的ChangeType都为ADDED，当Task处于增量构建时，即InputChanges的isIncremental方法返回true时，通过InputChanges的getFileChanges方法能获取到只发生变化的输入文件。
 
+接下来让我们在上面的基础下执行Copy任务，在命令行输入`gradle copyTask`执行这个Task，如下：
 
+```bash
+# in ~/GradleDemo 
+$ gradle copyTask
 
+> Task :subproject_3:copyTask
+execute: isIncremental = false
+changeType = ADDED, changeFile = text1.txt
 
+BUILD SUCCESSFUL in 22s
+1 actionable task: 1 executed
+```
 
+可以看到第一次执行Task，以非增量方式执行，把from/text1.txt文件复制到了to文件夹，接下来，我们在from文件夹下新增text2.txt、text3.text，然后再次在命令行输入`gradle copyTask`执行Copy任务，如下：
+
+```bash
+# in ~/GradleDemo 
+$ gradle copyTask
+
+> Task :subproject_3:copyTask
+execute: isIncremental = true
+changeType = ADDED, changeFile = text2.txt
+changeType = ADDED, changeFile = text3.txt
+
+BUILD SUCCESSFUL in 2s
+1 actionable task: 1 executed
+```
+
+可以看到当我们新增文件后第二次执行Task，以增量方式执行，只把新增的text2.txt、 text3.txt复制到to文件夹，而text1.txt没有被重复复制，此时文件结构如下：
+
+```
+subproject_3
+|_ build.gradle
+|_ from
+|  |_ text1.txt 
+|  |_ text2.txt
+|  |_ text3.txt
+|_ to
+   |_ text1.txt
+   |_ text2.txt
+   |_ text3.txt
+```
+
+接下来我们把text1.txt修改在里面添加一行hello world，然后再次在命令行输入`gradle copyTask`执行Copy任务，如下：
+
+```bash
+# in ~/GradleDemo 
+$ gradle copyTask
+
+> Task :subproject_3:copyTask
+execute: isIncremental = true
+changeType = MODIFIED, changeFile = text1.txt
+
+BUILD SUCCESSFUL in 2s
+1 actionable task: 1 executed
+```
+
+可以看到当我们修改文件后第三次执行Task，以增量方式执行，只把修改的text1.txt复制到to文件夹，而其他文件没有被重复复制，接下来我们把to文件夹里的text1.txt删除，然后再次在命令行输入`gradle copyTask`执行Copy任务，如下：
+
+```bash
+# in ~/GradleDemo 
+$ gradle copyTask
+
+> Task :subproject_3:copyTask
+execute: isIncremental = false
+changeType = ADDED, changeFile = text1.txt
+changeType = ADDED, changeFile = text2.txt
+changeType = ADDED, changeFile = text3.txt
+
+BUILD SUCCESSFUL in 2s
+1 actionable task: 1 executed
+```
+
+可以看到当我们删除某个输出文件后第四次执行Task，以非增量方式执行，把from文件夹下的文件重新复制到to文件夹，并且所有的文件状态都是ADDED，此时如果我们不做任何操作，再次在命令行输入`gradle copyTask`执行Copy任务会输出UP-TO-DATE。
+
+到现在我们就实现了一个支持增量式构建的Copy任务，通过Gradle提供的注解和InputChanges，我们很容易就自定义一个支持增量构建的Task，当你编写的Task支持增量构建后，你还可以考虑更进一步，让你的Task的支持延迟配置 - [Lazy Configuration](https://docs.gradle.org/current/userguide/lazy_configuration.html)，这是Gradle提供的对属性的一种状态管理，就不在本文展开了。
 
 ## 自定义Plugin
 
