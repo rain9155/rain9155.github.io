@@ -763,9 +763,9 @@ Copy任务中通过@Incremental指定了需要增量处理的输入，然后在a
 - 该Task是第一次执行；
 - 该Task只有输入没有输出；
 - 该Task的upToDateWhen条件返回了false；
-- 自上次构建以来，该Task的某个输出文件已更改。
+- 自上次构建以来，该Task的某个输出文件已更改;
 - 自上次构建以来，该Task的某个属性输入发生了变化，例如一些基本类型的属性；
-- 自上次构建以来，该Task的某个非增量文件输入发生了变化，非增量文件输入是指没有使用@Incremental或@SkipWhenEmpty注解的文件输入；
+- 自上次构建以来，该Task的某个非增量文件输入发生了变化，非增量文件输入是指没有使用@Incremental或@SkipWhenEmpty注解的文件输入.
 
 当Task处于非增量构建时，即InputChanges的isIncremental方法返回false时，通过InputChanges的getFileChanges方法能获取到所有的输入文件，并且每个文件的ChangeType都为ADDED，当Task处于增量构建时，即InputChanges的isIncremental方法返回true时，通过InputChanges的getFileChanges方法能获取到只发生变化的输入文件。
 
@@ -1441,6 +1441,8 @@ gradlePlugin {
 现在MyPlugin 2.0已经发布成功了，接下来让我们使用这个插件，需要通过plugins DSL引用的插件不需要定义classpath，但还是要定义仓库位置，我们在settings.gradle中添加如下：
 
 ```groovy
+//settings.gradle
+
 //一定要放在settings.gradle中的第一行
 pluginManagement{
   repositories{
@@ -1455,6 +1457,8 @@ pluginManagement{
 plugins DSL通过**pluginManagement{}**管理插件仓库还有插件，而且pluginManagement{}必须要放在settings.gradle脚本的头部，然后我们可以通过plugins DSL使用myplugin了，在subproject_4/build.gradle中添加如下：
 
 ```groovy
+//subproject_4/build.gradle
+
 //通过插件id引用插件
 plugins{
   id 'com.example.customplugin.myplugin' version '2.0'
