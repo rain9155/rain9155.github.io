@@ -188,17 +188,17 @@ Gradle项目可以使用Android Studio、IntelliJ IDEA等IDE工具或文本编�
 
 ### 1、build.gradle
 
-它表示Gradle的项目构建脚本，在里面我们可以通过Groovy来编写脚本，在Gradle中，一个build.gradle就对应一个项目，build.gradle放在Gradle项目的根目录下，表示它对应的是根项目，build.gradle放在Gradle项目的其他子目录下，表示它对应的是子项目，Gradle构建时会把build.gradle解析成[Project](https://docs.gradle.org/current/dsl/org.gradle.api.Project.html#org.gradle.api.Project)对象，你在里面编写的DSL，其实就是Project接口中的方法。
+它表示Gradle的项目构建脚本，在里面我们可以通过Groovy来编写脚本，在Gradle中，一个build.gradle就对应一个项目，build.gradle放在Gradle项目的根目录下，表示它对应的是根项目，build.gradle放在Gradle项目的其他子目录下，表示它对应的是子项目，Gradle构建时会为每一个build.gradle创建一个对应的[Project](https://docs.gradle.org/current/dsl/org.gradle.api.Project.html#org.gradle.api.Project)对象，这样编写build.gradle时就可以使用Project接口中的方法。
 
 ### 2、settings.gradle
 
-它表示Gradle的多项目配置脚本，存放在Gradle项目的根目录下，在里面可以通过include来决定哪些子项目会参与构建，Gradle构建时会把settings.gradle解析成[Settings](https://docs.gradle.org/current/dsl/org.gradle.api.initialization.Settings.html#org.gradle.api.initialization.Settings)对象，include也只是Settings接口中的一个方法。
+它表示Gradle的多项目配置脚本，存放在Gradle项目的根目录下，在里面可以通过include来决定哪些子项目会参与构建，Gradle构建时会为settings.gradle创建一个对应的[Settings](https://docs.gradle.org/current/dsl/org.gradle.api.initialization.Settings.html#org.gradle.api.initialization.Settings)对象，include也只是Settings接口中的一个方法。
 
 ### 3、Gradle Wrapper
 
 `gradle init`执行时会同时执行`wrapper`任务，`wrapper`任务会创建gradle/wrapper目录，并创建gradle/wrapper目录下的gradle-wrapper.jar、gradle-wrapper.properties这两个文件，还同时创建gradlew、gradlew.bat这两个脚本，它们统称为Gradle Wrapper，是对Gradle的一层包装。
 
-Gradle Wrapper的作用就是可以让你的电脑在**不安装配置Gradle环境**的前提下运行Gradle项目，例如当你的Gradle项目被用户A clone下来时，而用户A的电脑上没有安装配置Gradle环境，用户A通过Gradle构建项目时，Gradle Wrapper就会从指定下载位置下载Gradle，并解压到电脑的指定位置，然后用户A就可以在不配置Gradle系统变量的前提下在Gradle项目的命令行中运行gradlew或gradlew.bat脚本来使用gradle命令，假设用户A要运行`gradle -v`命令，在linux平台下只需要运行`./gradle -v`，在window平台下只需要运行`gradlew -v`，只是把`gradle`替换成`gradlew`。
+Gradle Wrapper的作用就是可以让你的电脑在**不安装配置Gradle环境**的前提下运行Gradle项目，例如当你的Gradle项目被用户A clone下来时，而用户A的电脑上没有安装配置Gradle环境，用户A通过Gradle构建项目时，Gradle Wrapper就会从指定下载位置下载Gradle，并解压到电脑的指定位置，然后用户A就可以在不配置Gradle系统变量的前提下在Gradle项目的命令行中运行gradlew或gradlew.bat脚本来使用gradle命令，假设用户A要运行`gradle -v`命令，在linux平台下只需要运行`./gradlew -v`，在window平台下只需要运行`gradlew -v`，只是把`gradle`替换成`gradlew`。
 
 Gradle Wrapper的每个文件含义如下：
 
@@ -350,7 +350,7 @@ this.afterEvaluate {
 }
 ```
 
-但是要注意的是在根项目的build.gradle添加上述方法，其beforeEvaluate方法是无法被回调的，因为注册时机太晚，解析根项目的的build.gradle时根项目已经开始构建了，但是子项目的build.gradle添加上述方法是可以监听到项目构建的开始和结束，因为根项目构建完成后才会轮到子项目的构建。
+但是要注意的是在根项目的build.gradle添加上述方法，其beforeEvaluate方法是无法被回调的，因为注册时机太晚，解析根项目的build.gradle时根项目已经开始构建了，但是子项目的build.gradle添加上述方法是可以监听到项目构建的开始和结束，因为根项目构建完成后才会轮到子项目的构建。
 
 ## Task
 
@@ -363,12 +363,12 @@ this.afterEvaluate {
 
 //通过Project的task方法创建一个Task
 task task1{
-	doFirst{
-		println 'one'
-	}
-	doLast{
- 		println 'two'
- 	}
+  doFirst{
+    println 'one'
+  }
+  doLast{
+    println 'two'
+  }
 }
 ```
 
@@ -380,10 +380,10 @@ task task1{
 //通过Project的task方法创建一个Task
 def t = task task2
 t.doFirst {
-	println 'one'
+  println 'one'
 }
 t.doLast{
-	println 'two'
+  println 'two'
 }
 ```
 
@@ -394,12 +394,12 @@ t.doLast{
 
 //通过TaskContainer的create方法创建一个Task
 tasks.create(name: 'task3'){
-	doFirst{
-		println 'one'
-	}
-	doLast{
- 		println 'two'
- 	}
+  doFirst{
+    println 'one'
+  }
+  doLast{
+    println 'two'
+  }
 }
 ```
 
@@ -437,13 +437,13 @@ Gradle为每个Task定义了默认的属性(Property)， 比如description、gro
 
 //我们可以在定义Task时对这些Property进行赋值
 task task1{
- 	group = 'MyGroup'
- 	description = 'Hello World'
+  group = 'MyGroup'
+  description = 'Hello World'
 
- 	doLast{
- 		println "task分组：${group}"
- 		println "task描述：${description}"
- 	}
+  doLast{
+    println "task分组：${group}"
+    println "task描述：${description}"
+  }
 }
 ```
 
@@ -454,36 +454,36 @@ Gradle在执行一个Task之前，会先配置这个Task的Property，然后再�
 
 //在定义Task之后才对Task进行配置
 task task2{
-	doLast{
-		println "task分组：${group}"
- 		println "task描述：${description}" 
-	}
+  doLast{
+    println "task分组：${group}"
+    println "task描述：${description}" 
+  }
 }
 task2{
-	group = 'MyGroup'
- 	description = 'Hello World'
+  group = 'MyGroup'
+  description = 'Hello World'
 }
 
 //等效于task2
 task task3{
-	doLast{
-		println "task分组：${group}"
- 		println "task描述：${description}" 
-	}
+  doLast{
+    println "task分组：${group}"
+    println "task描述：${description}" 
+  }
 }
 task3.description = 'Hello World!'
 task3.group = "MyGroup"
 
 //等效于task3
 task task4{
-	doLast{
-		println "task分组：${group}"
- 		println "task描述：${description}" 
-	}
+  doLast{
+    println "task分组：${group}"
+    println "task描述：${description}" 
+  }
 }
 task4.configure{
-	group = 'MyGroup'
- 	description = 'Hello World'
+  group = 'MyGroup'
+  description = 'Hello World'
 }
 ```
 
@@ -494,9 +494,9 @@ task4.configure{
 
 //创建Task时通过dependsOn声明Task之间的依赖关系
 task task5(dependsOn: task4){
-	doLast{
-		println 'Hello World'
-	}
+  doLast{
+    println 'Hello World'
+  }
 }
 
 //或者在创建Task之后再声明task之间的依赖关系
@@ -536,17 +536,17 @@ BUILD SUCCESSFUL in 2s
 
 class MyTask extends DefaultTask{
 
-  	def message = 'hello world from myCustomTask'
+  def message = 'hello world from myCustomTask'
 
-    @TaskAction
-    def println1(){
-      println "println1: $message"
-    }
+  @TaskAction
+  def println1(){
+    println "println1: $message"
+  }
 
-    @TaskAction
-    def println2(){
-      println "println2: $message"
-    }
+  @TaskAction
+  def println2(){
+    println "println2: $message"
+  }
 }
 ```
 
@@ -557,7 +557,7 @@ class MyTask extends DefaultTask{
 
 //在定义Task时通过type指定Task的类型
 task myTask(type: MyTask){
-      message = 'custom message'
+  message = 'custom message'
 }
 ```
 
@@ -657,8 +657,8 @@ class CopyTask extends DefaultTask{
 //subproject_3/build.gradle
 
 task copyTask(type: CopyTask){
-    from = files('from')
-    to = layout.projectDirectory.dir('to')
+  from = files('from')
+  to = layout.projectDirectory.dir('to')
 }
 ```
 
@@ -706,49 +706,49 @@ BUILD SUCCESSFUL in 634ms
 
 class CopyTask extends DefaultTask{
 
-    //新增@Incremental注解
-    @Incremental
-    @InputFiles
-    FileCollection from
+  //新增@Incremental注解
+  @Incremental
+  @InputFiles
+  FileCollection from
 
-    @OutputDirectory
-    Directory to
+  @OutputDirectory
+  Directory to
 
-    // @TaskAction
-    // void execute(){
-    //    File file = from.getSingleFile()
-    //    if(file.isDirectory()){
-    //        from.getAsFileTree().each {
-    //            copyFileToDir(it, to)
-    //        }
-    //    }else{
-    //        copyFileToDir(from, to)
-    //    }
-    // }
+  // @TaskAction
+  // void execute(){
+  //    File file = from.getSingleFile()
+  //    if(file.isDirectory()){
+  //        from.getAsFileTree().each {
+  //            copyFileToDir(it, to)
+  //        }
+  //    }else{
+  //        copyFileToDir(from, to)
+  //    }
+  // }
 
-    //带有InputChanges类型参数的action方法
-    @TaskAction
-    void executeIncremental(InputChanges inputChanges) {
-        println "execute: isIncremental = ${inputChanges.isIncremental()}"
-        inputChanges.getFileChanges(from).each {change ->
-            if(change.fileType != FileType.DIRECTORY){
-                println "changeType = ${change.changeType}, changeFile = ${change.file.name}"
-                if(change.changeType != ChangeType.REMOVED){
-                    copyFileToDir(change.file, to)
-                }
-            }
+  //带有InputChanges类型参数的action方法
+  @TaskAction
+  void executeIncremental(InputChanges inputChanges) {
+    println "execute: isIncremental = ${inputChanges.isIncremental()}"
+    inputChanges.getFileChanges(from).each {change ->
+      if(change.fileType != FileType.DIRECTORY){
+        println "changeType = ${change.changeType}, changeFile = ${change.file.name}"
+        if(change.changeType != ChangeType.REMOVED){
+          copyFileToDir(change.file, to)
         }
+      }
     }
+  }
 
-    private static void copyFileToDir(File src, Directory dir){
-        File dest = new File("${dir.getAsFile().path}/${src.name}")
-        if(!dest.exists()){
-            dest.createNewFile()
-        }
-        dest.withOutputStream {
-            it.write(new FileInputStream(src).getBytes())
-        }
+  private static void copyFileToDir(File src, Directory dir){
+    File dest = new File("${dir.getAsFile().path}/${src.name}")
+    if(!dest.exists()){
+      dest.createNewFile()
     }
+    dest.withOutputStream {
+      it.write(new FileInputStream(src).getBytes())
+    }
+  }
 }
 ```
 
@@ -865,7 +865,7 @@ Plugin可以理解为一系列Task的集合，通过实现**Plugin<T>**接口的
 
 ```groovy
 class MyPlugin implements Plugin<Project>{
-	@Override
+  @Override
   void apply(Project project){}
 }
 ```
@@ -878,33 +878,33 @@ package com.example.plugin
 import org.gradle.api.*
 
 class MyPlugin implements Plugin<Project>{
-  
-	@Override
-  void apply(Project project){
+
+    @Override
+    void apply(Project project){
       //通过project的ExtensionContainer的create方法创建一个名为outerExt的扩展，扩展对应的类为OuterExt
       OuterExt outerExt = project.extensions.create('outerExt', OuterExt.class)
-      
+
       //通过project的task方法创建一个名为showExt的Task
       project.task('showExt'){
-          doLast{
-              //使用OuterExt实例
-              println "outerExt = ${outerExt}"
-          }
+        doLast{
+          //使用OuterExt实例
+          println "outerExt = ${outerExt}"
+        }
       }
-  }
-  
-  /**
+    }
+
+    /**
    * 自定义插件的扩展对应的类
    */
-  static class OuterExt{
-      
+    static class OuterExt{
+
       String message
-      
+
       @Override
       String toString(){
-          return "[message = ${message}]"
+        return "[message = ${message}]"
       }
-  }
+    }
 }
 ```
 
@@ -914,9 +914,9 @@ class MyPlugin implements Plugin<Project>{
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
-  	//...
+  compileSdkVersion 29
+  buildToolsVersion "29.0.3"
+  //...
 }
 ```
 
@@ -928,7 +928,7 @@ android {
 apply plugin: com.example.plugin.MyPlugin
 
 outerExt {
-    message 'hello'
+  message 'hello'
 }
 
 //执行gradle showExt, 输出:
@@ -941,15 +941,15 @@ outerExt {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+  compileSdkVersion 29
+  buildToolsVersion "29.0.3"
 
-    defaultConfig {
-        applicationId "com.example.myapplication"
-        minSdkVersion 16
-        targetSdkVersion 29
-        //...
-    }
+  defaultConfig {
+    applicationId "com.example.myapplication"
+    minSdkVersion 16
+    targetSdkVersion 29
+    //...
+  }
   //...
 }
 ```
@@ -965,56 +965,56 @@ import javax.inject.Inject //新引入
 
 class MyPlugin implements Plugin<Project>{
 
-	@Override
-	void apply(Project project){
-        
-		OuterExt outerExt = project.extensions.create('outerExt', OuterExt.class)
+  @Override
+  void apply(Project project){
 
-		project.task('showExt'){
-			doLast{
-                //使用OuterExt实例和InnerExt实例
-                println "outerExt = ${outerExt}, innerExt = ${outerExt.innerExt}"
-			}
-		}
-	}
+    OuterExt outerExt = project.extensions.create('outerExt', OuterExt.class)
 
-    static abstract class OuterExt{
-
-        String message
-
-        //嵌套类
-        InnerExt innerExt
-
-        //定义一个使用@Inject注解的、抽象的获取ObjectFactory实例的get方法
-        @Inject
-        abstract ObjectFactory getObjectFactory()
-
-        OuterExt(){
-            //通过ObjectFactory的newInstance方法创建嵌套类innerExt实例
-            this.innerExt = getObjectFactory().newInstance(InnerExt.class)
-        }
-
-        //定义一个方法，方法名为可以随意起，方法的参数类型为Action，泛型类型为嵌套类InnerExt
-        void inner(Action<InnerExt> action){
-            //调用Action的execute方法，传入InnerExt实例
-            action.execute(innerExt)
-        }
-
-        @Override
-        String toString(){
-            return "[message = ${message}]"
-        }
-
-        static class InnerExt{
-
-            String message
-
-            @Override
-            String toString(){
-                return "[message = $message]"
-            }
-        }
+    project.task('showExt'){
+      doLast{
+        //使用OuterExt实例和InnerExt实例
+        println "outerExt = ${outerExt}, innerExt = ${outerExt.innerExt}"
+      }
     }
+  }
+
+  static abstract class OuterExt{
+
+    String message
+
+    //嵌套类
+    InnerExt innerExt
+
+    //定义一个使用@Inject注解的、抽象的获取ObjectFactory实例的get方法
+    @Inject
+    abstract ObjectFactory getObjectFactory()
+
+    OuterExt(){
+      //通过ObjectFactory的newInstance方法创建嵌套类innerExt实例
+      this.innerExt = getObjectFactory().newInstance(InnerExt.class)
+    }
+
+    //定义一个方法，方法名为可以随意起，方法的参数类型为Action，泛型类型为嵌套类InnerExt
+    void inner(Action<InnerExt> action){
+      //调用Action的execute方法，传入InnerExt实例
+      action.execute(innerExt)
+    }
+
+    @Override
+    String toString(){
+      return "[message = ${message}]"
+    }
+
+    static class InnerExt{
+
+      String message
+
+      @Override
+      String toString(){
+        return "[message = $message]"
+      }
+    }
+  }
 }
 ```
 
@@ -1074,70 +1074,70 @@ import javax.inject.Inject
 
 class MyPlugin implements Plugin<Project>{
 
-	@Override
-	void apply(Project project){
-        
-        //通过project的ObjectFactory的domainObjectContainer方法创建OuterExt的Container实例
-        NamedDomainObjectContainer<OuterExt> outerExtContainer = project.objects.domainObjectContainer(OuterExt.class)
-        
-        //然后再通过project的ExtensionContainer的add方法添加名称和OuterExt的Container实例的映射
-		project.extensions.add('outerExts', outerExtContainer)
-        
-        //通过project的task方法创建一个名为showExts的Task
-        project.task('showExts'){
-            doLast{
-                //遍历OuterExt的Container实例，逐个输出配置的值
-                outerExtContainer.each{ext ->
-                    println "${ext.name}: outerExt = ${ext}, innerExt = ${ext.innerExt}"
-                }
-            }
+  @Override
+  void apply(Project project){
+
+    //通过project的ObjectFactory的domainObjectContainer方法创建OuterExt的Container实例
+    NamedDomainObjectContainer<OuterExt> outerExtContainer = project.objects.domainObjectContainer(OuterExt.class)
+
+    //然后再通过project的ExtensionContainer的add方法添加名称和OuterExt的Container实例的映射
+    project.extensions.add('outerExts', outerExtContainer)
+
+    //通过project的task方法创建一个名为showExts的Task
+    project.task('showExts'){
+      doLast{
+        //遍历OuterExt的Container实例，逐个输出配置的值
+        outerExtContainer.each{ext ->
+          println "${ext.name}: outerExt = ${ext}, innerExt = ${ext.innerExt}"
         }
-	}
-
-    static abstract class OuterExt{
-
-        String message
-
-        InnerExt innerExt
-
-        @Inject
-        abstract ObjectFactory getObjectFactory()
-
-        //NamedDomainObjectContainer要求它的元素必须要有一个只可读的、名为name的常量字符串
-        private final String name
-
-        //只可读的name表示name要私有的，并且提供一个get方法，name的值在构造函数中注入
-        String getName(){
-            return this.name
-        }
-
-        //通过@Inject注解带有String类型参数的构造
-        @Inject
-        OuterExt(String name){
-            //在构造中为name赋值
-            this.name = name
-            this.innerExt = getObjectFactory().newInstance(InnerExt.class)
-        }
-
-        void inner(Action<InnerExt> action){
-            action.execute(innerExt)
-        }
-
-        @Override
-        String toString(){
-            return "[message = ${message}]"
-        }
-
-        static class InnerExt{
-
-            String message
-
-            @Override
-            String toString(){
-                return "[message = ${message}]"
-            }
-        }
+      }
     }
+  }
+
+  static abstract class OuterExt{
+
+    String message
+
+    InnerExt innerExt
+
+    @Inject
+    abstract ObjectFactory getObjectFactory()
+
+    //NamedDomainObjectContainer要求它的元素必须要有一个只可读的、名为name的常量字符串
+    private final String name
+
+    //只可读的name表示name要私有的，并且提供一个get方法，name的值在构造函数中注入
+    String getName(){
+      return this.name
+    }
+
+    //通过@Inject注解带有String类型参数的构造
+    @Inject
+    OuterExt(String name){
+      //在构造中为name赋值
+      this.name = name
+      this.innerExt = getObjectFactory().newInstance(InnerExt.class)
+    }
+
+    void inner(Action<InnerExt> action){
+      action.execute(innerExt)
+    }
+
+    @Override
+    String toString(){
+      return "[message = ${message}]"
+    }
+
+    static class InnerExt{
+
+      String message
+
+      @Override
+      String toString(){
+        return "[message = ${message}]"
+      }
+    }
+  }
 }
 ```
 
@@ -1149,24 +1149,24 @@ class MyPlugin implements Plugin<Project>{
 apply plugin: com.example.plugin.MyPlugin
 
 outerExts{
-    
-    //定义名为ext1的命名空间
-	ext1{
-		message 'hello'
 
-		inner{
-			message 'word'
-		}
-	}
+  //定义名为ext1的命名空间
+  ext1{
+    message 'hello'
 
-    //定义名为ext2的命名空间
-	ext2{
-		message 'hello'
+    inner{
+      message 'word'
+    }
+  }
 
-		inner{
-			message 'word'
-		}
-	}
+  //定义名为ext2的命名空间
+  ext2{
+    message 'hello'
+
+    inner{
+      message 'word'
+    }
+  }
 }
 
 //执行gradle showExts, 输出:
@@ -1185,20 +1185,20 @@ outerExts可以想象为一个容器，然后容器的元素就是OuterExt，放
 上面3步就是定义命名对象容器作为扩展时需要在自定义Plugin中做的事，1、2步骤是如何定义一个命名对象容器，2步骤是把命名对象容器添加为一个扩展，但是往往命名对象容器只是作为某个扩展中的一个嵌套DSL，而不是直接作为扩展，这时我们只需要结合前面讲过的定义扩展步骤、定义嵌套DSL步骤和这里的1、2步骤就行，这时我们就可以实现下面的DSL写法：
 
 ```groovy
-//扩展
+ //扩展
 outerExt{
-    message 'hello'
+  message 'hello'
 
-    //通过命名对象容器配置
-    exts{
-        ext1{
-            message 'word'
-        }
-
-        ext2{
-            message 'word'
-        }
+  //通过命名对象容器配置
+  exts{
+    ext1{
+      message 'word'
     }
+
+    ext2{
+      message 'word'
+    }
+  }
 }
 ```
 
@@ -1215,13 +1215,13 @@ outerExt{
 ```groovy
 //build.gradle
 buildscript {
-	repositories {
-		//定义插件所属仓库
-	}
+  repositories {
+    //定义插件所属仓库
+  }
 
-	dependencies {
-		classpath '插件类路径'
-	}
+  dependencies {
+    classpath '插件类路径'
+  }
 }
 
 apply plugin: '插件id'
@@ -1232,14 +1232,14 @@ apply plugin: '插件id'
 ```groovy
 //setting.gradle
 pluginManagement{
-    repositories{
-        //定义插件所属仓库
-    }
+  repositories{
+    //定义插件所属仓库
+  }
 }
 
 //build.gradle
 plugins{
-    id '插件id' version '插件版本'
+  id '插件id' version '插件版本'
 }
 ```
 
@@ -1253,8 +1253,8 @@ plugins{
 //gradle_plugin/build.gradle
 
 dependencies {
-    //这样gradle_plugin/src/main/groovy/中就可以使用Gradle和Groovy语法
-    implementation gradleApi()
+  //这样gradle_plugin/src/main/groovy/中就可以使用Gradle和Groovy语法
+  implementation gradleApi()
 }
 ```
 
@@ -1277,38 +1277,38 @@ implementation-class=com.example.plugin.MyPlugin
 //gradle_plugin/build.gradle
 
 plugins{
-    //引入maven-publish, maven-publish属于Gradle核心插件，核心插件可以省略version
-    id 'maven-publish'
+  //引入maven-publish, maven-publish属于Gradle核心插件，核心插件可以省略version
+  id 'maven-publish'
 }
 
 //publishing是maven-publish提供的扩展，通过repositories定义发布的maven仓库位置，可以指定本地目录地址或远端repo地址
 publishing.repositories {
-    //这里我指定了项目根目录下的repo目录
-    maven {
-        url '../repo'
-    }
-    
-    //可以指定远端repo地址
-    //maven{
-    //    url 'https://xxx'
-    //    credentials {
-    //        username 'xxx'
-    //        password xxx
-    //   }
-    //}
+  //这里我指定了项目根目录下的repo目录
+  maven {
+    url '../repo'
+  }
+
+  //可以指定远端repo地址
+  //maven{
+  //    url 'https://xxx'
+  //    credentials {
+  //        username 'xxx'
+  //        password xxx
+  //   }
+  //}
 }
 
 //通过publications定义发布的组件
 publishing.publications  {
-    //类似于命令容器对象，添加名为myplugin的的发布
-    myplugin(MavenPublication){
-        //配置自定义插件的groupId、artifactId和version
-        groupId = 'com.example.customplugin'
-        artifactId = 'myplugin'
-        version = '1.0'
-        //通过from引入打包jar的components
-        from components.java
-    }
+  //类似于命令容器对象，添加名为myplugin的的发布
+  myplugin(MavenPublication){
+    //配置自定义插件的groupId、artifactId和version
+    groupId = 'com.example.customplugin'
+    artifactId = 'myplugin'
+    version = '1.0'
+    //通过from引入打包jar的components
+    from components.java
+  }
 }
 ```
 
@@ -1328,23 +1328,23 @@ publishing.publications  {
 //subproject_4/build.gradle
 
 buildscript {
-    repositories { 
-        //添加maven本地仓库
-        mavenLocal()
-        
-        //添加发布时指定的maven远程仓库
-        maven {
-            url uri('../repo')
-        }
-        
-        //可以添加maven中央仓库
-        //mavenCentral()
+  repositories { 
+    //添加maven本地仓库
+    mavenLocal()
+
+    //添加发布时指定的maven远程仓库
+    maven {
+      url uri('../repo')
     }
 
-    dependencies {
-        //classpath填写插件的GAV坐标，gradle编译时会扫描该classpath下的所有jar文件并引入
-        classpath 'com.example.customplugin:myplugin:1.0'
-    }
+    //可以添加maven中央仓库
+    //mavenCentral()
+  }
+
+  dependencies {
+    //classpath填写插件的GAV坐标，gradle编译时会扫描该classpath下的所有jar文件并引入
+    classpath 'com.example.customplugin:myplugin:1.0'
+  }
 }
 ```
 
@@ -1358,11 +1358,11 @@ apply plugin: 'myplugin'
 
 //使用DSL配置插件的属性
 outerExt{
-    message 'hello'
+  message 'hello'
 
-    inner{
-        message 'word'
-    }
+  inner{
+    message 'word'
+  }
 }
 
 //执行gradle showExt，输出：
@@ -1381,17 +1381,17 @@ outerExt{
 //gradle_plugin/build.gradle
 
 plugins{
-    //用来生成插件元数据(META-INF)和插件标记工件(Plugin Marker Artifact)
-    id 'java-gradle-plugin'
-    //用来生成发布插件任务
-    id 'maven-publish'
+  //用来生成插件元数据(META-INF)和插件标记工件(Plugin Marker Artifact)
+  id 'java-gradle-plugin'
+  //用来生成发布插件任务
+  id 'maven-publish'
 }
 
 //通过maven-publish提供的publishing.repositories{}定义发布的maven仓库位置
 publishing.repositories{
-    maven {
-        url '../repo'
-    }
+  maven {
+    url '../repo'
+  }
 }
 
 //插件发布的groupId
@@ -1404,25 +1404,25 @@ version = '2.0'
 
 //通过java-gradle-plugin提供的gradlePlugin{}配置插件
 gradlePlugin {
-    plugins {
-        //配置myplugin插件
-        myplugin{
-            //插件id
-            id = 'com.example.customplugin.myplugin'
-            //插件实现类
-            implementationClass = 'com.example.plugin.MyPlugin'
-        }
-
-        //myplugin2{
-        //    id = 'xxx'
-        //    implementationClass = 'xxx'
-        //}
-        //以此类推可以配置多个插件
+  plugins {
+    //配置myplugin插件
+    myplugin{
+      //插件id
+      id = 'com.example.customplugin.myplugin'
+      //插件实现类
+      implementationClass = 'com.example.plugin.MyPlugin'
     }
+
+    //myplugin2{
+    //    id = 'xxx'
+    //    implementationClass = 'xxx'
+    //}
+    //以此类推可以配置多个插件
+  }
 }
 ```
 
-通过在gradlePlugin{}中的配置，执行发布任务时java-gradle-plugin会自动为我们生成插件的META-INF信息并打包进插件的jar中，同时java-gradle-plugin会自动为我们在dependencies引入gradleApi()，除此之外，执行发布任务时java-gradle-plugin还为插件生成了一个**插件标记工件 **- [Plugin Marker Artifact](https://docs.gradle.org/current/userguide/plugins.html#sec:plugin_markers)，它的作用就是用来定位插件的位置，我们在**plugins DSL**中通过插件id来引用插件时并不需要定义插件的classpath即GAV坐标就可以直接使用插件，那么Gradle是如何根据插件id定位到插件的呢？答案就是插件标记工件，它跟插件发布时一起发布，它里面只有一个pom文件，pom文件里面依赖了插件真正的GAV坐标，这样通过插件id来引用插件时就会先下载这个pom文件，从而解析到插件的GAV坐标，再根据插件的GAV坐标把插件的jar文件引入，那么Gradle又是如何定位到插件标记工件的呢？答案就是使用插件id按一定的规则生成插件标记工件的GAV坐标，插件标记工件的GAV生成规则为**pluginId:pluginId.gradle.plugin:pluginVersion**，如这里myplugin的插件标记工件生成的GAV为com.example.customplugin.myplugin:com.example.customplugin.myplugin.gradle.plugin:2.0，发布插件时会同时把插件标记工件发布到生成的GAV处，然后通过插件id引用时又根据插件id拼接出相同的GAV从而定位到插件标记工件，这么说有点绕，让我们执行发布任务看看生成的产物就懂了。
+通过在gradlePlugin{}中的配置，执行发布任务时java-gradle-plugin会自动为我们生成插件的META-INF信息并打包进插件的jar中，同时java-gradle-plugin会自动为我们在dependencies引入gradleApi()，除此之外，执行发布任务时java-gradle-plugin还为插件生成了一个**插件标记工件** - [Plugin Marker Artifact](https://docs.gradle.org/current/userguide/plugins.html#sec:plugin_markers)，它的作用就是用来定位插件的位置，我们在**plugins DSL**中通过插件id来引用插件时并不需要定义插件的classpath即GAV坐标就可以直接使用插件，那么Gradle是如何根据插件id定位到插件的呢？答案就是插件标记工件，它跟插件发布时一起发布，它里面只有一个pom文件，pom文件里面依赖了插件真正的GAV坐标，这样通过插件id来引用插件时就会先下载这个pom文件，从而解析到插件的GAV坐标，再根据插件的GAV坐标把插件的jar文件引入，那么Gradle又是如何定位到插件标记工件的呢？答案就是使用插件id按一定的规则生成插件标记工件的GAV坐标，插件标记工件的GAV生成规则为**pluginId:pluginId.gradle.plugin:pluginVersion**，如这里myplugin的插件标记工件生成的GAV为com.example.customplugin.myplugin:com.example.customplugin.myplugin.gradle.plugin:2.0，发布插件时会同时把插件标记工件发布到生成的GAV处，然后通过插件id引用时又根据插件id拼接出相同的GAV从而定位到插件标记工件，这么说有点绕，让我们执行发布任务看看生成的产物就懂了。
 
 我们在Gradle项目所处目录的命令行输入`gradle publishPluginMavenPublicationToMavenRepository publishMypluginPluginMarkerMavenPublicationToMavenRepository`来执行插件发布任务和插件标记工件发布任务，这两个任务都是maven-publish根据java-gradle-plugin定义的发布过程为我们生成好的，除此之外还生成了发布到maven本地仓库的任务，这里只以发布到maven远程仓库任务做示例，两个任务执行成功后，在GradleDemo/repo/中会看到发布的插件和插件标识工件，如下：
 
@@ -1443,12 +1443,12 @@ gradlePlugin {
 ```groovy
 //一定要放在settings.gradle中的第一行
 pluginManagement{
-    repositories{
-        //添加发布时指定的maven远程仓库
-        maven {
-            url uri('repo')
-        }
+  repositories{
+    //添加发布时指定的maven远程仓库
+    maven {
+      url uri('repo')
     }
+  }
 }
 ```
 
@@ -1456,17 +1456,17 @@ plugins DSL通过**pluginManagement{}**管理插件仓库还有插件，而且pl
 
 ```groovy
 //通过插件id引用插件
- plugins{
- 	id 'com.example.customplugin.myplugin' version '2.0'
- }
+plugins{
+  id 'com.example.customplugin.myplugin' version '2.0'
+}
 
 //使用DSL配置插件的属性
 outerExt{
-	message 'hello'
+  message 'hello'
 
-	inner{
-		message 'word'
-	}
+  inner{
+    message 'word'
+  }
 }
 
 //执行gradle showExt，输出：
