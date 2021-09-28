@@ -4,9 +4,8 @@ tags:
   - gradle
   - asm
   - aop
-Categories: grade
 date: 2020-09-29 16:35:11
-categories:
+categories: gradle
 ---
 
 
