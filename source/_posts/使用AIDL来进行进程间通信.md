@@ -32,7 +32,7 @@ AIDL它是Android众多进程间通信方式中的一种，底层是Binder机制
 
 Bundle实现了Parcelable，所以在Android中我们可以通过Intent在不同进程间传递Bundle数据。
 
-但是在Intent 传输数据的过程中，用到了 Binder，Intent中的数据，即Bundle数据，会作为 Parcel 存储在Binder 的事务缓冲区(Binder transaction buffer)中的对象进行传输，而这个 Binder 事务缓冲区具有一个有限的固定大小，约为1MB，而且这个1Mb并不是当前进程所独享，而是所有进程共享的，所以由于1Mb的限制，Bundle不能存放大量的数据，不然会报TransactionTooLargeException，并且Bundle中存放的数据也要求能够被序列化，所以Bundle只适用于数据量小和简单的进程间通信。
+但是在Intent 传输数据的过程中，用到了 Binder，Intent中的数据，即Bundle数据，会作为 Parcel 存储在Binder 的事务缓冲区(Binder transaction buffer)中的对象进行传输，而这个 Binder 事务缓冲区具有一个有限的固定大小，约为1MB，而且这个1Mb并不是当前操作独享的，而是前进程所共享的，所以由于1Mb的限制，Bundle不能存放大量的数据，不然会报TransactionTooLargeException，并且Bundle中存放的数据也要求能够被序列化，所以Bundle只适用于数据量小和简单的进程间通信，每次通过Intent传输数据时最好不要超过200K。
 
 **2、文件共享**
 
