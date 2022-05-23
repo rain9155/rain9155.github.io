@@ -507,7 +507,7 @@ public data class CoroutineName(
 }
 ```
 
-CoroutineName就是协程的名字，它的结构很简单, 我们平时开发一般是不会去指定一个CoroutineName的，因为CoroutineName只在kotlin的调试模式下才会被用的, 它在debug模式下被用于设置协程运行线程的名字：
+CoroutineName就是协程的名字，它的结构很简单, 我们平时开发一般是不会去指定一个CoroutineName的，因为CoroutineName只在kotlin的debug模式下才会被用的, 它在debug模式下被用于设置协程运行线程的名字：
 
 ```kotlin
 internal data class CoroutineId(
@@ -533,6 +533,8 @@ internal data class CoroutineId(
   //...
 }
 ```
+
+我们可以通过设置key为**kotlinx.coroutines.debug**的SystemProp的值为**on**打开协程的debug模式，这样我们指定的CoroutineName就会出现运行协程的线程的名字上。
 
 ### 4、CoroutineExceptionHandler
 
@@ -688,6 +690,12 @@ parent is still running
 可以看到当抛出CancellationException时，我们可以try catch住它，同时当我们再次抛出它时，协程的CoroutineExceptionHandler并没有处理它，同时父协程不受影响，继续运行。
 
 上面就是CoroutineExceptionHandler处理协程异常时的特点。
+
+## 自定义CoroutineContext元素
+
+
+
+
 
 ## CoroutineContext的结构
 
