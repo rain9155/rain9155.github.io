@@ -11,9 +11,9 @@ date: 2021-01-21 10:52:18
 
 [kotlin coroutines guide](https://kotlinlang.org/docs/reference/coroutines/coroutines-guide.html)
 
-其实入门协程我还是非常推荐通过官方文档来进行学习，因为官方文档的例子是很全面的，跟着它的例子敲一遍代码，你也基本掌握了协程的使用。
+其实入门协程我还是非常推荐通过官方文档来进行学习，因为官方文档的例子是很全面的，跟着它的例子敲一遍代码，你也基本掌握了协程的使用，kotlin协程的源码被放在了两个库中，一部分是在kotlin标准库[kotlin-stdlib](https://github.com/JetBrains/kotlin/tree/1.4.0/libraries/stdlib/src/kotlin/coroutines)中，一部分是在kotlin协程实现库[kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines/tree/native-mt-1.4.20/kotlinx-coroutines-core)中，其中kotlinx-coroutines是基于kotlin-stdlib的，kotlin-stdlib库提供了实现协程所需的基本原语，而本文讲解的CoroutineContext的主要实现就是在kotlin-stdlib中。
 
-> [kotlinx.coroutines地址](https://github.com/Kotlin/kotlinx.coroutines)
+> 本文涉及到的源码都是基于kotlin1.4版本
 
 ## Coroutine的简单理解
 
@@ -42,7 +42,7 @@ fun main(){
 
 上面就是启动一个协程的简单步骤，需要用到CoroutineScope、CoroutineContext、CoroutineStart。
 
-> 通过自定义CoroutineScope，可以在应用程序的某一个层次开启或者控制协程的生命周期，例如Android，在ViewModel和Lifecycle类的生命周期里提供了CoroutineScope，分别是ViewModelScope和LifecycleScope.
+> 通过自定义CoroutineScope，可以在应用程序的某一个层次开启或者控制协程的生命周期，例如Android，在ViewModel和Lifecycle类的生命周期里提供了CoroutineScope，分别是[ViewModelScope](https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:lifecycle/lifecycle-viewmodel-ktx/src/main/java/androidx/lifecycle/ViewModel.kt)和[LifecycleScope](https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:lifecycle/lifecycle-runtime-ktx/src/main/java/androidx/lifecycle/LifecycleOwner.kt;l=29?q=lifecycleScope&ss=androidx%2Fplatform%2Fframeworks%2Fsupportdroidx%2Fplatform%2Fframeworks%2Fsupport)，通过这两个CoroutineScope启动的所有协程可以在对应类的生命周期结束时自动被取消从而避免内存泄漏。
 
 ## CoroutineContext的元素
 
@@ -89,7 +89,7 @@ public interface Job : CoroutineContext.Element {
 
 ```
 
-通过CoroutineScope的扩展方法launch启动一个协程后，它会返回一个Job对象，它是协程的唯一标识，这个Job对象包含了这个协程任务的一系列状态，如下：
+通过CoroutineScope的扩展方法launch启动一个协程后，它会新建返回一个Job对象，它是协程的唯一标识，这个Job对象包含了这个协程任务的一系列状态，如下：
 
 {% asset_img coroutine2.png coroutine %}
 
@@ -388,6 +388,7 @@ internal class DispatchedContinuation<in T>(
         } else {//Unconfined走这里的逻辑
           	//调用executeUnconfined方法
             executeUnconfined(state, MODE_ATOMIC) {
+                //withCoroutineContext方法的作用是查找context中的ThreadContextElement元素，然后调用ThreadContextElement的相应方法更新当前线程的上下文
                 withCoroutineContext(this.context, countOrElement) {
                   	//调用Continuation的resumeWith方法
                     continuation.resumeWith(result)
@@ -689,13 +690,7 @@ parent is still running
 
 可以看到当抛出CancellationException时，我们可以try catch住它，同时当我们再次抛出它时，协程的CoroutineExceptionHandler并没有处理它，同时父协程不受影响，继续运行。
 
-上面就是CoroutineExceptionHandler处理协程异常时的特点。
-
-## 自定义CoroutineContext元素
-
-
-
-
+以上就是我们平时开发常用到的CoroutineContext元素，除了这四个元素，还有一些在特定场景下会使用到的元素，例如NonCancellable、ThreadContextElement等，其中NonCancellable可以把协程运行在不可取消的上下文中，ThreadContextElement可以让协程恢复/挂起前修改当前线程的上下文信息，例如修改线程的名字为当前运行协程的名字，前面讲的CoroutineName通过CoroutineId这个ThreadContextElement就是这么干的，除了这些内置的元素，我们还可以自定义CoroutineContext元素以满足我们的开发，后面会讲到如何自定义CoroutineContext的元素。
 
 ## CoroutineContext的结构
 
@@ -887,16 +882,54 @@ plus方法大部分情况最终下返回一个CombinedContext，即我们把两�
 
 现在我们再看回简化前的plus方法，它里面有个对ContinuationInterceptor的处理，目的是让ContinuationInterceptor在每次相加后都能变成CoroutineContext中的**最后**一个元素， ContinuationInterceptor它也是继承自Element，通常叫做协程上下文拦截器，它的主要作用是在协程执行前拦截它，从而在协程执行前做出一些其他的操作，前面我们讲到CoroutineDispatcher它本身也继承自ContinuationInterceptor，ContinuationInterceptor有一个interceptContinuation方法用于返回拦截协程的行为，而这个行为就是前面我们所讲到Dispatchers.Unconfined时的**DispatchedContinuation**，DispatchedContinuation在恢复协程前根据协程的CoroutineDispatcher类型做出不同的协程分派行为，通过把ContinuationInterceptor放在最后面，协程在查找上下文的element时，总能最快找到拦截器，避免了递归查找，从而让拦截行为前置执行。
 
+## 自定义CoroutineContext元素
+
+通过前面对CoroutineContext结构的介绍，我们知道CoroutineContext中的Element和Key是一一对应的，我们可以自定义Element和对应的Key把它们放进协程的CoroutineContext中，然后在适当的时候从CoroutineContext中根据Key取出我们自定义的Element并执行相应的逻辑，你可以把协程的CoroutineContext简单地类比为线程的[ThreadLocal](https://blog.csdn.net/Rain_9155/article/details/103447399)，CoroutineContext保存的是跟协程运行相关的上下文信息，而ThreadLocal保存的是跟线程相关的上下文信息，与线程的ThreadLocal不同的是协程的CoroutineContext的是**不可变的**而线程的ThreadLocal是**可变的**，所以我们每次对CoroutineContext的修改返回的都是一个新的CoroutineContext，自定义的Element推荐继承自**AbstractCoroutineContextElement**，例如应用中有些方法需要登陆后才能调用，所以我们可以自定义一个名为的User的Element：
+
+```kotlin
+class User(val name: String) : AbstractCoroutineContextElement(User) {
+
+    companion object Key : CoroutineContext.Key<User>
+}
+```
+
+然后在启动协程时根据是否登陆把用户信息保存到CoroutineContext中：
+
+```kotlin
+fun mian() {
+    //...
+    val context = if(isLogin) {
+        User("rain9155") + Dispatchers.Main
+    }else {
+        Dispatchers.Main
+    }
+    GlobalScope.launch(context) {
+        //...调用其他方法
+    }
+}
+```
+
+然后在执行每个需要登陆态的方法前都检查一下当前协程的CoroutineContext中是否有登陆后的用户信息：
+
+```kotlin
+suspend fun performAction() {
+    val name = coroutineContext[User]?.name ?: throw IllegalAccessException("unauthorized")
+    //...根据登陆后的用户信息执行其他操作
+}
+```
+
+**coroutineContext**是kotlin.coroutines包中的一个字段，可以获取当前运行协程的上下文，在每个suspend方法中都可以访问这个字段，同时由于User的Key是一个伴生对象，所以我们可以直接通过User名使用Key实例。
+
 ## 结语
 
-本文主要介绍了CoroutineContext的元素组成和结构，理解CoroutineContext对于理解协程使用有很大的帮助，因为协程的启动时就离不开CoroutineContext，同时如果你以后想要更深入的学习协程，例如协程的创建过程，Continuation概念、suspend关键字等，本篇文章也能给你一个抛砖引玉的效果。
+本文主要介绍了kotlin协程的CoroutineContext的元素组成和结构，CoroutineContext它是一个K-V数据结构，保存了跟协程相关联的运行上下文例如协程的线程调度策略、异常处理逻辑、日志记录、运行标识、名字等，理解CoroutineContext对于理解协程使用有很大的帮助，因为协程的启动时就离不开CoroutineContext，同时如果你以后想要更深入的学习协程，例如协程的调度过程、Continuation概念、suspend关键字等，本篇文章也能给你一个抛砖引玉的效果。
 
 以上就是本文的所有内容，希望大家有所收获！
 
 参考文章：
 
-[Kotlin协程Coroutines入门到实战](https://blog.csdn.net/NJP_NJP/article/details/103513537)
-
 [开始使用Kotlin协程](https://www.jianshu.com/p/9f720b9ccdea)
 
-[协程中的取消和异常](https://mp.weixin.qq.com/s/wzSi7UrFK6iQV2MA2OCwew)
+[协程中的核心概念](https://medium.com/androiddevelopers/coroutines-first-things-first-e6187bf3bb21)
+
+[协程中的异常处理](https://medium.com/androiddevelopers/exceptions-in-coroutines-ce8da1ec060c)
