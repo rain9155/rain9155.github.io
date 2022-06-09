@@ -717,7 +717,7 @@ createCoroutineUnintercepted、startCoroutineUninterceptedOrReturn、suspendCoro
 
 从前面可以看到，当我们需要从挂起点恢复被挂起的Continuation或者首次执行这个Continuation时，就要调用[Continuation](https://github.com/JetBrains/kotlin/blob/1.4.0/libraries/stdlib/src/kotlin/coroutines/Continuation.kt)接口的resumeWith方法，resumeWith方法方法根据Continuation的子类不同有不同的实现，在kotlin协程中，Continuation主要有**BaseContinuationImpl**、**DispatchedContinuation**、**SafeContinuation**、**CancellableContinuation**、**AbstractCoroutine**这几种实现，下面主要讲一下DispatchedContinuation、BaseContinuationImpl和AbstractCoroutine的resumeWith方法实现，它们之间的关系如下：
 
-{% asset_img coroutine1.png coroutine %}
+{% asset_img coroutines1.png coroutine %}
 
 **DispatchedContinuation**
 
