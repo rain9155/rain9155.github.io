@@ -509,15 +509,15 @@ class SuspendLambdaStateMachine(completion: Continuation<Unit>) : SuspendLambda(
 }
 ```
 
-suspend lambda方法的状态机会比suspend命名方法多实现一个**create**方法，这个create方法也来自于父类BaseContinuationImpl中，这个create方法的目的就是创建一个suspend lambda方法的状态机实例并传入它的完成延续。
+suspend lambda方法的状态机会比suspend命名方法多实现一个**create**方法，这个create方法也来自于父类BaseContinuationImpl中，这个create方法的目的就是创建一个suspend lambda方法的状态机实例并传入它的完成延续，这个方法最终会被kotlin intrinsice方法的**createCoroutineUnintercepted**方法调用。
 
 通过前面介绍的suspend命名方法和suspend lambda方法实现可以看出，kotlin编译器为每个suspend方法做了以下几件事：
 
-1、为含有挂起点、且挂起点不是尾调用的suspend方法创建一个私有的状态机；
+- 1、为含有挂起点、且挂起点不是尾调用的suspend方法创建一个私有的状态机；
 
-2、状态机中通过变量保存了suspend方法将要执行的状态和上一个状态的结果，每一次执行状态前，为了防止挂起函数运行失败都会进行状态检查，并且调用挂起函数前，状态机的状态都会提前置为下一个状态；
+- 2、状态机中通过变量保存了suspend方法将要执行的状态和上一个状态的结果，每一次执行状态前，为了防止挂起函数运行失败都会进行状态检查，并且调用挂起函数前，状态机的状态都会提前置为下一个状态；
 
-3、调用其他挂起函数时，都会把当前状态机实例作为Continuation传递过去，而被调用的挂起函数满足1条件时也会被创建一个状态机，当被调用挂起函数的状态机运行结束时，可以利用传递过去的Continuation恢复当前状态机执行。
+- 3、调用其他挂起函数时，都会把当前状态机实例作为Continuation传递过去，而被调用的挂起函数满足1条件时也会被创建一个状态机，当被调用挂起函数的状态机运行结束时，可以利用传递过去的Continuation恢复当前状态机执行。
 
 从第1点可以看出，kotlin编译器并不总是为suspend方法创建状态机，例如fetchData方法，虽然它是suspend方法，但是它里面没有调用其他的suspend方法，并不需要处理状态，所以kotlin编译器不会为它创建状态机，还有一种情况kotlin编译器也不会创建状态机，就是如果suspend方法中只有一个suspend方法调用并且这个suspend方法调用是尾调用，那么kotlin编译器不会为它创建状态机，只会简单地把suspend方法的Continuation实例继续传递给尾调用的suspend方法，因为在尾调用中，调用方不需要保存状态，所以总结起来就是kotlin编译器只会为**含有非尾部suspend方法调用**的suspend方法创建状态机，这是kotlin编译器的一个优化，避免创建多余的状态机实例。
 
@@ -527,7 +527,7 @@ suspend lambda方法的状态机会比suspend命名方法多实现一个**create
 
 ## intrinsics方法
 
-kotlin intrinsics方法是用来实现协程的基本原语，前面已经讲过协程的实现原理是Continuation，Continuation的最主要的好处就是可以暴露给用户用于控制程序的执行，而kotlin intrinsics作用就是可以让我们调用它提供的基本方法获取Continuation，kotlin intrinsics在kotlin-stdlib和kotlinx-coroutines都有相应的intrinsics包，而kotlinx-coroutines的intrinsics包是基于kotlin-stdlib的intrinsics包的安全实现，增加了一些try catch、启动时可取消、拦截的能力，kotlin-stdlib的intrinsics包是不推荐给用户使用的，因为使用它必须要注意一些问题，所以kotlin在IDE中隐藏了kotlin-stdlib的intrinsics包的智能提示，我们无法自动导入这个包只能手动导入，并且里面的方法在引用时也没有提示，只能手动编写，这里我主要讲kotlin-stdlib的intrinsics包的方法，因为它才是最基本的实现。
+kotlin intrinsics方法是用来实现协程的基本原语，前面已经讲过协程的实现原理是Continuation，Continuation的最主要的好处就是可以暴露给用户用于控制程序的执行，而kotlin intrinsics作用就是可以让我们调用它提供的基本方法获取Continuation，kotlin intrinsics在[kotlin-stdlib](https://github.com/JetBrains/kotlin/blob/1.4.0/libraries/stdlib/jvm/src/kotlin/coroutines/intrinsics/IntrinsicsJvm.kt)和[kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines/tree/native-mt-1.4.20/kotlinx-coroutines-core/common/src/intrinsics)都有相应的intrinsics包，而kotlinx-coroutines的intrinsics包是基于kotlin-stdlib的intrinsics包的安全实现，增加了一些try catch、启动时可取消、拦截的能力，kotlin-stdlib的intrinsics包是不推荐给用户使用的，因为使用它必须要注意一些问题，所以kotlin在IDE中隐藏了kotlin-stdlib的intrinsics包的智能提示，我们无法自动导入这个包只能手动导入，并且里面的方法在引用时也没有提示，只能手动编写，这里我主要讲kotlin-stdlib的intrinsics包的方法，因为它才是最基本的实现，如果平时开发使用，还是推荐使用kotlinx-coroutines的intrinsics包。
 
 首先我们要手动导入kotlin-stdlib的intrinsics包：
 
@@ -553,13 +553,15 @@ CoroutineScope.launch(context, start, block)
 -> createCoroutineUnintercepted(receiver, completion).intercepted().resumeCancellable(Result.success(Unit))
 ```
 
-可以看到调用了createCoroutineUnintercepted方法后会马上调用**intercepted**方法，intercepted方法是Continuation的扩展方法，它也属于intrinsics方法，方法签名如下：
+而前面讲过suspend lambda方法会被CPS成一个状态机实现，这个状态机继承自BaseContinuationImpl并且实现了**create**方法，而createCoroutineUnintercepted方法会调用这个create方法创建状态机实例作为协程的初始Continuation。
+
+从上面launch的调用链可以看到调用了createCoroutineUnintercepted方法后会马上调用**intercepted**方法，intercepted方法是Continuation的扩展方法，它也属于intrinsics方法，方法签名如下：
 
 ```kotlin
 fun Continuation<T>.intercepted(): Continuation<T>
 ```
 
-这个方法的作用是在Continuation的上下文CoroutineContext中查找拦截器ContinuationInterceptor，并返回拦截器对Continuation的拦截延续，它包装了原始的Continuation，在Continuation恢复前做出一些其他操作，目前在协程实现中intercepted方法返回的是一个DispatchedContinuation，它的作用是在Continuation恢复前把它分发到对应上下文的Dispatcher中恢复，这样原始的Continuation就会被切换到对应的Dispatcher中执行，由于拦截器在协程的执行过程会经常用到，所以kotlin就建议在调用createCoroutineUnintercepted方法创建了初始Continuation后和调用suspendCoroutineUninterceptedOrReturn方法捕获Continuation后马上调用它的intercepted方法，因为intercepted方法中会返回的拦截延续进行缓存，这样后续调用intercepted方法时就能马上返回。
+这个方法的作用是在Continuation的上下文CoroutineContext中查找拦截器ContinuationInterceptor，并返回拦截器对Continuation的拦截延续，它包装了原始的Continuation，在Continuation恢复前做出一些其他操作，目前在协程实现中intercepted方法返回的是一个**DispatchedContinuation**，它的作用是在Continuation恢复前把它分发到对应上下文的Dispatcher中恢复，这样原始的Continuation就会被切换到对应的Dispatcher中执行，由于拦截在协程的执行过程会经常用到，所以kotlin就建议在调用createCoroutineUnintercepted方法创建了初始Continuation后和调用suspendCoroutineUninterceptedOrReturn方法捕获Continuation后马上调用它的intercepted方法，因为intercepted方法中会返回的拦截延续进行缓存，这样后续调用intercepted方法时就能马上返回。
 
 前面多次讲到了**suspendCoroutineUninterceptedOrReturn**方法，它也属于intrinsics方法，suspendCoroutineUninterceptedOrReturn方法的作用是捕获suspend连续传递过来的Continuation，方法签名如下：
 
@@ -709,15 +711,88 @@ public suspend fun <T> withContext(
 
 withContext方法的作用是把block块运行在新的上下文中，并返回block块的运行结果，同时返回时会切换到原来的上下文中，withContext方法在不需要进行Dispatcher切换的情况中会直接使用block.startCoroutineUninterceptedOrReturn方法，这样会减少无谓的intercepted方法调用。
 
-createCoroutineUnintercepted、startCoroutineUninterceptedOrReturn、suspendCoroutineUninterceptedOrReturn三个方法就是kotlin intrinsice中最常用到的方法，用来创建、启动和捕获Continuation，kotlin协程的本质就是启动、调度和管理Continuation，所以说intrinsice方法是kotlin协程实现的基石。
+createCoroutineUnintercepted、startCoroutineUninterceptedOrReturn、suspendCoroutineUninterceptedOrReturn三个方法就是kotlin intrinsice中最常用到的方法，用来创建、启动和捕获Continuation，kotlin协程的本质就是启动、调度和管理Continuation，所以说intrinsics方法是kotlin协程实现的基石。
 
 ## Continuation的恢复
 
-从前面可以看到，当我们需要从挂起点恢复被挂起的Continuation时，就要调用Continuation接口的resumeWith方法，resumeWith方法方法根据Continuation的子类不同有不同的实现，在kotlin协程中，Continuation主要有以下几种实现：
+从前面可以看到，当我们需要从挂起点恢复被挂起的Continuation或者首次执行这个Continuation时，就要调用[Continuation](https://github.com/JetBrains/kotlin/blob/1.4.0/libraries/stdlib/src/kotlin/coroutines/Continuation.kt)接口的resumeWith方法，resumeWith方法方法根据Continuation的子类不同有不同的实现，在kotlin协程中，Continuation主要有**BaseContinuationImpl**、**DispatchedContinuation**、**SafeContinuation**、**CancellableContinuation**、**AbstractCoroutine**这几种实现，下面主要讲一下DispatchedContinuation、BaseContinuationImpl和AbstractCoroutine的resumeWith方法实现，它们之间的关系如下：
 
-1、**BaseContinuationImpl**
+{% asset_img coroutine1.png coroutine %}
 
-BaseContinuationImpl是所有suspend方法状态机的共同父类，例如子类ContinuationImpl就表示suspend命名方法，子类SuspendLambda就表示suspend lambda方法，除了这些普通的suspend方法外，kotlin中还有一种受限suspend方法 - [Restricted suspension](https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md#continuation-interceptor)，它是一种带有限制的suspend方法作用域，在这种带限制的suspend方法中只能调用**@RestrictsSuspension**注解的类中定义的suspend方法，例如**sequence**方法的block块就是一个带有限制的suspend lambda方法：
+**DispatchedContinuation**
+
+DispatchedContinuation就是把Continuation分发到对应上下文的Dispatcher中执行，当我们需要拦截Continuation时，就调用它的intercepted方法获取它的DispatchedContinuation，当一个Continuation被拦截后，后续它执行都在对应的Dispatcher中，DispatchedContinuation当resumeWith方法实现如下：
+
+```kotlin
+internal class DispatchedContinuation<in T>(
+    @JvmField val dispatcher: CoroutineDispatcher,//被拦截Continuation的Dispatcher
+    @JvmField val continuation: Continuation<T>//被拦截的Continuation
+) : DispatchedTask<T>(MODE_UNINITIALIZED), CoroutineStackFrame, Continuation<T> by continuation {
+  
+  //...
+  
+  override fun resumeWith(result: Result<T>) {
+        val context = continuation.context
+        val state = result.toState()
+        if (dispatcher.isDispatchNeeded(context)) {//IO、DEFAULT、MAIN走这里逻辑
+            _state = state
+            resumeMode = MODE_ATOMIC
+            //调用dispatch方法后，DispatchedTask的run方法会执行
+            dispatcher.dispatch(context, this)
+        } else {//Unconfined走这里的逻辑
+            executeUnconfined(state, MODE_ATOMIC) {
+                withCoroutineContext(this.context, countOrElement) {
+                   //调用Continuation的resumeWith方法
+                    continuation.resumeWith(result)
+                }
+            }
+        }
+  }
+}
+
+internal abstract class DispatchedTask<in T>(@JvmField public var resumeMode: Int) : SchedulerTask() {
+  
+  //...
+  
+  public final override fun run() {
+    val taskContext = this.taskContext
+    var fatalException: Throwable? = null
+    try {
+      val delegate = delegate as DispatchedContinuation<T>
+      val continuation = delegate.continuation
+      val context = continuation.context
+      val state = takeState()
+      withCoroutineContext(context, delegate.countOrElement) {
+        val exception = getExceptionalResult(state)
+        val job = if (exception == null && resumeMode.isCancellableMode) context[Job] else null
+        if (job != null && !job.isActive) {
+          val cause = job.getCancellationException()
+          cancelCompletedResult(state, cause)
+          continuation.resumeWithStackTrace(cause)
+        } else {
+          //调用Continuation的resumeWith方法
+          if (exception != null) {
+            continuation.resumeWithException(exception)
+          } else {
+            continuation.resume(getSuccessfulResult(state))
+          }
+        }
+      }
+    } catch (e: Throwable) {
+      fatalException = e
+    } finally {
+      val result = runCatching { taskContext.afterTask() }
+      handleFatalException(fatalException, result.exceptionOrNull())
+    }
+  }
+}
+```
+
+可以看到如果Dispatcher是Unconfined，那么就会在当前线程调用Continuation的resumeWith方法，如果Dispatcher是IO、DEFAULT、MAIN，就调用它们的dispatch方法提交DispatchedTask任务等待调度执行，而DispatchedContinuation同时又继承自DispatchedTask，所以它是一个DispatchedTask，等IO、DEFAULT、MAIN的Dispatcher调度时，run方法就会执行，这时就调用Continuation的resumeWith方法，这样Continuation就被分发到对应上下文的线程中恢复。
+
+**BaseContinuationImpl**
+
+[BaseContinuationImpl](https://github.com/JetBrains/kotlin/blob/1.4.0/libraries/stdlib/jvm/src/kotlin/coroutines/jvm/internal/ContinuationImpl.kt)是所有suspend方法状态机的共同父类，例如子类ContinuationImpl就表示suspend命名方法，子类SuspendLambda就表示suspend lambda方法，除了这些普通的suspend方法外，kotlin中还有一种受限suspend方法，它是一种带有限制的suspend方法作用域，在这种带限制的suspend方法中只能调用**@RestrictsSuspension**注解的类中定义的suspend方法，例如[sequence](https://kotlinlang.org/docs/sequences.html)方法的block块就是一个带有限制的suspend lambda方法：
 
 ```kotlin
 fun main() {
@@ -740,11 +815,11 @@ public abstract class SequenceScope<in T> internal constructor() {
 }
 ```
 
-受限的suspend方法用RestrictedContinuationImpl表示，受限的suspend lambda方法用RestrictedSuspendLambda表，这些类都定义在kotlin.coroutines.jvm.internal包中，当我们调用BaseContinuationImpl的resumeWith方法时，就是在执行当前suspend方法的状态机，并且在状态机运行结束时恢复外部Continuation，我们可以看一下BaseContinuationImpl的resumeWith方法的实现：
+受限的suspend方法用RestrictedContinuationImpl表示，受限的suspend lambda方法用RestrictedSuspendLambda表，当我们调用BaseContinuationImpl的resumeWith方法时，就是在执行当前suspend方法的状态机，并且在状态机运行结束时恢复外部Continuation，我们可以看一下BaseContinuationImpl的resumeWith方法的实现：
 
 ```kotlin
 internal abstract class BaseContinuationImpl(
-    //每个BaseContinuationImpl实例都会引用一个外部的Continuation，用来在当前状态机流转结束时恢复外部的Continuation
+    //每个BaseContinuationImpl实例都会引用一个完成Continuation，用来在当前状态机流转结束时恢复这个Continuation
     public val completion: Continuation<Any?>?
 ) : Continuation<Any?>, CoroutineStackFrame, Serializable {
   
@@ -786,25 +861,11 @@ internal abstract class BaseContinuationImpl(
 }
 ```
 
-每个BaseContinuationImpl实例就代表一个suspend方法状态机，每个BaseContinuationImpl实例都会持有一个外部的Continuation，用来在当前BaseContinuationImpl结束时恢复外部的Continuation，BaseContinuationImpl执行恢复时，是由里到外链式执行，直到所有的suspend方法都执行完毕，当遇到外部Continuation不是suspend方法时，就调用它的resumeWith方法执行对应的逻辑；
+每个BaseContinuationImpl实例就代表一个suspend方法状态机，当suspend方法状态机执行结束时，BaseContinuationImpl就会恢复引用的完成Continuation，如果完成Continuation是suspend方法，就调用它状态机的invokeSuspend方法，当遇到完成Continuation不是suspend方法时，就调用它的resumeWith方法执行对应的逻辑。
 
-2、**DispatchedContinuation**
+**AbstractCoroutine**
 
-
-
-3、**SafeContinuation**
-
-
-
-4、**CancellableContinuation**
-
-
-
-5、**AbstractCoroutine**
-
-[AbstractCoroutine](https://github.com/Kotlin/kotlinx.coroutines/blob/native-mt-1.4.20/kotlinx-coroutines-core/common/src/AbstractCoroutine.kt)AbstractCoroutine是kotlin协程的基类，
-
-当所有suspend方法都执行完毕后，AbstractCoroutine的resumeWith方法就会被调用，这时它就可以进行协程的生命周期流转，例如判断协程是否完成、是否被取消，如下：
+[AbstractCoroutine](https://github.com/Kotlin/kotlinx.coroutines/blob/native-mt-1.4.20/kotlinx-coroutines-core/common/src/AbstractCoroutine.kt)是kotlin协程的基类，AbstractCoroutine在kotlin协程实现中会作为**最后一个恢复的Continaution**，所以当所有suspend方法都执行完毕后，AbstractCoroutine的resumeWith方法就会被调用，这时它就可以进行协程的生命周期流转，例如判断子协程是否完成，如果子协程都完成了，那么就能置为完成状态，否则就置为完成中状态等待所有子协程完成，如下：
 
 ```kotlin
 public abstract class AbstractCoroutine<in T>(protected val parentContext: CoroutineContext, active: Boolean = true) : JobSupport(active), Job, Continuation<T>, CoroutineScope {
@@ -820,21 +881,403 @@ public abstract class AbstractCoroutine<in T>(protected val parentContext: Corou
 }
 ```
 
-它们之间的关系如下：
+## 自己实现Coroutine
 
-{% asset_img coroutine1.png coroutine %}
+当我们通过launch方法传入block块启动一个协程，本质是通过这个block块创建了一个Continuation，当我们在block块中调用其他suspend方法，并且suspend方法中再调用其他suspend方法，Continuation就会在这些suspend方法之间传递，最终我们可以捕获到连续传递的Continuation，当我们通过Continuation恢复时，本质是上一个suspend方法的递归调用进行状态流转，而kotlin协程只是在这些Continuation的基础上添加了生命周期管理、父子关系、异常处理、线程切换等逻辑。
 
-{% asset_img coroutine2.png coroutine %}
+通过intrinsics方法，我们自己也可以实现一个协程，这里我通过intrinsics方法仿照kotlin协程写了个简化版的协程，它这样使用：
 
+```kotlin
+fun main() {
+    val simpleScope = SimpleCoroutineScope(Dispatchers.Default)
+    val simpleJob = simpleScope.launch(CoroutineName("main"), CoroutineStart.DEFAULT) {
+        val user = login()
+        val userData = fetchData(user)
+        displayUI(userData)
+    }
+    simpleJob.invokeOnCompletion(object : SimpleJob.CompletionHandler {
+        override fun invoke(cause: Throwable?) {
+            println("invokeOnCompletion: cause = $cause")
+        }
+    })
+  
+  	//进程保活
+    Thread.sleep(1000)
+}
 
+private suspend fun SimpleCoroutineScope.login(): String {
+    return async(CoroutineName("login")) {
+        delay(200)
+        return@async "user"
+    }.await()
+}
 
-## 重新认识Coroutine
+private suspend fun SimpleCoroutineScope.fetchData(user: String): String {
+    return async(CoroutineName("fetch")) {
+        delay(200)
+        return@async "$user data"
+    }.await()
+}
 
+private fun displayUI(data: String) {
+    println("displayUI: $data")
+}
 
+//运行输出：
+//displayUI: user data
+//invokeOnCompletion: cause = null
+```
+
+invokeOnCompletion方法回调会在协程完成后被调用，如果协程正常完成那么，cause为null，如果协程异常完成，那么cause为对应的异常，上面协程正常完成，所有实现代码如下：
+
+```kotlin
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.coroutines.intrinsics.*
+import java.util.concurrent.CopyOnWriteArraySet
+
+/**
+ * 简化版的[CoroutineScope]，提供协程运行作用域，它与[CoroutineScope]的区别是没有[CoroutineScope.cancel]、[CoroutineScope.ensureActive]等这些扩展方法
+ */
+private interface SimpleCoroutineScope {
+
+    val coroutineContext: CoroutineContext
+}
+
+/**
+ * [SimpleCoroutineScope]的实现
+ */
+private class SimpleCoroutineScopeImpl(override val coroutineContext: CoroutineContext) : SimpleCoroutineScope
+
+/**
+ * 构造[SimpleCoroutineScope]实例
+ */
+private fun SimpleCoroutineScope(context: CoroutineContext) = SimpleCoroutineScopeImpl(if(context[SimpleJob] != null) context else context + SimpleJob())
+
+/**
+ * 简化版的[Job]，用于管理协程的生命周期，它与[Job]的区别是它没有取消操作、异常传播、异常处理等功能，只有简单的状态流转：
+ *
+ *      start/await
+ * NEW -------------> ACTIVE (isActive = true)
+ *   \                /
+ *    \  fail/finish /
+ *     \            /
+ *       COMPLETING
+ *           |
+ *           | wait children
+ *           v
+ *       COMPLETE (isComplete = true)
+ */
+private interface SimpleJob : CoroutineContext.Element {
+
+    companion object Key : CoroutineContext.Key<SimpleJob>
+
+    /**
+     * 协程是否已启动
+     */
+    fun isActive(): Boolean
+
+    /**
+     * 协程是否已完成
+     */
+    fun isComplete(): Boolean
+
+    /**
+     * 启动协程
+     */
+    fun start()
+
+    /**
+     * 等待协程的结果返回
+     */
+    suspend fun <T> await(): T
+
+    /**
+     * 注册协程完成回调[completionHandler]，返回的[DisposableHandle]可以用来反注册回调
+     */
+    fun invokeOnCompletion(completionHandler: CompletionHandler, invokeImmediately: Boolean = true): DisposableHandle
+
+    /**
+     * 建立起与[childJob]子协程的父子关系
+     */
+    fun attachChild(childJob: SimpleJob)
+
+    /**
+     * 协程完成通知回调
+     */
+    interface CompletionHandler {
+
+        /**
+         * cause == null -> 成功结束
+         * cause == other -> 异常结束
+         */
+        fun invoke(cause: Throwable?)
+    }
+
+    /**
+     * 反注册句柄
+     */
+    interface DisposableHandle {
+
+        /**
+         * 调用[dispose]方法反注册
+         */
+        fun dispose()
+    }
+}
+
+/**
+ * [SimpleJob]的实现
+ */
+private open class SimpleJobImpl(active: Boolean) : SimpleJob {
+
+    enum class State {
+        NEW, ACTIVE, COMPLETING, COMPLETED
+    }
+
+    override val key: CoroutineContext.Key<*> get() = SimpleJob
+
+    @Volatile
+    private var state = if(active) State.ACTIVE else State.NEW
+    @Volatile
+    private var result: Any? = null
+    private val children = CopyOnWriteArraySet<SimpleJob>()
+    private val completionHandlers = CopyOnWriteArraySet<SimpleJob.CompletionHandler>()
+
+    override fun isActive(): Boolean {
+        return state == State.ACTIVE
+    }
+
+    override fun isComplete(): Boolean {
+        return state == State.COMPLETED
+    }
+
+    override fun start() {
+        if(state == State.NEW) {
+            state = State.ACTIVE
+            onStart()
+        }
+    }
+
+    override suspend fun <T> await(): T {
+        if(state == State.COMPLETED) {
+            if(result is Throwable) {
+                throw result as Throwable
+            }else {
+                return result as T
+            }
+        }
+        if(state == State.NEW) {
+            start()
+        }
+        return suspendCoroutineUninterceptedOrReturn {
+            invokeOnCompletion(object : SimpleJob.CompletionHandler {
+                override fun invoke(cause: Throwable?) {
+                     if(cause != null) {
+                         it.resumeWithException(cause)
+                     }else {
+                         it.resume(result as T)
+                     }
+                }
+            })
+            COROUTINE_SUSPENDED
+        }
+    }
+
+    override fun invokeOnCompletion(completionHandler: SimpleJob.CompletionHandler, invokeImmediately: Boolean): SimpleJob.DisposableHandle {
+        if(invokeImmediately && state == State.COMPLETED) {
+            completionHandler.invoke(result as? Throwable)
+        }
+        completionHandlers.add(completionHandler)
+        return CompletionHandlerDisposeHandle(completionHandler)
+    }
+
+    override fun attachChild(childJob: SimpleJob) {
+        children.add(childJob)
+    }
+
+    protected fun initParentJob(parentJob: SimpleJob?) {
+        parentJob?.start()
+        parentJob?.attachChild(this)
+    }
+
+    protected fun tryMakeCompleted(value: Any?): Boolean {
+        result = value ?: result
+        val complete = children.find { !it.isComplete() } == null
+        if(complete) {
+            if(state == State.COMPLETED) {
+                return true
+            }
+            state = State.COMPLETED
+            val cause = if(result is Throwable) { result as Throwable } else { null }
+            notifyCompleteHandlers(cause)
+        }else {// 等待所有child完成
+            if(state == State.COMPLETING) {
+                return false
+            }
+            state = State.COMPLETING
+            children.forEach {
+                it.invokeOnCompletion(object : SimpleJob.CompletionHandler {
+                    override fun invoke(cause: Throwable?) {
+                        tryMakeCompleted(cause)
+                    }
+                }, invokeImmediately = true)
+            }
+        }
+        return complete
+    }
+
+    private fun notifyCompleteHandlers(cause: Throwable?) {
+        completionHandlers.forEach {
+            it.invoke(cause)
+        }
+    }
+
+    /**
+     * 协程调用start/await方法从[State.NEW]转移到[State.ACTIVE]
+     */
+    protected open fun onStart() {}
+
+    /**
+     * 调用[dispose]方法解除注册的[completionHandler]
+     */
+    inner class CompletionHandlerDisposeHandle(private val completionHandler: SimpleJob.CompletionHandler) : SimpleJob.DisposableHandle {
+
+        override fun dispose() {
+            completionHandlers.remove(completionHandler)
+        }
+    }
+}
+
+/**
+ * 构造[SimpleJob]实例
+ */
+private fun SimpleJob() = SimpleJobImpl(active = true)
+
+/**
+ * 简化版的协程，调用start方法启动协程
+ * @param parentContext 协程的父Context，用于建立父子关系
+ * @param active 为true时让协程处于active状态，否则处于new状态，处于new状态需要调用start/await方法才会启动协程
+ */
+private open class SimpleCoroutine<T>(private val parentContext: CoroutineContext, active: Boolean = true) : SimpleJobImpl(active), SimpleCoroutineScope, Continuation<T> {
+
+    override val context: CoroutineContext = parentContext + this
+
+    override val coroutineContext: CoroutineContext get() = context
+
+    /**
+     * 协程完成通知，这里处理结果，进行生命周期状态流转
+     */
+    override fun resumeWith(result: Result<T>) {
+        println("resumeWith: result = $result, coroutineName = ${coroutineContext[CoroutineName]}")
+        if(result.isSuccess) {//成功恢复
+            tryMakeCompleted(result.getOrNull())
+        }else {//错误恢复
+            tryMakeCompleted(result.exceptionOrNull())
+        }
+    }
+
+    /**
+     * for [CoroutineStart.LAZY]
+     */
+    private var lazyContinuation: Continuation<Unit>? = null
+
+    /**
+     * for [CoroutineStart.LAZY]
+     */
+    override fun onStart() {
+        lazyContinuation?.intercepted()?.resumeWith(Result.success(Unit))
+    }
+
+    /**
+     * 建立协程的父子关系，使用[kotlin.coroutines.intrinsics]原语为[block]块创建协程的初始化[Continuation], 并根据[start]模式启动它
+     */
+    fun start(start: CoroutineStart, block: suspend SimpleCoroutineScope.() -> T) {
+        if(coroutineContext[CoroutineExceptionHandler] != null) {
+            throw IllegalAccessException("unsupport CoroutineExceptionHandler")
+        }
+        initParentJob(parentContext[SimpleJob])
+        when(start) {
+            /**
+             * 立即启动协程，并把启动的协程运行在指定的Dispatcher上
+             */
+            CoroutineStart.DEFAULT -> {
+                block.createCoroutineUnintercepted(this, this).intercepted().resumeWith(Result.success(Unit))
+            }
+            /**
+             * 在当前线程立即启动协程, 但恢复时会把协程运行在指定的Dispatcher上，效果和指定[Dispatchers.Unconfined]类似
+             */
+            CoroutineStart.UNDISPATCHED -> {
+                val result = try {
+                    block.startCoroutineUninterceptedOrReturn(this, this)
+                }catch (e: Throwable) {
+                    e
+                }
+                if(result is Throwable) {
+                    this.resumeWithException(result)
+                }else if(result !== COROUTINE_SUSPENDED) {
+                    this.resume(result as T)
+                }else {
+                    //COROUTINE_SUSPENDED, do noting
+                }
+            }
+            /**
+             * 不立即启动协程，当调用start/await方法时才启动协程，并把启动的协程运行在指定的Dispatcher上
+             */
+            CoroutineStart.LAZY -> {
+                lazyContinuation = block.createCoroutineUnintercepted(this, this)
+            }
+            else -> {
+                throw IllegalAccessException("unsupport $start")
+            }
+        }
+    }
+}
+
+/**
+ * 启动协程，没有结果返回
+ */
+private fun SimpleCoroutineScope.launch(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend SimpleCoroutineScope.() -> Unit
+): SimpleJob {
+    val newContext = coroutineContext + context
+    val coroutine = if(start == CoroutineStart.LAZY) {
+        SimpleCoroutine<Unit>(newContext, active = false)
+    }else {
+        SimpleCoroutine<Unit>(newContext, active = true)
+    }
+    coroutine.start(start, block)
+    return coroutine
+}
+
+/**
+ * 启动协程，可以调用返回的SimpleJob的await方法等待结果
+ */
+private fun <T> SimpleCoroutineScope.async(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend SimpleCoroutineScope.() -> T
+): SimpleJob {
+    val newContext = coroutineContext + context
+    val coroutine = if(start == CoroutineStart.LAZY) {
+        SimpleCoroutine<T>(newContext, active = false)
+    }else {
+        SimpleCoroutine<T>(newContext, active = true)
+    }
+    coroutine.start(start, block)
+    return coroutine
+}
+```
+
+在这里我自定义了SimpleCoroutineScope、SimpleJob、SimpleCoroutine分别对应kotlin协程的CoroutineScope、Job、AbstractCoroutine角色，实现了协程的launch、async方法，支持DEFAULT、LAZY、UNDISPATCHED三种启动模式，在kotlin协程中CoroutineScope是用来控制协程的作用域，Job是用来管理协程的生命周期和父子关系，而AbstractCoroutine实现了Continuation同时继承自Job，它的作用在前面也讲过，就是当所有suspend方法都执行完毕后，AbstractCoroutine的resumeWith方法就会被调用，这时它就可以进行协程的生命周期流转，DEFAULT模式表示立即启动，所以它调用了createCoroutineUnintercepted方法创建初始Continuation后马上调用resumeWith方法执行它，LAZY模式表示延迟启动，所以它通过createCoroutineUnintercepted方法创建的初始Continuation的resumeWith方法会等到调用start方法时才调用，而UNDISPATCHED模式表示在当前线程立即启动，所以它通过startCoroutineUninterceptedOrReturn方法创建并执行Continuation，希望大家通过这个简化版的协程理解kotlin协程中角色的作用。
 
 ## 结语
 
+本文介绍了kotlin协程的实现思想，Continuation、CPS和suspend方法的实现，不只是kotlin协程，其他语言的协程的实现思想也是类似的，同时还介绍了kotlin提供的intrinsics方法，它是用于给用户操纵这些Continuation，最后通过intrinsics方法实现了一个简化版的kotlin协程，所以kotlin协程也没有那么神秘，它只是Continuation的应用，它只是在这些Continuation的基础上添加了生命周期管理、父子关系、异常处理、线程切换等逻辑。
 
+以上就是本文的所有内容，希望大家有所收获！
 
 参考文档：
 
