@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>发布开源库到jitpack | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="jitpack">
+    <meta name="description" content="前言最近几天准备发布一个开源库，方便自己使用，一开始了解到的是发布到jcenter仓库中，它是目前世界上最大的java和Android开源软件构件仓库，而且 JCenter 是 Android Studio 默认使用的服务器仓库，只需要一句话就可以搞定整个包的导入过程，但是它的发布过程繁琐，而且对于新手来说特别不友好，就算你跟着网上教程来发布，运气好的话你就会发布成功，如果运气不好，你就会遇到很多">
+<meta property="og:type" content="article">
+<meta property="og:title" content="发布开源库到jitpack">
+<meta property="og:url" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言最近几天准备发布一个开源库，方便自己使用，一开始了解到的是发布到jcenter仓库中，它是目前世界上最大的java和Android开源软件构件仓库，而且 JCenter 是 Android Studio 默认使用的服务器仓库，只需要一句话就可以搞定整个包的导入过程，但是它的发布过程繁琐，而且对于新手来说特别不友好，就算你跟着网上教程来发布，运气好的话你就会发布成功，如果运气不好，你就会遇到很多">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step1.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step2.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step3.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step4.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step5.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step6.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step7.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step8.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step9.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step10.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step11.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step12.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step13.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step14.png">
+<meta property="article:published_time" content="2019-06-10T10:47:41.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:49.030Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="jitpack">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">发布开源库到jitpack</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">发布开源库到jitpack</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-06-10T10:47:41.000Z" itemprop="datePublished" class="page-time">
+  2019-06-10
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#JitPack是什么？"><span class="post-toc-text">JitPack是什么？</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#发布步骤"><span class="post-toc-text">发布步骤</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、准备好你要发布的library"><span class="post-toc-text">1、准备好你要发布的library</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、给你要发布libaray添加配置"><span class="post-toc-text">2、给你要发布libaray添加配置</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、执行gradlew命令，排错"><span class="post-toc-text">3、执行gradlew命令，排错</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、本地打tag，上传到github中"><span class="post-toc-text">4、本地打tag，上传到github中</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、github上面发布release"><span class="post-toc-text">5、github上面发布release</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6、用GitHub账号登陆、注册jitpack，Look-Up-gt-Get-it"><span class="post-toc-text">6、用GitHub账号登陆、注册jitpack，Look Up -&gt; Get it</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#其他"><span class="post-toc-text">其他</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-发布开源库到jitpack"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">发布开源库到jitpack</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-06-10 18:47:41" datetime="2019-06-10T10:47:41.000Z"  itemprop="datePublished">2019-06-10</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近几天准备发布一个开源库，方便自己使用，一开始了解到的是发布到jcenter仓库中，它是目前世界上最大的java和Android开源软件构件仓库，而且 JCenter 是 Android Studio 默认使用的服务器仓库，只需要一句话就可以搞定整个包的导入过程，但是它的发布过程繁琐，而且对于新手来说特别不友好，就算你跟着网上教程来发布，运气好的话你就会发布成功，如果运气不好，你就会遇到很多构建失败、上传失败、翻墙等问题，而且在网上还找不到答案。我就属于运气不好的一类，我发布的时候几乎是使用了所有方法，但还是失败，就在我心灰意冷的时刻，我发现了<strong>jitpack</strong>，几步操作就把开源库发布成功，真的是简单了许多，有种相见恨晚的感觉，下面就把我发布的过程分享给大家。</p>
+<h2 id="JitPack是什么？"><a href="#JitPack是什么？" class="headerlink" title="JitPack是什么？"></a>JitPack是什么？</h2><p>在讲解发布流程之前先简单介绍一下jitpack是什么，<a href="https://jitpack.io/" target="_blank" rel="noopener">JitPack</a>是一个网站，它允许你把git托管的java或android项目（貌似目前仅支持github和码云），轻松发布到jitpack的maven仓库上，它所有内容都通过内容分发网络（CDN）使用加密https连接获取。</p>
+<h2 id="发布步骤"><a href="#发布步骤" class="headerlink" title="发布步骤"></a>发布步骤</h2><p>下面开始讲解发布步骤。以我的开源库<a href="https://github.com/rain9155/Loading" target="_blank" rel="noopener">Loading</a>为例。</p>
+<h3 id="1、准备好你要发布的library"><a href="#1、准备好你要发布的library" class="headerlink" title="1、准备好你要发布的library"></a>1、准备好你要发布的library</h3><p>library不同于app工程，library是没有applicationId的，还有build.gradle中apply的的插件也不一样，在AS中按如下操作新建一个library：File -&gt; new -&gt; New Moudle -&gt; Android Library -&gt; next -&gt; 填写好信息后 -&gt; finish。</p>
+<h3 id="2、给你要发布libaray添加配置"><a href="#2、给你要发布libaray添加配置" class="headerlink" title="2、给你要发布libaray添加配置"></a>2、给你要发布libaray添加配置</h3><p>2.1、首先在项目的根目录的build.gradle下添加maven插件，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step1.png" class="" title="step1">
+
+<p>可以去这里查看插件的最新版本<a href="https://github.com/dcendents/android-maven-gradle-plugin" target="_blank" rel="noopener">android-maven-gradle-plugin</a>。</p>
+<p>2.2、然后再library目录的build.gradle下apply插件和添加group，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step2.png" class="" title="step2">
+
+<p>group填<strong>com.github.你的github账号名</strong>，这里我的是rain9155。</p>
+<h3 id="3、执行gradlew命令，排错"><a href="#3、执行gradlew命令，排错" class="headerlink" title="3、执行gradlew命令，排错"></a>3、执行gradlew命令，排错</h3><p>再命令行下输入<strong>gradlew install</strong>命令，这个命令会构建你的library到你的本地 maven 仓库($HOME/.m2/repository)中，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step3.png" class="" title="step3">
+
+<p>如果出现BUILD SUCCESS，说明构建成功，如果出现BUILD FAIL，说明构建失败，这时候你就要按照失败提示去排错，排错完后在执行一遍gradlew install命令，直到出现BUILD SUCCESS。</p>
+<h3 id="4、本地打tag，上传到github中"><a href="#4、本地打tag，上传到github中" class="headerlink" title="4、本地打tag，上传到github中"></a>4、本地打tag，上传到github中</h3><p>4.1、在打tag前，你要先执行<strong>git add .</strong>和<strong>git commit -m “XX”</strong>命令，把代码提交到本地git仓库</p>
+<p>4.2、然后开始在本地git仓库打tag，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step4.png" class="" title="step4">
+
+<p>打tag本质就是提交一个commit，-a后面写版本号，一般是v1.0或v1.0.0，-m后面写描述信息，这里写了第一版，然后把tag push到github上面。</p>
+<h3 id="5、github上面发布release"><a href="#5、github上面发布release" class="headerlink" title="5、github上面发布release"></a>5、github上面发布release</h3><p>打开你的libary的github界面，点击<strong>release</strong>，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step5.png" class="" title="step5">
+
+<p>然后点击<strong>Draft a new release</strong>，新建一个release，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step6.png" class="" title="step6">
+
+<p>然后填信息，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step7.png" class="" title="step7">
+
+<p>填好信息后，点击<strong>publich release</strong>，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step8.png" class="" title="step8">
+
+<p>其实relese就是一个加了描述信息的tag。</p>
+<h3 id="6、用GitHub账号登陆、注册jitpack，Look-Up-gt-Get-it"><a href="#6、用GitHub账号登陆、注册jitpack，Look-Up-gt-Get-it" class="headerlink" title="6、用GitHub账号登陆、注册jitpack，Look Up -&gt; Get it"></a>6、用GitHub账号登陆、注册<a href="<https://jitpack.io/">jitpack</a>，Look Up -&gt; Get it</h3><p>登陆jitpack后，在jitpack的地址栏中输入你的library的的github项目地址，然后点击<strong>Look Up</strong>，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step9.png" class="" title="step9">
+
+<p>点击Look Up后，下面会出现项目在github上发布的release版本，你有多少个release，下面就会显示多少个，然后点击<strong>Get it</strong>，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step10.png" class="" title="step10">
+
+<p>点击Get it后，它会滚到下面去，你要滚回上面去，先等一会，等jitpack那里构建完，会出现一个绿色的log，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step11.png" class="" title="step11">
+
+<p>如果出现红色的log，说明构建失败，你可以点击进去看一下失败原因，出现绿色的代表成功，然后再点Get it，它会滚到下面去，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step12.png" class="" title="step12">
+
+<p>可以看到，它提示了你如何用gradle方式引用你的开源库，<code>maven { url &quot;https://jitpack.io&quot; }</code>就是指定私有Maven库为<a href="https://link.jianshu.com/?t=https://jitpack.io/" target="_blank" rel="noopener">JitPack</a>，<code>implementation com.github.rain9155:Loading:Tag</code>则是指定具体的包。然后你就可以愉快的在项目中按照它的提示引用你的开源库。</p>
+<p>更多请查看示例<a href="https://github.com/rain9155/Loading" target="_blank" rel="noopener"><strong>Loading</strong></a>。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>jitpack也是有勋章的，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step13.png" class="" title="step13">
+
+<p>点击那个jitpack，把它的链接复制到你的REMAED中去，如下：</p>
+<img src="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/step14.png" class="" title="step14"> 
+
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p><a href="https://link.jianshu.com?t=https://jitpack.io/" target="_blank" rel="noopener">JitPack</a>是基于GitHub Releases的发布。当你打完tag，生成一个Release时，源文件会自动打包成zip。在<a href="https://link.jianshu.com?t=https://jitpack.io/" target="_blank" rel="noopener">JitPack</a>上点击【Get it】，就可以编译这个tag的源文件，把版本发布到这个私有Maven库中，并且可以提供给其他人使用。比起Bintray的JCenter，或者Maven Central这个官方中央仓库来说，<a href="https://link.jianshu.com?t=https://jitpack.io/" target="_blank" rel="noopener">JitPack</a>背靠GitHub，少了一大堆流程。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:49.030Z" itemprop="dateUpdated">2023-01-07 18:44:49</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jitpack/" rel="tag">jitpack</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/&title=《发布开源库到jitpack》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/&title=《发布开源库到jitpack》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《发布开源库到jitpack》 — jianyu的博客&url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/10/Activity%E5%BA%94%E7%94%A8%E7%AA%97%E5%8F%A3%E7%9A%84%E6%B7%BB%E5%8A%A0%E8%BF%87%E7%A8%8B/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Activity应用窗口的添加过程</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">android6.0动态权限申请的正确流程</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/&title=《发布开源库到jitpack》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/&title=《发布开源库到jitpack》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《发布开源库到jitpack》 — jianyu的博客&url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPYAAAD2CAAAAADAeSUUAAADM0lEQVR42u3aQXLbQAwEQP3/005VrrGsGYAqmZvmySXT5Pb6AGGwj0d8ff29kp+fXc+e9u/nz56f3H/xhY2NjX0TdrLcnz/JX98+IV9bu/XY2NjY57HzorW55+eFJkVrVvCwsbGxsdtC0pa9pCC1rRE2NjY2dl5mEnzSYGzCLGxsbGzsWXFqQ/88DJq1QG/J0rCxsbF/PfvaQe9nf/7YfBsbGxv7Q+yv0ZVHSLOm5drh7jdPwMbGxj6InbcEeXCfb0TSuuSrqofH2NjY2IeyN7zZwZp2U9qB9CNfNDY2NvbN2W1RaeP4fejfbncdLWFjY2Pflt2OaX8Oemb35AVpFn69mHJjY2Nj35adxDH5puSBzn7YkMdM37wFGxsb+yB2W6LaBbUFabOeeiCBjY2NfQQ7Gojmo9Ny5PCOEUW0WdjY2NgHsTdj2jwqagexebw1ux8bGxv7PPasnWg3Lh/rzpB55ISNjY19Krv4Eh80J/k2zQpkW0qf4rGxsbEPYu8PYub3zJqKzfnJN54/xcbGxv4ou20S6s5mUcDaN9ZTEWxsbOwj2G19S5qB9tqHRG1jg42NjX0qOw9l8lg/oSYNSRIq5WvGxsbGPo+9bydmsNmAISlO7WqxsbGx78ueHWHMW4K8yLWhUlLknv4VNjY29kHs/WGdvD1ox8D7wz0vBgzY2NjYh7Jnx3f2BSz57ebf8Ghfg42NjX1D9iy+2Q90r2pI6rVhY2NjH8TefK1PlhI1BotSmhTLF1NubGxs7EPZbdnLeZsWpd2+Fy5sbGzsm7P3R2eubSSuKmAvCi02Njb2Qewkap+9YHZQsg2MNi0KNjY29hns9vDNLIi/trVo46dvVo6NjY19ELuNlpJjNJuWY9bGzIoxNjY29hnsr/LaBDdtW9K2HMUzsbGxsQ9iv+/oZF7SEsBmgPHYXNjY2Ng3YbdFq+5vRnHPVYPkYUOCjY2NfUP27Hhl9ILFNs3+NgnIsLGxsbE3JWp2fGdWRF8c3MHGxsb+z9h56zILqmahUtu6YGNjY5/Kng13Z7HO/mmz0cIqS8PGxsb+xex9scmjnLx5yJeej5AvmG9jY2Nj/y72H+SSgwZ8IAJgAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

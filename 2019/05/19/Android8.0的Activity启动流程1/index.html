@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Android8.0的Activity启动流程(1) | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="activity,源码">
+    <meta name="description" content="前言Activity的启动流程有俩种过程，一种是根Activity的启动过程，即在Launch界面点击一个应用图标启动应用程序，根Activity指的是应用程序启动的第一个Activity；另一种是普通Activity的启动流程，即我们平时调用startActivity方法来启动一个Activity。本文讨论第二种，startActivity方法大家都知道是用来启动一个Activity的，那么大家">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android8.0的Activity启动流程(1)">
+<meta property="og:url" content="http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言Activity的启动流程有俩种过程，一种是根Activity的启动过程，即在Launch界面点击一个应用图标启动应用程序，根Activity指的是应用程序启动的第一个Activity；另一种是普通Activity的启动流程，即我们平时调用startActivity方法来启动一个Activity。本文讨论第二种，startActivity方法大家都知道是用来启动一个Activity的，那么大家">
+<meta property="og:image" content="http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity1.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity2.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity3.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity4.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity5.png">
+<meta property="article:published_time" content="2019-05-19T08:11:17.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.661Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="activity">
+<meta property="article:tag" content="源码">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Android8.0的Activity启动流程(1)</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Android8.0的Activity启动流程(1)</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-05-19T08:11:17.000Z" itemprop="datePublished" class="page-time">
+  2019-05-19
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6/">四大组件</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Activity-startActivity"><span class="post-toc-text">Activity::startActivity()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、Activity-startActivityForResult"><span class="post-toc-text">1、Activity::startActivityForResult()</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、Instrumentation-execStartActivity"><span class="post-toc-text">2、Instrumentation::execStartActivity()</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#AMS-startActivity"><span class="post-toc-text">AMS::startActivity()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、AMS-startActivityAsUser"><span class="post-toc-text">1、AMS::startActivityAsUser()</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、ActivityStarter-startActivityMayWait"><span class="post-toc-text">2、ActivityStarter::startActivityMayWait()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-1、ActivityStarter-startActivityLocked"><span class="post-toc-text">2.1、ActivityStarter::startActivityLocked()</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-2、ActivityStarter-startActivity"><span class="post-toc-text">2.2、ActivityStarter::startActivity()</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-3、ActivityStarter-startActivity"><span class="post-toc-text">2.3、ActivityStarter::startActivity()</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-4、ActivityStarter-startActivityUnchecked"><span class="post-toc-text">2.4、ActivityStarter::startActivityUnchecked()</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、ActivityStackSupervisor-resumeFocusedStackTopActivityLocked"><span class="post-toc-text">3、ActivityStackSupervisor::resumeFocusedStackTopActivityLocked()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#3-1、ActivityStack-resumeTopActivityUncheckedLocked"><span class="post-toc-text">3.1、ActivityStack:: resumeTopActivityUncheckedLocked()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#3-1-1、-ActivityStack-resumeTopActivityInnerLocked"><span class="post-toc-text">3.1.1、 ActivityStack:: resumeTopActivityInnerLocked()</span></a></li></ol></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#3-2、ActivityStackSupervisor-startSpecificActivityLocked"><span class="post-toc-text">3.2、ActivityStackSupervisor::startSpecificActivityLocked()</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#3-3、ActivityStackSupervisor-realStartActivityLocked"><span class="post-toc-text">3.3、ActivityStackSupervisor::realStartActivityLocked()</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#总结"><span class="post-toc-text">总结</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Android8.0的Activity启动流程1"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Android8.0的Activity启动流程(1)</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-05-19 16:11:17" datetime="2019-05-19T08:11:17.000Z"  itemprop="datePublished">2019-05-19</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6/">四大组件</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Activity的启动流程有俩种过程，一种是根Activity的启动过程，即在Launch界面点击一个应用图标启动应用程序，根Activity指的是应用程序启动的第一个Activity；另一种是普通Activity的启动流程，即我们平时调用startActivity方法来启动一个Activity。本文讨论第二种，startActivity方法大家都知道是用来启动一个Activity的，那么大家有没有想过它在底层是怎么启动的呢？Activity的生命周期方法是如何被回调的？它启动过程中涉及到多少个进程？接下来我们通过撸一篇源码来了解Activity的大概启动流程，然后解答这几个问题。</p>
+<a id="more"></a>
+
+<pre><code>本文源码基于Android8.0，本文涉及的源码文件位置如下：
+frameworks/base/core/java/android/app/Activity.java
+frameworks/base/services/core/java/com/android/server/am/*.java(*代表ActivityManagerService，ActivityStack，ActivityStarter，ActivityStackSupervisor，ActivityStack)</code></pre><h2 id="Activity-startActivity"><a href="#Activity-startActivity" class="headerlink" title="Activity::startActivity()"></a>Activity::startActivity()</h2><p>startActivity有好几种重载方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivity</span><span class="params">(Intent intent)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.startActivity(intent, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivity</span><span class="params">(Intent intent, @Nullable Bundle options)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (options != <span class="keyword">null</span>) &#123;</span><br><span class="line">            startActivityForResult(intent, -<span class="number">1</span>, options);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//我们一般没有传options参数给startActivity，所以options为空，就会走到这个分支</span></span><br><span class="line">            <span class="comment">//第二参数requestCode为-1，表示不需要知道Activity启动的结果</span></span><br><span class="line">            startActivityForResult(intent, -<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"> <span class="comment">//发现两个参数的startActivityForResult方法最终还是调用三个参数的startActivityForResult方法，options参数传入null</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivityForResult</span><span class="params">(@RequiresPermission Intent intent, <span class="keyword">int</span> requestCode)</span> </span>&#123;</span><br><span class="line">        startActivityForResult(intent, requestCode, <span class="keyword">null</span>);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现startActivity最终都会调用到startActivityForResult方法。</p>
+<h3 id="1、Activity-startActivityForResult"><a href="#1、Activity-startActivityForResult" class="headerlink" title="1、Activity::startActivityForResult()"></a>1、Activity::startActivityForResult()</h3><p>这里我们来到了具有三个参数的startActivityForResult方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Activity.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivityForResult</span><span class="params">(@RequiresPermission Intent intent, <span class="keyword">int</span> requestCode, @Nullable Bundle options)</span> </span>&#123;</span><br><span class="line">    	<span class="comment">//mParent一直为空</span></span><br><span class="line">        <span class="keyword">if</span> (mParent == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">            <span class="comment">//1、关注这里，调用Instrumentation的execStartActivity方法</span></span><br><span class="line">            Instrumentation.ActivityResult ar =</span><br><span class="line">                mInstrumentation.execStartActivity(</span><br><span class="line">                    <span class="keyword">this</span>, mMainThread.getApplicationThread(), mToken, <span class="keyword">this</span>,</span><br><span class="line">                    intent, requestCode, options);</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">            <span class="comment">//此时requestCode为-1</span></span><br><span class="line">            <span class="keyword">if</span> (requestCode &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                mStartedActivity = <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上面的的代码中，会进入mParent==null的这个分支里，mParent是Activity类型，它只会在LocalActivityManger构造中被赋值，在我们startActivity过程中一直为空（关于为甚么mParent一直为空，可以查看这篇文章<a href="https://www.jianshu.com/p/3141d2c0194c" target="_blank" rel="noopener">StartActivity路上的mParent</a>）。这里我们只关注注释1，调用Instrumentation的execStartActivity方法，Instrumentation是一个用来监控应用程序与系统交互的类，我们还要注意传入execStartActivity方法的两个参数：</p>
+<ul>
+<li>1、mMainThread.getApplicationThread()：ApplicationThread类型，mMainThread是ActivityThread类型，它是应用程序的入口类，而mMainThread.getApplicationThread()就是获得一个<strong>ApplicationThread</strong>，它是ActivityThread的内部类，它实现了IApplicationThread.Stub，如下：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityThread.java::ApplicationThread</span></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationThread</span> <span class="keyword">extends</span> <span class="title">IApplicationThread</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>IApplicationThread.java类是在编译时由IApplicationThread.aidl通过AIDL工具自动生成的，IApplicationThread的内部会自动生成一个 IApplicationThread.Stub类，它继承自Binder类，而Binder实现了IBinder接口，并且 IApplicationThread.Stub实现了IActivityManager接口。要想进行进程间通信，ApplicationThread只需要继承IApplicationThread.Stub类并实现相应的方法就可以，这样主线程ActivityThread就可以通过ApplicationThread就能对外提供远程服务。要记住这个<strong>ApplicationThread</strong>，他在Activity的启动过程中发挥重要作用。</p>
+<ul>
+<li>2、mToken： 它的类型为IBinder，代表着当前Activity的token，它保存自己所处Activity的ActivityRecord信息</li>
+</ul>
+<h3 id="2、Instrumentation-execStartActivity"><a href="#2、Instrumentation-execStartActivity" class="headerlink" title="2、Instrumentation::execStartActivity()"></a>2、Instrumentation::execStartActivity()</h3><p>我们继续看Instrumentation的execStartActivity方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Instrumentation.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ActivityResult <span class="title">execStartActivity</span><span class="params">(Context who, IBinder contextThread, IBinder token, Activity target, Intent intent, <span class="keyword">int</span> requestCode, Bundle options)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//还记得上面提到的ApplicationThread吗，这里把它转成了IApplicationThread，并在下面作为startActivity方法的参数</span></span><br><span class="line">    IApplicationThread whoThread = (IApplicationThread) contextThread;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="comment">//1、关注这里，这里实际调用的是ActivityManagerService的startActivity方法</span></span><br><span class="line">        <span class="keyword">int</span> result = ActivityManager.getService()</span><br><span class="line">            .startActivity(whoThread, who.getBasePackageName(), intent,</span><br><span class="line">                           intent.resolveTypeIfNeeded(who.getContentResolver()),</span><br><span class="line">                           token, target != <span class="keyword">null</span> ? target.mEmbeddedID : <span class="keyword">null</span>,</span><br><span class="line">                           requestCode, <span class="number">0</span>, <span class="keyword">null</span>, options);</span><br><span class="line">        <span class="comment">//检查启动Activity的结果，无法正确启动一个Activiy时，这个方法抛出异常</span></span><br><span class="line">        checkStartActivityResult(result, intent);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Failure from system"</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看注释1，ActivityManager.getService()返回的是ActivityManagerService（下面简称AMS）在应用进程的本地代理，该方法在ActivityManager中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityManager.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> IActivityManager <span class="title">getService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    	<span class="comment">//IActivityManagerSingleton是Singleton类型，Singleton是一个单例的封装类</span></span><br><span class="line">    	<span class="comment">//第一次调用它的get方法时它会通过create方法来初始化AMS这个Binder对象，在后续调用中返回之前创建的对象</span></span><br><span class="line">        <span class="keyword">return</span> IActivityManagerSingleton.get();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton&lt;IActivityManager&gt; IActivityManagerSingleton =</span><br><span class="line">            <span class="keyword">new</span> Singleton&lt;IActivityManager&gt;() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">protected</span> IActivityManager <span class="title">create</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="comment">//ServiceManager是服务大管家，这里通过getService获取到了IBinder类型的AMS引用</span></span><br><span class="line">                    <span class="keyword">final</span> IBinder b = ServiceManager.getService(Context.ACTIVITY_SERVICE);</span><br><span class="line">                    <span class="comment">//这通过asInterface方法把IBinder类型的AMS引用转换成AMS在应用进程的本地代理</span></span><br><span class="line">                    <span class="keyword">final</span> IActivityManager am = IActivityManager.Stub.asInterface(b);</span><br><span class="line">                    <span class="keyword">return</span> am;</span><br><span class="line">                &#125;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>上面出现的IActivityManager.java类的意义类似于前面提到的ApplicationThread.java。要想进行进程间通信，AMS只需要继承IActivityManager.Stub类并实现相应的方法就可以，这样AMS就能对外提供远程服务，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityManagerService.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ActivityManagerService</span> <span class="keyword">extends</span> <span class="title">IActivityManager</span>.<span class="title">Stub</span></span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以继续回到Instrumentation的execStartActivity方法中，ActivityManager.getService()返回的是AMS的本地代理，注意AMS是在系统进程SystemServer中，所以注释1这里通过<strong>Binder的IPC</strong>，调用的其实是AMS的startActivity方法。</p>
+<p>整个过程的时序图如下：</p>
+<img src="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity1.png" class="" title="activity">
+
+<p><strong>在这里开始，Activity的启动过程从应用进程转移到AMS中去</strong>。</p>
+<h2 id="AMS-startActivity"><a href="#AMS-startActivity" class="headerlink" title="AMS::startActivity()"></a>AMS::startActivity()</h2><p>AMS的startActivity方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AMS.java</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">startActivity</span><span class="params">(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, <span class="keyword">int</span> requestCode, <span class="keyword">int</span> startFlags, ProfilerInfo profilerInfo, Bundle bOptions)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">return</span> startActivityAsUser(caller, callingPackage, intent, resolvedType, resultTo,</span><br><span class="line">             resultWho, requestCode, startFlags, profilerInfo, bOptions,</span><br><span class="line">             UserHandle.getCallingUserId());</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>简单的return了startActivityAsUser方法，该方法在最后多了个 UserHandle.getCallingUserId()参数，AMS根据这个确定调用者权限。我们再来看看其他参数：</p>
+<ul>
+<li>caller：IApplicationThread类型，还记得上面提到的ApplicationThread吗？到这里它已经被转成了ApplicationThread的本地代理，这个转换的过程发生在上面讲到的Binder的IPC中，就像上面提到的AMS本地代理转换一样。</li>
+<li>callingPackage：前面一直传过来的，代表调用者Activity所在的包名</li>
+<li>intent：前面startActivity时传递过来的intent</li>
+<li>resolvedType：从上面传过来，intent.resolveTypeIfNeeded()</li>
+<li>resultTo：IBinder类型，还记得上面提到的mToken吗？就是从上面一直传过来的，保存着的调用者Activity的ActivityRecord信息</li>
+<li>resultWho：String类型，调用者Activity的mEmbeddedID，前面一直传过来的</li>
+<li>requestCode：从上面一直传过来的，一直为-1</li>
+<li>startFlags：从上面传过来，为0</li>
+<li>profilerInfo：ProfilerInfo类型，从上面传过来，等于null</li>
+<li>bOptions：Bundle类型，从上面传过来，等于null</li>
+</ul>
+<p>下面继续看AMS的startActivityAsUser方法。</p>
+<h3 id="1、AMS-startActivityAsUser"><a href="#1、AMS-startActivityAsUser" class="headerlink" title="1、AMS::startActivityAsUser()"></a>1、AMS::startActivityAsUser()</h3><p>startActivityAsUser方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AMS.java</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">startActivityAsUser</span><span class="params">(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, <span class="keyword">int</span> requestCode, <span class="keyword">int</span> startFlags, ProfilerInfo profilerInfo, Bundle bOptions, <span class="keyword">int</span> userId)</span> </span>&#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">     <span class="keyword">return</span> mActivityStarter.startActivityMayWait(caller, -<span class="number">1</span>, callingPackage, intent,</span><br><span class="line">             resolvedType, <span class="keyword">null</span>, <span class="keyword">null</span>, resultTo, resultWho, requestCode, startFlags,</span><br><span class="line">             profilerInfo, <span class="keyword">null</span>, <span class="keyword">null</span>, bOptions, <span class="keyword">false</span>, userId, <span class="keyword">null</span>, <span class="keyword">null</span>,</span><br><span class="line">             <span class="string">"startActivityAsUser"</span>);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>省略了两个判断，1、判断调用者进程是否被隔离，2、判断调用者是否有权限，这些都不是重点。下面继续简单的return了mActivityStarter.startActivityMayWait方法，mActivityStarter是ActivityStarter类型，它是AMS中加载Activity的控制类，会收集所有的逻辑来决定如何将Intent和Flags转换为Activity，并将Activity和Task以及Stack相关联。传入startActivityMayWait方法的参数又多了几个，看一下几个：</p>
+<ul>
+<li>callingUid：第二个参数，等于-1</li>
+<li>inTask：倒数第二个参数，TaskRecord类型，代表要启动的Activity所在的栈，这里为null，表示还没创建</li>
+<li>reason：倒数第一个参数，值为”startActivityAsUser”，代表启动的理由</li>
+<li>其他的参数有一些传入null，有一些是从上面传过来的</li>
+</ul>
+<p>下面看ActivityStarter中的startActivityMayWait方法。</p>
+<h3 id="2、ActivityStarter-startActivityMayWait"><a href="#2、ActivityStarter-startActivityMayWait" class="headerlink" title="2、ActivityStarter::startActivityMayWait()"></a>2、ActivityStarter::startActivityMayWait()</h3><p>来看看这个方法的源码，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStarter.java</span></span><br><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">int</span> <span class="title">startActivityMayWait</span><span class="params">(IApplicationThread caller, <span class="keyword">int</span> callingUid, String callingPackage, Intent intent, String resolvedType, IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor, IBinder resultTo, String resultWho, <span class="keyword">int</span> requestCode, <span class="keyword">int</span> startFlags, ProfilerInfo profilerInfo, WaitResult outResult, Configuration globalConfig, Bundle bOptions, <span class="keyword">boolean</span> ignoreTargetSecurity, <span class="keyword">int</span> userId, IActivityContainer iContainer, TaskRecord inTask, String reason)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//把上面传进来的intent再构造一个新的Intent对象，这样即便intent被修改也不受影响</span></span><br><span class="line">    intent = <span class="keyword">new</span> Intent(intent);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    ResolveInfo rInfo = mSupervisor.resolveIntent(intent, resolvedType, userId);</span><br><span class="line">    <span class="keyword">if</span>(rInfo == <span class="keyword">null</span>)&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//解析这个intent，收集intent指向的Activity信息</span></span><br><span class="line">    ActivityInfo aInfo = mSupervisor.resolveActivity(intent, rInfo, startFlags, profilerInfo);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">final</span> ActivityRecord[] outRecord = <span class="keyword">new</span> ActivityRecord[<span class="number">1</span>];</span><br><span class="line">    <span class="comment">//1、主要关注这里，调用了本身的startActivityLocked方法</span></span><br><span class="line">    <span class="keyword">int</span> res = startActivityLocked(caller, intent, ephemeralIntent, resolvedType, aInfo, rInfo, voiceSession, voiceInteractor, resultTo, resultWho, requestCode, callingPid, callingUid, callingPackage, realCallingPid, realCallingUid, startFlags, options, ignoreTargetSecurity, componentSpecified, outRecord, container, inTask, reason);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ActivityInfo里面收集了要启动的Activity信息（关于ResolveInfo与ActivityInfo可以看这篇<a href="https://blog.csdn.net/Rain_9155/article/details/89286415" target="_blank" rel="noopener">如何获取Android应用与系统信息</a>），主要还是关注注释1，这里又调用了ActivityStarter中的startActivityLocked方法。传入startActivityLocked方法的参数又多了几个（callingPid等）。关于pid于与uid的介绍可以看这篇文章<a href="https://blog.csdn.net/jiaoli_82/article/details/49802613" target="_blank" rel="noopener">Android手机中UID、PID作用及区别</a>。</p>
+<p>下面来看一下startActivityLocked方法。</p>
+<h4 id="2-1、ActivityStarter-startActivityLocked"><a href="#2-1、ActivityStarter-startActivityLocked" class="headerlink" title="2.1、ActivityStarter::startActivityLocked()"></a>2.1、ActivityStarter::startActivityLocked()</h4><p>该方法的相关源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStarter.java</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">startActivityLocked</span><span class="params">(IApplicationThread caller, Intent intent, Intent ephemeralIntent, String resolvedType, ActivityInfo aInfo, ResolveInfo rInfo, IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor, IBinder resultTo, String resultWho, <span class="keyword">int</span> requestCode, <span class="keyword">int</span> callingPid, <span class="keyword">int</span> callingUid, String callingPackage, <span class="keyword">int</span> realCallingPid, <span class="keyword">int</span> realCallingUid, <span class="keyword">int</span> startFlags, ActivityOptions options, <span class="keyword">boolean</span> ignoreTargetSecurity, <span class="keyword">boolean</span> componentSpecified,</span></span></span><br><span class="line"><span class="function"><span class="params">                          ActivityRecord[] outActivity, ActivityStackSupervisor.ActivityContainer container, TaskRecord inTask, String reason)</span> </span>&#123;</span><br><span class="line">         <span class="comment">//这里对上面传进来值为"startActivityAsUser"理由参数判空</span></span><br><span class="line">         <span class="keyword">if</span> (TextUtils.isEmpty(reason)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Need to specify a reason."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">       mLastStartReason = reason;</span><br><span class="line">       mLastStartActivityTimeMs = System.currentTimeMillis();</span><br><span class="line">       mLastStartActivityRecord[<span class="number">0</span>] = <span class="keyword">null</span>;</span><br><span class="line">      <span class="comment">//1、主要关注这里，调用了本身的startActivity方法</span></span><br><span class="line">       mLastStartActivityResult = startActivity(caller, intent, ephemeralIntent, resolvedType,</span><br><span class="line">                aInfo, rInfo, voiceSession, voiceInteractor, resultTo, resultWho, requestCode,</span><br><span class="line">                callingPid, callingUid, callingPackage, realCallingPid, realCallingUid, startFlags,</span><br><span class="line">                options, ignoreTargetSecurity, componentSpecified, mLastStartActivityRecord,</span><br><span class="line">                container, inTask);</span><br><span class="line">      <span class="keyword">if</span> (outActivity != <span class="keyword">null</span>) &#123;</span><br><span class="line">            outActivity[<span class="number">0</span>] = mLastStartActivityRecord[<span class="number">0</span>];</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">return</span> mLastStartActivityResult;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里主要关注注释1，调用了ActivityStarter中的startActivity方法，该方法多了一个参数，最后一个mLastStartActivityRecord，mLastStartActivityRecord是一个ActivityRecord数组类型，ActivityRecord是用来保存一个Activity的所有信息的类。</p>
+<p>下面来看ActivityStarter中的startActivity方法。</p>
+<h4 id="2-2、ActivityStarter-startActivity"><a href="#2-2、ActivityStarter-startActivity" class="headerlink" title="2.2、ActivityStarter::startActivity()"></a>2.2、ActivityStarter::startActivity()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">//ActivityStarter.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">startActivity</span><span class="params">(IApplicationThread caller, Intent intent, Intent ephemeralIntent, String resolvedType, ActivityInfo aInfo, ResolveInfo rInfo, IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor, IBinder resultTo, String resultWho, <span class="keyword">int</span> requestCode, <span class="keyword">int</span> callingPid, <span class="keyword">int</span> callingUid, String callingPackage, <span class="keyword">int</span> realCallingPid, <span class="keyword">int</span> realCallingUid, <span class="keyword">int</span> startFlags, ActivityOptions options, <span class="keyword">boolean</span> ignoreTargetSecurity, <span class="keyword">boolean</span> componentSpecified,</span></span></span><br><span class="line"><span class="function"><span class="params">ActivityRecord[] outActivity, ActivityStackSupervisor.ActivityContainer container, TaskRecord inTask)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> err = ActivityManager.START_SUCCESS;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">     <span class="comment">//获取调用者所在进程记录的对象，caller就是上面一直强调的代表调用者进程的ApplicationThread对象</span></span><br><span class="line">     ProcessRecord callerApp = <span class="keyword">null</span>;</span><br><span class="line">     <span class="keyword">if</span> (caller != <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="comment">//这里调用AMS的getRecordForAppLocked方法获得代表调用者进程的callerApp</span></span><br><span class="line">         callerApp = mService.getRecordForAppLocked(caller);</span><br><span class="line">         <span class="keyword">if</span> (callerApp != <span class="keyword">null</span>) &#123;</span><br><span class="line">             <span class="comment">//获取调用者进程的pid与uid并赋值</span></span><br><span class="line">             callingPid = callerApp.pid;</span><br><span class="line">             callingUid = callerApp.info.uid;</span><br><span class="line">         &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             err = ActivityManager.START_PERMISSION_DENIED;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//下面startActivity方法的参数之一，代表调用者Activity的信息</span></span><br><span class="line">     ActivityRecord sourceRecord = <span class="keyword">null</span>;</span><br><span class="line">     <span class="keyword">if</span> (resultTo != <span class="keyword">null</span>) &#123;</span><br><span class="line">            sourceRecord = mSupervisor.isInAnyStackLocked(resultTo);</span><br><span class="line">         	<span class="comment">//...</span></span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">     <span class="comment">//创建即将要启动的Activity的信息描述类ActivityRecord</span></span><br><span class="line">      ActivityRecord r = <span class="keyword">new</span> ActivityRecord(mService, callerApp, callingPid, callingUid,</span><br><span class="line">                callingPackage, intent, resolvedType, aInfo, mService.getGlobalConfiguration(),</span><br><span class="line">                resultRecord, resultWho, requestCode, componentSpecified, voiceSession != <span class="keyword">null</span>,</span><br><span class="line">                mSupervisor, container, options, sourceRecord);</span><br><span class="line">     <span class="comment">//outActivity是ActivityRecord[]类型，从上面传进来，这里把ActivityRecord赋值给了它，下面会作为参数传进startActivity方法中</span></span><br><span class="line">     <span class="keyword">if</span> (outActivity != <span class="keyword">null</span>) &#123;</span><br><span class="line">         outActivity[<span class="number">0</span>] = r;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">     <span class="comment">//1、关注这里，调用了本身的另一个startActivity方法</span></span><br><span class="line">	<span class="keyword">return</span> startActivity(r, sourceRecord, voiceSession, voiceInteractor, startFlags, <span class="keyword">true</span>,</span><br><span class="line">                options, inTask, outActivity);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的startActivity代码非常长，省略了很多，上面讲的调用者进程，在这里等价于应用程序进程，ProcessRecord是用来描述一个应用进程的信息，ActivityRecord上面也讲过了，就是用来记录一个要启动的Activity的所有信息，在注释1处的调用了ActivityStarter的startActivity方法，这个方法参数少了很多，大多数有关要启动的Activity的信息都被封装进了ActivityRecord类中，作为参数r传了进去。</p>
+<p>下面来看ActivityStarter的startActivity方法。</p>
+<h4 id="2-3、ActivityStarter-startActivity"><a href="#2-3、ActivityStarter-startActivity" class="headerlink" title="2.3、ActivityStarter::startActivity()"></a>2.3、ActivityStarter::startActivity()</h4><p>该方法代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">//ActivityStarter.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">startActivity</span><span class="params">(<span class="keyword">final</span> ActivityRecord r, ActivityRecord sourceRecord,</span></span></span><br><span class="line"><span class="function"><span class="params">                           IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor, <span class="keyword">int</span> startFlags, <span class="keyword">boolean</span> doResume, ActivityOptions options, TaskRecord inTask, ActivityRecord[] outActivity)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> result = START_CANCELED;</span><br><span class="line">     <span class="keyword">try</span> &#123;</span><br><span class="line">            mService.mWindowManager.deferSurfaceLayout();</span><br><span class="line">         	<span class="comment">//1、主要关注这里，调用本身的startActivityUnchecked方法</span></span><br><span class="line">            result = startActivityUnchecked(r, sourceRecord, voiceSession, voiceInteractor,</span><br><span class="line">                    startFlags, doResume, options, inTask, outActivity);</span><br><span class="line">          &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">           	<span class="comment">//...</span></span><br><span class="line">           mService.mWindowManager.continueSurfaceLayout();</span><br><span class="line">     	&#125;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里主要调用了ActivityStarter的startActivityUnchecked方法。</p>
+<h4 id="2-4、ActivityStarter-startActivityUnchecked"><a href="#2-4、ActivityStarter-startActivityUnchecked" class="headerlink" title="2.4、ActivityStarter::startActivityUnchecked()"></a>2.4、ActivityStarter::startActivityUnchecked()</h4><p>该方法代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStarter.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">startActivityUnchecked</span><span class="params">(<span class="keyword">final</span> ActivityRecord r, ActivityRecord sourceRecord,</span></span></span><br><span class="line"><span class="function"><span class="params">IVoiceInteractionSession voiceSession, IVoiceInteractor voiceInteractor, <span class="keyword">int</span> startFlags, <span class="keyword">boolean</span> doResume, ActivityOptions options, TaskRecord inTask, ActivityRecord[] outActivity)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//把上面传进来的参数除了outActivity都传进去了，主要是把这些参数赋值给ActivityStarter的成员变量，如mDoResume = doResume, mStartActivity = r</span></span><br><span class="line">    <span class="comment">//mStartActivity就是即将要启动的Activity的信息</span></span><br><span class="line">     setInitialState(r, options, inTask, doResume, startFlags, sourceRecord, voiceSession,</span><br><span class="line">                voiceInteractor);</span><br><span class="line">    <span class="comment">//计算出启动Activity的模式，并赋值给mLaunchFlags</span></span><br><span class="line">    computeLaunchingTaskFlags();</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//设置启动模式</span></span><br><span class="line">     mIntent.setFlags(mLaunchFlags);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">boolean</span> newTask = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">//1、下面会进行判断，到底需不需要创建一个新的Activity任务栈</span></span><br><span class="line">    <span class="keyword">int</span> result = START_SUCCESS;</span><br><span class="line">    <span class="keyword">if</span> (mStartActivity.resultTo == <span class="keyword">null</span> &amp;&amp; mInTask == <span class="keyword">null</span> &amp;&amp; !mAddingToTask</span><br><span class="line">        &amp;&amp; (mLaunchFlags &amp; FLAG_ACTIVITY_NEW_TASK) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//1.1走这里就会在setTaskFromReuseOrCreateNewTask方法内部创建一个新的Activity任务栈</span></span><br><span class="line">        newTask = <span class="keyword">true</span>;</span><br><span class="line">        result = setTaskFromReuseOrCreateNewTask(</span><br><span class="line">            taskToAffiliate, preferredLaunchStackId, topStack);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mSourceRecord != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//1.2走这里就会在setTaskFromSourceRecord方法内部获得调用者Activity的的任务栈赋值给mTargetStack</span></span><br><span class="line">        result = setTaskFromSourceRecord();</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mInTask != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//1.3走这里就会在setTaskFromInTask方法内部直接把mInTask赋值给mTargetStack，前面已经说过mInTask等于null</span></span><br><span class="line">        result = setTaskFromInTask();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//1.4、就是前面的条件都不满足了，但是这种情况很少发生</span></span><br><span class="line">        setTaskToCurrentTopOrCreateNewTask();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (result != START_SUCCESS) &#123;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//mDoResume等于上面传进来的doResume，为true</span></span><br><span class="line">     <span class="keyword">if</span> (mDoResume) &#123;</span><br><span class="line">            <span class="keyword">final</span> ActivityRecord topTaskActivity =</span><br><span class="line">                    mStartActivity.getTask().topRunningActivityLocked();</span><br><span class="line">            <span class="keyword">if</span> (!mTargetStack.isFocusable()</span><br><span class="line">                    || (topTaskActivity != <span class="keyword">null</span> &amp;&amp; topTaskActivity.mTaskOverlay</span><br><span class="line">                    &amp;&amp; mStartActivity != topTaskActivity)) &#123;</span><br><span class="line">              <span class="comment">//走这里不会显示Activity，因为Activity还没有获取焦点或者Activity的栈溢出</span></span><br><span class="line">              <span class="comment">//...</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">              <span class="comment">//正常的话会走到这里</span></span><br><span class="line">                <span class="keyword">if</span> (mTargetStack.isFocusable() &amp;&amp; !mSupervisor.isFocusedStack(mTargetStack)) &#123;</span><br><span class="line">                    mTargetStack.moveToFront(<span class="string">"startActivityUnchecked"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//2、主要关注这里调用mSupervisor的resumeFocusedStackTopActivityLocked方法</span></span><br><span class="line">                mSupervisor.resumeFocusedStackTopActivityLocked(mTargetStack, mStartActivity,</span><br><span class="line">                        mOptions);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">     <span class="keyword">return</span> START_SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的startActivityUnchecked方法也是很长，这个方法主要处理Activity栈管理相关的逻辑，如果对于这方面信息不熟悉的话可以查看这两篇文章<a href="https://blog.csdn.net/guolin_blog/article/details/41087993" target="_blank" rel="noopener">Android任务和返回栈完全解析</a>、<a href="http://liuwangshu.cn/framework/ams/2-activitytask.html" target="_blank" rel="noopener">ActivityTask和Activity栈管理</a>。一个或多个ActivityRecord会组成一个TaskRecord，TaskRecord用来记录Activity的栈，而ActivityStack包含了一个或多个TaskRecord。上面代码的mTargetStack就是ActivityStack类型，我们先来看注释1，注释1会根据mLaunchFlags等条件到底需不需要创建一个新的Activity任务栈，而本文所讨论的条件限定在从一个应用程序调用Activity的startActivity去启动另外一个Activity的情景，而且默认Activity的启动模式是standard，并不会创建一个新的任务栈，所以就会走到1.2的条件分支，然后我们再来看注释2，这里会调用mSupervisor.resumeFocusedStackTopActivityLocked方法，mSupervisor是ActivityStackSupervisor类型，ActivityStackSupervisor主要用来管理ActivityStack。启动Activity的过程从ActivityStack来到了ActivityStackSupervisor。</p>
+<p>下面我们来看ActivityStackSupervisor的resumeFocusedStackTopActivityLocked方法。</p>
+<h3 id="3、ActivityStackSupervisor-resumeFocusedStackTopActivityLocked"><a href="#3、ActivityStackSupervisor-resumeFocusedStackTopActivityLocked" class="headerlink" title="3、ActivityStackSupervisor::resumeFocusedStackTopActivityLocked()"></a>3、ActivityStackSupervisor::resumeFocusedStackTopActivityLocked()</h3><p>该方法源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStackSupervisor.java</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">resumeFocusedStackTopActivityLocked</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            ActivityStack targetStack, ActivityRecord target, ActivityOptions targetOptions)</span> </span>&#123;</span><br><span class="line">       	<span class="comment">//...</span></span><br><span class="line">    	<span class="comment">//获取要启动的Activity所在栈的栈顶的ActivityRecord</span></span><br><span class="line">        <span class="keyword">final</span> ActivityRecord r = mFocusedStack.topRunningActivityLocked();</span><br><span class="line">    	<span class="comment">//1、r是否null或是否为RESUMED状态</span></span><br><span class="line">        <span class="keyword">if</span> (r == <span class="keyword">null</span> || r.state != RESUMED) &#123;</span><br><span class="line">            <span class="comment">//2、关注这里，调用ActivityStack的resumeTopActivityUncheckedLocked方法</span></span><br><span class="line">            mFocusedStack.resumeTopActivityUncheckedLocked(<span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (r.state == RESUMED) &#123;</span><br><span class="line">            mFocusedStack.executeAppTransition(targetOptions);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先这里会获取要启动的Activity所在栈的栈顶的ActivityRecord赋值给r，因为要启动的Activity的还没有启动，所以此时栈顶就是调用者Activity，调用者Activity启动Activity，肯定会从RESUME状态转到其他状态如STPO，所以注释1满足r.state != RESUMED的条件，此时就是走带注释2，注释2调用了mFocusedStack的resumeTopActivityUncheckedLocked方法，mFocusedStack就是ActivityStack类型。启动Activity的过程从ActivityStackSupervisor又回到到了ActivityStack。</p>
+<p>下面我们来看ActivityStack的resumeTopActivityUncheckedLocked方法。</p>
+<h4 id="3-1、ActivityStack-resumeTopActivityUncheckedLocked"><a href="#3-1、ActivityStack-resumeTopActivityUncheckedLocked" class="headerlink" title="3.1、ActivityStack:: resumeTopActivityUncheckedLocked()"></a>3.1、ActivityStack:: resumeTopActivityUncheckedLocked()</h4><p>该方法的源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStack.java</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">resumeTopActivityUncheckedLocked</span><span class="params">(ActivityRecord prev, ActivityOptions options)</span> </span>&#123;</span><br><span class="line">       <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//1、关注这里，这里调用了本身的resumeTopActivityInnerLocked方法</span></span><br><span class="line">            result = resumeTopActivityInnerLocked(prev, options);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">           <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们来看注释1，简单的调用了resumeTopActivityInnerLocked方法。</p>
+<h5 id="3-1-1、-ActivityStack-resumeTopActivityInnerLocked"><a href="#3-1-1、-ActivityStack-resumeTopActivityInnerLocked" class="headerlink" title="3.1.1、 ActivityStack:: resumeTopActivityInnerLocked()"></a>3.1.1、 ActivityStack:: resumeTopActivityInnerLocked()</h5><p>该方法源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStack.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">resumeTopActivityInnerLocked</span><span class="params">(ActivityRecord prev, ActivityOptions options)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    	<span class="comment">//获得将要启动的Activity的信息</span></span><br><span class="line">        <span class="keyword">final</span> ActivityRecord next = topRunningActivityLocked(<span class="keyword">true</span> <span class="comment">/* focusableOnly */</span>)</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">if</span> (next.app != <span class="keyword">null</span> &amp;&amp; next.app.thread != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">            <span class="comment">//1、关注这里，调用了ActivityStackSupervisor的startSpecificActivityLocked方法</span></span><br><span class="line">            mStackSupervisor.startSpecificActivityLocked(next, <span class="keyword">true</span>, <span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    	<span class="keyword">if</span> (DEBUG_STACK) mStackSupervisor.validateTopActivitiesLocked();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>topRunningActivityLocked方法获得将要启动的Activity的信息next，因为此时要启动的Activity还不属于任何进程，故它的ProcessRecord为空成立，就会走到else分支，所以注释1这里调用了ActivityStackSupervisor的startSpecificActivityLocked方法，又回到了ActivityStackSupervisor中。</p>
+<p>下面来看ActivityStackSupervisor的startSpecificActivityLocked方法。</p>
+<h4 id="3-2、ActivityStackSupervisor-startSpecificActivityLocked"><a href="#3-2、ActivityStackSupervisor-startSpecificActivityLocked" class="headerlink" title="3.2、ActivityStackSupervisor::startSpecificActivityLocked()"></a>3.2、ActivityStackSupervisor::startSpecificActivityLocked()</h4><p>该方法源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStackSupervisor.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">startSpecificActivityLocked</span><span class="params">(ActivityRecord r, <span class="keyword">boolean</span> andResume, <span class="keyword">boolean</span> checkConfig)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//获取要启动的Activity的所在应用程序进程</span></span><br><span class="line">        ProcessRecord app = mService.getProcessRecordLocked(r.processName, 													r.info.applicationInfo.uid, <span class="keyword">true</span>);</span><br><span class="line">        r.getStack().setLaunchTime(r);</span><br><span class="line">        <span class="comment">//要启动的Activity的所在应用程序进程存在</span></span><br><span class="line">        <span class="keyword">if</span> (app != <span class="keyword">null</span> &amp;&amp; app.thread != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//...</span></span><br><span class="line">                <span class="comment">//1、关注这里，调用了本身的realStartActivityLocked方法</span></span><br><span class="line">                realStartActivityLocked(r, app, andResume, checkConfig);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">                <span class="comment">//...</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    	<span class="comment">//...</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里首先会获取要启动的Activity所在的应用进程app，当app进程已经运行时，就会调用注释1处的realStartActivityLocked方法，注意这里多了一个参数，把代表应用进程的app传了进去。</p>
+<p>下面来看ActivityStackSupervisor的realStartActivityLocked方法。</p>
+<h4 id="3-3、ActivityStackSupervisor-realStartActivityLocked"><a href="#3-3、ActivityStackSupervisor-realStartActivityLocked" class="headerlink" title="3.3、ActivityStackSupervisor::realStartActivityLocked()"></a>3.3、ActivityStackSupervisor::realStartActivityLocked()</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">realStartActivityLocked</span><span class="params">(ActivityRecord r, ProcessRecord app, <span class="keyword">boolean</span> andResume, <span class="keyword">boolean</span> checkConfig)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//1、把应用所在进程信息赋值给要启动的Activity的ActivityRecord</span></span><br><span class="line">    r.app = app;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="comment">//2、关注这里，app是ProcessRecord类型，app.thread是IApplicationThread类型</span></span><br><span class="line">        <span class="comment">//app.thread是应用进程的ApplicationThread在AMS的本地代理，前面已经讲过</span></span><br><span class="line">        <span class="comment">//所以这里实际调用的是ApplicationThread的scheduleLaunchActivity方法</span></span><br><span class="line">        app.thread.scheduleLaunchActivity(<span class="keyword">new</span> Intent(r.intent), r.appToken,</span><br><span class="line">                   System.identityHashCode(r), r.info,</span><br><span class="line">                   mergedConfiguration.getGlobalConfiguration(),</span><br><span class="line">                   mergedConfiguration.getOverrideConfiguration(), r.compat,</span><br><span class="line">                   r.launchedFromPackage, task.voiceInteractor, app.repProcState, r.icicle,</span><br><span class="line">                   r.persistentState, results, newIntents, !andResume,</span><br><span class="line">                   mService.isNextTransitionForward(), profilerInfo);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;<span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>正如这方法名所示，realStartActivity，兜兜转转，这里就是真正启动Activity的地方，注释1处app指的是传入的要启动的Activity的所在的应用程序进程，是从前面传过来的，这里把它赋值给了要启动的Activity的ActivityRecord的app字段去，这样就可以说要启动的Activity属于应用进程，我们再来看注释2这里，app.thread就是我们上面一直强调的ApplicationThread，所以这里通过<strong>Binder的IPC</strong>其实调用的是ApplicationThread中的scheduleLaunchActivity方法。</p>
+<p>整个过程的时序图如下：</p>
+<img src="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity2.png" class="" title="activity">
+
+<p><strong>当前的代码逻辑执行在AMS所在进程，从这里开始Activity的启动流程最终又回到了应用进程所在的ApplicationThread中。</strong></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本来一篇文章写完Activity的启动，写到这里才发现，篇幅太长，所以<strong>Activity在应用进程中的启动过程</strong>就放到下一篇文章。本文简单的介绍了<strong>应用进程请求AMS启动Activity过程和Activity在AMS中的启动过程</strong>，现在让我们来回答一下开头给出的几个问题：</p>
+<ul>
+<li><strong>1、Activity的启动流程是怎样的？</strong></li>
+</ul>
+<p>从应用调用一个startActivity方法开始，应用进程开始请求AMS启动Activity，然后在AMS中Activity完成它的一系列准备，最后再回到应用进程中开始回调Activity的生命周期，本文回答了一半这个问题，即本文讲解了应用进程开始请求AMS启动Activity，然后在AMS中完成它的一系列准备的过程，这个过程用时序图表示如下：</p>
+<img src="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity3.png" class="" title="activity">
+
+<ul>
+<li><strong>2、Activity的生命周期方法是如何被回调的？</strong></li>
+</ul>
+<p>本文并没有解答这个问题，这个问题要到下一篇文章才能有答案。</p>
+<ul>
+<li><strong>3、它启动过程中涉及到多少个进程？</strong></li>
+</ul>
+<p>答案是2个，前言已经讲过本文讨论的是普通Activity的启动流程，<strong>即我们平时调用startActivity方法来启动一个Activity</strong>，所以本文这个过程涉及的进程可以可以用下面这个图表示：</p>
+<img src="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity4.png" class="" title="activity">
+
+<p>图中AppProcess代表应用所在进程，systemServer代表AMS所在进程，两个进程之间通过Binder进行通信，实现了XX.Stub的类就可以进行Binder通信，如本文的ApplicationThread和AMS都实现了各自的Stub类，所以应用进程startActivity时请求AMS启动Activity，AMS准备好后，再发送scheduleLaunchActivity请求告诉应用可以开始启动Activity了。</p>
+<p>那么如果是前言所讲的第一种启动Activity的过程，<strong>即在Launch界面点击一个应用图标启动应用程序</strong>，那么会涉及多少个进程？答案是4个，如图：</p>
+<img src="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/activity5.png" class="" title="activity5">
+
+<p>可以看到会涉及Launcher进程、SystemServer进程、App进程、Zygote进程(关于这些进程的简单信息可以看这篇<a href="https://rain9155.github.io/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" target="_blank" rel="noopener">从进程的角度看Android的系统架构</a>)，这整个过程如下：首先是点击App图标，此时是运行在Launcher进程,  Launcher通过AMS本地代理向AMS发起startActivity请求，AMS收到请求后，发现要启动的Activity的进程不存在，就通过Process.start方法向Zygote进程发送创建进程的请求，Zygote进程收到请求后，fork出新的子进程，即App进程，然后进入ActivityThread.main方法中，这时运行在App进程中，App进程通过AMS本地代理向AMS发起attachApplication请求，AMS接收到请求后，进行一些列准备工作(通知Activity创建Application)后，再通过ApplicationThread向App进程发送scheduleLaunchActivity请求，App进程收到请求后，后面就会进行Activity的生命周期回调。</p>
+<p>关于ApplicationThread中的scheduleLaunchActivity方法之后的流程就留到下一篇文章了。</p>
+<p>阅读源码真的是一个漫长的过程，又时候看别人写的那么简单，但是当自己去写，才发现要考虑的东西很多，所以这是一个日积月累的过程，所以阅读源码的时候，最好跟着前人的文章阅读，这样理解的更快。</p>
+<p>参考文章：</p>
+<p><a href="http://gityuan.com/2016/03/12/start-activity/" target="_blank" rel="noopener">startActivity启动过程分析</a></p>
+<p><a href="http://liuwangshu.cn/framework/component/6-activity-start-1.html" target="_blank" rel="noopener">Android8.0 根Activity启动过程</a></p>
+<p><a href="https://www.cnblogs.com/jymblog/p/10917345.html" target="_blank" rel="noopener">从Activity的启动流程理解Binder</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.661Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/activity/" rel="tag">activity</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/&title=《Android8.0的Activity启动流程(1)》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/&title=《Android8.0的Activity启动流程(1)》 — jianyu的博客&source=前言Activity的启动流程有俩种过程，一种是根Activity的启动过程，即在Launch界面点击一个应用图标启动应用程序，根Activity指的是应..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Android8.0的Activity启动流程(1)》 — jianyu的博客&url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B2/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Android8.0的Activity启动流程(2)</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Window,WindowManager和WindowManagerService之间的关系</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/&title=《Android8.0的Activity启动流程(1)》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/&title=《Android8.0的Activity启动流程(1)》 — jianyu的博客&source=前言Activity的启动流程有俩种过程，一种是根Activity的启动过程，即在Launch界面点击一个应用图标启动应用程序，根Activity指的是应..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Android8.0的Activity启动流程(1)》 — jianyu的博客&url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPYAAAD2CAAAAADAeSUUAAADKUlEQVR42u3aS27CUAwFUPa/6Xbaqg1c20EizskIAQ3vGKnGn8cjvr6eXkfv+fn80ePe9fcOj3dc2NjY2Bdh90gJOGH/fZwHqBpKbGxs7N3so//w+bGOkkov4c0T5AsjNjY29o3Zz9+fh6AX6DyZYWNjY2NP2JMQVNtG2NjY2Ni9xFAdACTUaiDy5hc2Njb2bnY+Ff38x2+Zb2NjY2N/MPusRZl5Ipl/bkGBjY2NvYidJ4CkVEiQ+aJPdUiQnx8bGxt7EztZf6k2ZfKGVJ6QkmFGoVzBxsbGXseOxqIt3lmLOC8ycHDnX+/BxsbGXs2uNobmraJJYuuNqLGxsbE3sfMFx+Snf3U1M0l1SbHUW9PExsbG3sGe/KCfjATy+1eDXviesbGxsVewzzpKr4CpjgSiAiMWYWNjY+9g99JSr0HfG9D2Rs4vFNjY2Njr2OXGeoDP/3YS4mhBJ/94bGxs7Auye7xq4ZG09XsBzZMoNjY29t3YyUggGevO13HmY4bybAQbGxv7UuyvN1+9AiZ5NflKDl/FxsbGXsrOD9dbl+kFIsnASSsKGxsbezd7snaTD197gchTY6GphI2Njb2I3RsDFG76tnKi2oo6DBk2Njb2xdnJ8LX6Q7/6aq/llKfbf1zY2NjY69i9VtHzMiC5Ty/f9p7BxsbG3sqerNf02lLJok8SjnyF9PBzsbGxsRex8+XFJDklA9pJoZKEuHBnbGxs7Iuzq0fsDVMnw9rqACAqeLCxsbEXsXtHn5QQeeKpLuU0Q4ONjY29iJ0np+rqzHxMm6TSfEiAjY2NvY+dlweTAUAe+15TqTxOxsbGxl7HniebfBiclDQ9duHLwMbGxl7H7qWB6npNVA/FA+NHfJ2Qt7GxsbE/kn1WQ6c3Ki70umJSVK5gY2NjL2JP8l4vjfVKlF6z6QQ8NjY29kXYeasoCUHe6MmTZbWRhI2NjX1P9qQdn5ciyWBgkswKI2RsbGzsG7Orx+21e3rLl4WqCxsbG/vG7MnQN1+vqZ6wOjzAxsbG3seer132Vm3md242v7CxsbEXsavtmF5bv5rw8pP0BtXY2NjYK9jfAU3kwFKtr7sAAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

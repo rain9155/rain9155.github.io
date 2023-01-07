@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>优雅地处理运行时权限请求 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="android">
+    <meta name="description" content="前言从android 6.0(API 级别 23)开始，android引入了运行时权限，用户开始在应用运行时向其授予权限，而不是在应用安装时向其授予权限，如果应用的某项功能需要使用到受运行时权限保护的资源(例如相机、位置、麦克风等)，但在运行该功能前没有动态地申请相应的权限，那么在调用该功能时就会抛出SecurityException异常， android 6.0已经推出了很多年了，相信大家对于运">
+<meta property="og:type" content="article">
+<meta property="og:title" content="优雅地处理运行时权限请求">
+<meta property="og:url" content="http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言从android 6.0(API 级别 23)开始，android引入了运行时权限，用户开始在应用运行时向其授予权限，而不是在应用安装时向其授予权限，如果应用的某项功能需要使用到受运行时权限保护的资源(例如相机、位置、麦克风等)，但在运行该功能前没有动态地申请相应的权限，那么在调用该功能时就会抛出SecurityException异常， android 6.0已经推出了很多年了，相信大家对于运">
+<meta property="og:image" content="http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/permission1.png">
+<meta property="og:image" content="http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/permission2.png">
+<meta property="article:published_time" content="2021-09-22T17:22:43.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.976Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/permission1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">优雅地处理运行时权限请求</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">优雅地处理运行时权限请求</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2021-09-22T17:22:43.000Z" itemprop="datePublished" class="page-time">
+  2021-09-23
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#权限的分类"><span class="post-toc-text">权限的分类</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、普通权限"><span class="post-toc-text">1、普通权限</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、签名权限"><span class="post-toc-text">2、签名权限</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、危险权限"><span class="post-toc-text">3、危险权限</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、特殊权限"><span class="post-toc-text">4、特殊权限</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#动态权限申请设计"><span class="post-toc-text">动态权限申请设计</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#权限申请相关变更"><span class="post-toc-text">权限申请相关变更</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-优雅地处理运行时权限请求"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">优雅地处理运行时权限请求</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2021-09-23 01:22:43" datetime="2021-09-22T17:22:43.000Z"  itemprop="datePublished">2021-09-23</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从android 6.0(API 级别 23)开始，android引入了运行时权限，用户开始在应用运行时向其授予权限，而不是在应用安装时向其授予权限，如果应用的某项功能需要使用到受运行时权限保护的资源(例如相机、位置、麦克风等)，但在运行该功能前没有动态地申请相应的权限，那么在调用该功能时就会抛出SecurityException异常， android 6.0已经推出了很多年了，相信大家对于运行时权限的申请过程已经非常的熟悉，但是android的运行时权限的申请过程一直都是非常的繁琐的，主要有两步：</p>
+<p>1、在需要申请权限的地方检查该权限是否被同意，如果同意了就直接执行，如果不同意就动态申请权限；</p>
+<p>2、重写Activity或Fragment的onRequestPermissionsResult方法，在里面根据grantResults数组判断权限是否被同意，如果同意就直接执行，如果不同意就要进行相应的提示，如果用户勾选了“don’t ask again”，还要引导用户去“Settings”界面打开权限，这时还要重写onActivityResult判断权限是否被同意.</p>
+<p>就是这简单的两步，却夹杂了大量的if else语句，不但不优雅，而且每次都要写重复的样板代码，可能android的开发者也意识到了这一点，在最新androidx中引入了<a href="https://developer.android.com/training/basics/intents/result" target="_blank" rel="noopener">activity result api</a>，通过activity result api你可以不需要自己管理requestCode，只需要提供需要请求的权限和处理结果的回调就行，让权限请求简单了一点，但是如果在权限请求的过程中，用户点击拒绝或者拒绝并不再询问，那么我们还是需要自己处理这些情况，但是这些处理流程都是一样的，完全可以封装起来，所以我就把以前的一个使用无界面fragment代理权限申请的库重构了一下，让权限的请求流程更加简单，本文会先复习一下权限的分类，然后再介绍PermissionHelper申请权限时的设计，最后记录一下从android 6.0后随着系统的迭代跟权限申请相关的重要行为变更。</p>
+<ul>
+<li><a href="https://github.com/rain9155/PermissionHelper" target="_blank" rel="noopener">PermissionHelper</a></li>
+</ul>
+<h2 id="权限的分类"><a href="#权限的分类" class="headerlink" title="权限的分类"></a>权限的分类</h2><p>android中所有的预定义权限(不包括厂商自定义的)都可以在<a href="https://developer.android.google.cn/reference/android/Manifest.permission" target="_blank" rel="noopener">Manifest.permission</a>这个静态类中找到定义，android把权限分为四类：普通权限、签名权限、危险权限和特殊权限，每一种类型的权限都分配一个对应的<strong>Protection Level</strong>，分别为：normal、signature、dangerous和appop，下面简单介绍一下这四种类型的权限</p>
+<h3 id="1、普通权限"><a href="#1、普通权限" class="headerlink" title="1、普通权限"></a>1、普通权限</h3><p>普通权限也叫正常权限，Protection Level为<strong>normal</strong>，它不需要动态申请，你只需要在AndroidManifest.xml中静态地声明，然后系统在应用<strong>安装时</strong>就会自动的授予该应用相应的权限，当应用获得授权时，它就可以访问应用沙盒外受该普通权限保护地数据或操作，这些数据或操作不会泄漏或篡改用户的隐私，对用户或其他应用几乎没有风险。</p>
+<h3 id="2、签名权限"><a href="#2、签名权限" class="headerlink" title="2、签名权限"></a>2、签名权限</h3><p>这类权限我们用得比较少，它只对拥有相同签名的应用开放，Protection Level为<strong>signature</strong>，它也不需要动态申请，例如应用A在AndroidManifest.xml中自定义了一个permission且在权限标签中加入android:protectionLevel=”signature”，表示应用A声明了一个签名权限，那么应用B想要访问应用A受该权限保护的数据时，必须要在AndroidManifest.xml中声明该权限，同时要用与应用A<strong>相同的签名</strong>打包，这样系统在应用B<strong>安装时</strong>才会自动地授予应用B该权限，应用B在获得授权后就可以访问该权限控制的数据，其他应用即使知道这个权限，也在AndroidManifest.xml中声明了该权限，但由于应用签名不同，安装时系统不会授予它该权限，这样其他应用就无法访问受该权限保护的数据。</p>
+<p>还有一些签名权限不会供第三方应用程序使用，只会供系统预装应用使用，这种签名权限的Protection Level为signature和privileged。</p>
+<h3 id="3、危险权限"><a href="#3、危险权限" class="headerlink" title="3、危险权限"></a>3、危险权限</h3><p>危险权限也叫运行时权限，Protection Level为<strong>dangerous</strong>，跟普通权限相反，一旦应用获取了该类权限，用户的隐私数据就会面临被泄露或篡改的风险，所以如果你想使用该权限保护的数据或操作，就必须在AndroidManifest.xml中静态地声明需要用到的危险权限，并在访问这些数据或操作前<strong>动态的</strong>申请权限，系统就会弹出一个权限请求弹窗征求用户的同意，除非用户同意该权限，否则你不能使用该权限保护的数据或操作。</p>
+<p>所有的危险权限都有对应的权限组，android预定义了11个权限组(<strong>根据android 11总结</strong>)，这11个权限组中包含了30个危险权限和几个普通权限，当我们动态的申请某个危险权限时，都是按权限组申请的，当用户一旦同意授权该危险权限，那么该权限所对应的权限组中的其他在AndroidManifest.xml中注册的权限也会同时被授权，android预定义的11个权限组包含的危险权限如下：</p>
+<table>
+<thead>
+<tr>
+<th>Permission Group</th>
+<th>Dangerous Permissions</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CALENDAR (日历)</td>
+<td>READ_CALENDAR   <br> WRITE_CALENDAR</td>
+</tr>
+<tr>
+<td>CALL_LOG (通话记录，Added in android 29)</td>
+<td>READ_CALL_LOG <br> WRITE_CALL_LOG <br> PROCESS_OUTGOING_CALLS</td>
+</tr>
+<tr>
+<td>CAMERA (相机)</td>
+<td>CAMERA</td>
+</tr>
+<tr>
+<td>CONTACTS (通讯录)</td>
+<td>READ_CONTACTS <br> WRITE_CONTACTS <br> GET_ACCOUNTS</td>
+</tr>
+<tr>
+<td>LOCATION (位置信息)</td>
+<td>ACCESS_COARSE_LOCATION <br> ACCESS_FINE_LOCATION <br> ACCESS_BACKGROUND_LOCATION (Added in android 10)</td>
+</tr>
+<tr>
+<td>MICROPHONE (麦克风)</td>
+<td>RECORD_AUDIO</td>
+</tr>
+<tr>
+<td>PHONE (电话)</td>
+<td>READ_PHONE_NUMBERS <br> READ_PHONE_STATE <br> CALL_PHONE <br> ANSWER_PHONE_CALLS <br> ADD_VOICEMAIL <br> USE_SIP <br> ACCEPT_HANDOVER (Added in android 9)</td>
+</tr>
+<tr>
+<td>SENSORS (身体传感器)</td>
+<td>BODY_SENSORS</td>
+</tr>
+<tr>
+<td>SMS (短信)</td>
+<td>READ_SMS <br> RECEIVE_WAP_PUSH <br> RECEIVE_SMS <br> RECEIVE_MMS <br> SEND_SMS</td>
+</tr>
+<tr>
+<td>STORAGE (存储空间)</td>
+<td>READ_EXTERNAL_STORAGE <br> WRITE_EXTERNAL_STORAGE <br> ACCESS_MEDIA_LOCATION (Added in android 10)</td>
+</tr>
+<tr>
+<td>ACTIVITY_RECOGNITION (身体活动，Added in android 10)</td>
+<td>ACTIVITY_RECOGNITION (Added in android 10)</td>
+</tr>
+</tbody></table>
+<h3 id="4、特殊权限"><a href="#4、特殊权限" class="headerlink" title="4、特殊权限"></a>4、特殊权限</h3><p>特殊权限用于保护一些特定的应用程序操作，Protection Level为<strong>appop</strong>，使用前也需要在AndroidManifest.xml中静态地声明，也需要<strong>动态的</strong>申请，但是它不同于危险权限的申请，危险权限的申请会弹出一个对话框询问你是否同意，而特殊权限的申请需要跳转到指定的设置界面，让你手动点击toggle按钮确认是否同意，<strong>截止到android 11</strong>，我了解到的常用的5个特殊权限为：</p>
+<ul>
+<li>SYSTEM_ALERT_WINDOW：允许应用在其他应用的顶部绘制悬浮窗，当你创建的悬浮窗是<a href="https://developer.android.google.cn/reference/android/view/WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY" target="_blank" rel="noopener">TYPE_APPLICATION_OVERLAY</a>类型时需要申请这个权限；</li>
+<li>WRITE_SETTINGS：允许应用修改系统设置，当你需要修改系统参数<a href="https://developer.android.google.cn/reference/android/provider/Settings.System" target="_blank" rel="noopener">Settings.System</a>时需要申请该权限，例如<a href="https://blog.csdn.net/hnkwei1213/article/details/54947339" target="_blank" rel="noopener">修改系统屏幕亮度</a>等；</li>
+<li>REQUEST_INSTALL_PACKAGES： 允许应用安装未知来源应用，android 8.0以后当你<a href="https://www.jianshu.com/p/0462a57134ed" target="_blank" rel="noopener">在应用中安装第三方应用</a>时需要申请这个权限，否则不会跳转到安装界面；</li>
+<li>PACKAGE_USAGE_STATS：允许应用收集其他应用的使用信息，当你使用<a href="https://developer.android.com/reference/android/app/usage/UsageStatsManager" target="_blank" rel="noopener">UsageStatsManager</a>相关Api<a href="https://blog.csdn.net/LoveDou0816/article/details/77983400" target="_blank" rel="noopener">获取其他应用的信息</a>时需要申请这个权限；</li>
+<li>MANAGE_EXTERNAL_STORAGE(Added in android 11)：允许应用访问作用域存储(scoped storage)中的外部存储，android 11以后强制新安装的应用使用<a href="https://developer.android.com/training/data-storage#scoped-storage" target="_blank" rel="noopener">作用域存储</a>，但是对于文件管理器这一类的应用它们需要<a href="https://developer.android.com/training/data-storage/manage-all-files" target="_blank" rel="noopener">管理整个SD卡上的文件</a>，所以针对这些特殊应用可以申请这个权限来获得对整个SD卡的读写权限，当应用授予这个权限后，它就可以访问文件的真实路径，注意这个权限是很危险的，声明这个权限上架应用时可能需要进行审核.</li>
+</ul>
+<p>除了特殊权限，LOCATION权限组中的位置权限也有点特殊，需要注意一下，位置信息的获取不仅依赖位置权限的动态申请还依赖系统定位开关，如果你没有打开定位开关就申请了位置权限，那么就算用户同意授权位置权限，应用通过Location相关Api也无法获取到位置信息，所以申请位置权限前，最好先通过<strong>LocationManager#isProviderEnabled方法</strong>判断是否打开定位开关后再进行位置权限的申请，如果没有打开定位开关需要先跳转到设置界面打开定位开关，伪代码如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> locationManager = <span class="keyword">this</span>.getSystemService(Context.LOCATION_SERVICE) <span class="keyword">as</span> LocationManager</span><br><span class="line"><span class="keyword">if</span> (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) or locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) &#123;</span><br><span class="line">    <span class="comment">//请求位置权限</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">//跳转到开启定位的地方</span></span><br><span class="line">    Toast.makeText(<span class="keyword">this</span>, <span class="string">"检测到未开启定位服务,请开启"</span>, Toast.LENGTH_SHORT).show()</span><br><span class="line">    <span class="keyword">val</span> intent = Intent().apply &#123;</span><br><span class="line">        action = Settings.ACTION_LOCATION_SOURCE_SETTINGS</span><br><span class="line">    &#125;</span><br><span class="line">    startActivityForResult(intent, REQUEST_CODE_LOCATION_PROVIDER)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然，上面危险权限和特殊权限的判断与申请，PermissionHelper都已经替你做好了封装，你只需要像平常一样在AndroidManifest.xml中静态地声明权限，然后在代码中动态地申请就行，下面我把危险权限和特殊权限都统称为动态权限，因为它们都是需要动态申请的。</p>
+<h2 id="动态权限申请设计"><a href="#动态权限申请设计" class="headerlink" title="动态权限申请设计"></a>动态权限申请设计</h2><p>动态权限的申请依据不同的android版本和应用targetSdkVersion有着不同的行为，主要有两种处理，如下：</p>
+<img src="/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/permission1.png" class="" title="permission">
+
+<ul>
+<li><strong>android版本 &lt;= 5.1 或者 应用的targetSdkVersion &lt;= 22：</strong>当用户同意安装应用时，系统会要求用户授权应用声明的所有权限，包括动态权限，如果用户不同意授权，只能拒绝安装应用，如果用户同意全部授权，他们撤销权限的唯一方式就是卸载应用；</li>
+<li><strong>android版本 &gt;= 6.0 且 应用的targetSdkVersion &gt;= 23：</strong>当用户同意安装应用时，系统不再强制用户必须授权动态权限，系统只会授权应用除动态权限之外的普通权限，而动态权限需要应用使用到相关功能时才动态申请，当申请动态权限时，用户可以选择授权或拒绝每项权限，即使用户同意授权权限，用户也可以随时进入应用的“Settings”中调整应用的动态权限授权，所以你每次使用到该权限的功能时，都要动态申请，因为用户有可能在“Settings”界面中把它再次关闭掉.</li>
+</ul>
+<p>在android版本 &lt;= 5.1 或者 应用的targetSdkVersion &lt;= 22时，系统使用的是<a href="https://developer.android.com/reference/android/app/AppOpsManager" target="_blank" rel="noopener">AppOps</a>来进行权限管理，这是android在4.4推出的一套应用程序操作权限管理，AppOps所管理的是所有可能涉及用户隐私和安全的操作，例如access notification、keep weak lock、display toast 等等，而运行时权限管理是android 6.0才出现，是基于AppOps的实现，进一步做了动态请求封装和明确的规范，同时当targetSdkVersion &lt;= 22的应用运行在 &gt;= 6.0的android系统上时，动态权限可以在“Settings”界面中关闭，应用运行过程中使用到相关功能时就会由于没有权限而出现崩溃，这时只能使用AppOps的 checkOp方法来检测对应的权限是否已经授权，没有权限就跳转到“Settings”界面，考虑到目前android 6.0已经推出了很久，应用商店也不允许targetSdkVersion &lt; 23的应用上架，所以为了减少框架的复杂度，动态权限申请设计就没有考虑兼容AppOps的权限管理操作，所以当你使用<a href="https://github.com/rain9155/PermissionHelper" target="_blank" rel="noopener">PermissionHelper</a>时应用的targetSdkVersion要 <strong>&gt;= 23</strong>。</p>
+<p>PermissionHelper支持危险权限和特殊权限的申请，只需要一行代码就可以发起权限请求，具有生命周期感应能力，只在界面可见时才发起请求和回调结果，同时当系统配置更改例如屏幕旋转后能够恢复之前权限申请流程，不会中断权限申请流程，灵活性高，可以设置请求前、拒绝后回调，在回调发生时暂停权限申请流程，然后根据用户意愿再决定是否继续权限申请流程，整个申请过程如图：</p>
+<img src="/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/permission2.png" class="" title="permission">
+
+<p>PermissionHelper可以通过设置回调在权限申请开始前和权限被拒绝后把要请求的权限和被拒绝的权限回调出去，在回调中你可以通过弹窗向用户解释要申请的权限对应用的必要性，引导用户继续授权或再次授权，PermissionHelper不定制弹窗UI，弹窗的UI由开发者自定义，开发者只需要在用户同意或拒绝后调用回调中的Process实例的相应方法就能让被暂停的权限申请流程恢复，然后在最终的结果回调中处理结果就行，整个过程都是链式的，关于向用户解释权限申请原因的弹窗，弹窗内容建议包含下面的3点：</p>
+<p>1、包含需要授权的权限列表的描述；</p>
+<p>2、包含确认按钮，用户可以点击确认按钮再次授权或跳转到”Settings“；</p>
+<p>3、包含取消按钮，用户可以点击取消按钮放弃授权.</p>
+<p>如果用户不授权这个权限，就会导致应用无法继续运行下去，可以考虑取消第3步的取消按钮，即无法取消这个弹窗，一定要用户再次授权或跳转到”Settings“去授权。</p>
+<p>PermissionHelper整个框架的设计参考了<a href="https://juejin.cn/post/6844903945828040711" target="_blank" rel="noopener">okhttp的拦截器模式</a>，通过责任链模式的形式把危险权限申请、特殊权限申请、申请前处理和申请后处理划分为一个个节点，然后通过Chain串联起各个节点，每个节点只负责对应的内容，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> originalRequest = Request()    </span><br><span class="line"><span class="keyword">val</span> interceptors = listOf(</span><br><span class="line">    StartRequestNode(),</span><br><span class="line">    RequestLocationNode(),</span><br><span class="line">    RequestNormalNode(),</span><br><span class="line">    RequestSpecialNode(),</span><br><span class="line">    PostRequestNode(),</span><br><span class="line">    FinishRequestNode()</span><br><span class="line">)</span><br><span class="line">DefaultChain(originalRequest, interceptors).process(originalRequest)</span><br></pre></td></tr></table></figure>
+
+<p>通过这样的形式PermissionHelper就可以很灵活的控制权限申请流程，对于生命周期感应能力的实现PermissionHelper使用了<a href="https://developer.android.com/topic/libraries/architecture/lifecycle" target="_blank" rel="noopener">Lifecycle</a>+<a href="https://developer.android.com/topic/libraries/architecture/livedata" target="_blank" rel="noopener">LiveData</a>组件，这两个都是官方支持的用于实现需要响应生命周期感应的操作，可以编写更轻量级和更易于维护的代码，避免界面销毁后的内存泄漏，对于系统配置更改后的数据恢复则使用到了<a href="https://developer.android.com/topic/libraries/architecture/viewmodel" target="_blank" rel="noopener">ViewModel</a>组件，这是官方支持的用于保存需要在<a href="https://developer.android.com/topic/libraries/architecture/saving-states#viewmodel" target="_blank" rel="noopener">配置更改</a>后恢复的数据，例如一些UI相关的数据，通过这三件套 + 责任链模式实现了一个简单易用的权限申请框架，更多详细使用和实现细节可以查看<a href="https://github.com/rain9155/PermissionHelper" target="_blank" rel="noopener">代码仓库</a>。</p>
+<h2 id="权限申请相关变更"><a href="#权限申请相关变更" class="headerlink" title="权限申请相关变更"></a>权限申请相关变更</h2><p>自android 6.0推出动态权限申请之后，有一些申请行为也随着系统的迭代发生变化，目的都是更好的保护用户的隐私权，使得权限申请对用户感知：</p>
+<p><a href="https://developer.android.com/about/versions/oreo/android-8.0-changes#rmp" target="_blank" rel="noopener">android 8.0</a>以后并且应用的targetSdkVersion &gt;= 28时，应用申请某个危险权限授权，用户同意后，系统不再错误地把该危险权限对应的权限组中的其他在AndroidManifest.xml中注册的权限一并授予给应用，系统只会授予应用明确请求的权限，然而，一旦用户应用同意授权某个危险权限，则后续对该危险权限的权限组中的其他权限请求都会被自动批准，而不会提示用户，例如某个应用在AndroidManifest.xml中注册READ_EXTERNAL_STORAGE和WRITE_EXTERNAL_STORAGE权限，应用申请READ_EXTERNAL_STORAGE权限并且用户同意，在android 8.0之前，系统在用户同意后还会一并授予WRITE_EXTERNAL_STORAGE权限，因为它和READ_EXTERNAL_STORAGE权限是同一个权限组并且也在AndroidManifest.xml中注册，但在android 8.0之后并且应用的targetSdkVersion &gt;= 28，系统在用户同意后只会授予READ_EXTERNAL_STORAGE权限，但是如果后来应用又申请WRITE_EXTERNAL_STORAGE权限，系统会立即授予该权限，而不会提示用户，换句话说，如果只申请了外部存储空间读取权限，在低版本下（android &lt; 8.0）对外部存储空间使用写入操作是没有问题的，但是在高版本（android &gt;= 8.0 &amp;&amp; targetSdkVersion &gt;= 28）下是会出现问题的，解决方案是将两个读和写的权限一起申请。</p>
+<p><a href="https://developer.android.com/about/versions/pie/android-9.0-changes-all#privacy-changes-all" target="_blank" rel="noopener">android 9.0</a>增加了<a href="https://developer.android.com/reference/android/Manifest.permission_group#CALL_LOG" target="_blank" rel="noopener">CALL_LOG</a>（通话记录）权限组，并把READ_CALL_LOG、WRITE_CALL_LOG]、PROCESS_OUTGOING_CALLS权限从PHONE（电话）权限组移动到了CALL_LOG权限组，CALL_LOG权限组使得用户能够更好地控制需要访问电话通话记录敏感信息的应用程序，例如读取通话记录和识别电话号码。</p>
+<p><a href="https://developer.android.com/about/versions/10/privacy/changes#top-changes" target="_blank" rel="noopener">android 10</a>引入了很多隐私变更，新增了<a href="https://developer.android.com/reference/android/Manifest.permission#ACTIVITY_RECOGNITION" target="_blank" rel="noopener">ACTIVITY_RECOGNITION</a>（身体活动）权限和权限组，允许应用检测用户的步数或分类用户的身体活动如步行、骑自行车等；同时android 10引入了作用域存储，当应用启用作用域存储时，<a href="https://developer.android.com/reference/android/Manifest.permission#WRITE_EXTERNAL_STORAGE" target="_blank" rel="noopener">WRITE_EXTERNAL_STORAGE</a>权限会失效，应用对WRITE_EXTERNAL_STORAGE权限的申请<a href="https://developer.android.com/training/data-storage#permissions" target="_blank" rel="noopener">不会对应用的存储访问权限产生任何影响</a>，并且WRITE_EXTERNAL_STORAGE会在未来被废弃，因为作用域存储的目的就是不让应用随意的修改应用沙盒外的外部存储；同时新增了<a href="https://developer.android.com/reference/android/Manifest.permission#ACCESS_BACKGROUND_LOCATION" target="_blank" rel="noopener">ACCESS_BACKGROUND_LOCATION</a>权限，归属于LOCATION权限组，用于后台运行的应用访问用户定位时申请，与ACCESS_FINE_LOCATION和ACCESS_COARSE_LOCATION这些前台定位权限区分开，当你的应用targetSdkVersion &gt;= 29并且运行在android 10以上时，应用在后台访问定位时需要动态的申请后台定位权限，当你把后台定位权限和前台定位权限一起申请时，弹窗授权框会有2个允许选项：<code>始终允许</code>和<code>仅在应用使用过程中允许</code>，点击<code>始终允许</code>表示同时授权后台定位权限和前台定位权限，点击<code>仅在应用使用过程中允许</code>表示仅授权前台定位权限，然后下次再次申请时只会单独申请后台定位权限，并且也会有2个允许选项，并且要点击<code>始终允许</code>才会让后台定位权限申请通过，当你的应用targetSdkVersion &lt; 29运行在android 10以上时，应用在申请前台定位权限时系统会把后台定位权限一并授予给应用；android 10还新增了<a href="https://developer.android.com/reference/android/Manifest.permission#ACCESS_MEDIA_LOCATION" target="_blank" rel="noopener">ACCESS_MEDIA_LOCATION</a>权限，归属于STORAGE (存储空间) 权限组，android 10以后，因为隐私问题，默认不再提供图片的地理位置信息，要获取该信息需要向用户申请ACCESS_MEDIA_LOCATION权限，并使用MediaStore.setRequireOriginal()接口更新文件Uri。</p>
+<p><a href="https://developer.android.com/about/versions/11/privacy" target="_blank" rel="noopener">android 11</a>也引入了很多隐私变更，android 11强制新安装的应用(targetSdkVersion &gt;= 30)启用作用域存储，新增<a href="https://developer.android.com/reference/android/Manifest.permission#MANAGE_EXTERNAL_STORAGE" target="_blank" rel="noopener">MANAGE_EXTERNAL_STORAGE</a>用于代替WRITE_EXTERNAL_STORAGE权限，提供给手机管家、文件管理器这类需要<a href="https://developer.android.com/training/data-storage/manage-all-files" target="_blank" rel="noopener">管理整个SD卡上的文件</a>的应用申请；android 11中当用户开启“安装未知来源应用”权限后返回应用，应用会被杀死重启，该行为与强制分区存储有关；从android 11后，如果应用对某个权限<a href="https://developer.android.com/about/versions/11/privacy/permissions#dialog-visibility" target="_blank" rel="noopener">连续点击多次拒绝</a>，那么下一次请求该权限时系统会直接拒绝连授权弹窗都不会弹出，该行为等同于android 11之前勾选了don‘t ask again；android 11后还新增了<a href="https://developer.android.com/about/versions/11/privacy/permissions#one-time" target="_blank" rel="noopener">一次性权限</a>（One-time permissions）和<a href="https://developer.android.com/about/versions/11/privacy/permissions#auto-reset" target="_blank" rel="noopener">权限自动重置</a>功能（Permissions auto-reset），这些变更只要你正确的进行运行时权限请求就不需要做额外适配；同时android 11后当targetSdkVersion &lt; 30的应用把后台定位权限和前台定位权限一起申请时，弹窗授权框的允许选项中<a href="https://developer.android.com/about/versions/11/privacy/location#background-location-permission-dialog-changes" target="_blank" rel="noopener">不再会显示<code>始终允许</code>选项</a>，只有<code>本次允许</code>和<code>仅在应用使用过程中允许</code>，也就说点击允许时只会授予你前台定位权限<strong>不再默认授予你后台定位权限</strong>，而android 11后targetSdkVersion &gt;= 30的应用的ACCESS_BACKGROUND_LOCATION权限需要<a href="https://developer.android.com/about/versions/11/privacy/location#request-background-location-separately" target="_blank" rel="noopener">独立申请</a>，不能与前台权限一起申请，如果与前台权限一起申请，系统会直接拒绝连授权弹窗都不会弹出，系统推荐增量请求权限，这样对用户更友好，同时用户必须先同意前台权限后才能进入后台定位权限的申请。</p>
+<p>可以看到从android 10引入ACCESS_BACKGROUND_LOCATION权限以来，后台定位权限的申请一直都非常特殊，它在android 10可以和前台定位权限一起申请，而在android 11又不可以一起申请还有先后申请顺序，针对这种特殊情况，申请后台定位权限时要做到：</p>
+<ul>
+<li>1、先请求前台定位权限，再请求后台定位权限；</li>
+<li>2、单独请求后台定位权限，不要与其他权限一同请求.</li>
+</ul>
+<p>上面这些PermissionHelper都已经做好了处理，申请时只需要把后台定位权限和前台定位权限一起传进去就行。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文主要让让大家对权限的申请流程有进一步的认识，然后可以通过对动态权限的封装，将检测动态权限，请求动态权限，权限设置跳转，监听权限设置结果等处理和业务功能隔离开来，业务以后可以非常快速的接入动态权限支持，提高开发效率。</p>
+<p>以上就是本文的全部内容！</p>
+<p>参考资料：</p>
+<p><a href="https://developer.android.google.cn/training/permissions/requesting" target="_blank" rel="noopener">Request app permissions</a></p>
+<p><a href="https://mp.weixin.qq.com/s/w82temt7NjQb2eATONuEsA" target="_blank" rel="noopener">安卓系统权限，你真的了解吗？</a></p>
+<p><a href="https://www.jianshu.com/p/6a4dff744031" target="_blank" rel="noopener">Android 6.0 运行权限解析</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.976Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/" rel="tag">android</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/&title=《优雅地处理运行时权限请求》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/&title=《优雅地处理运行时权限请求》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《优雅地处理运行时权限请求》 — jianyu的博客&url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2022/05/26/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">揭秘kotlin协程的实现原理</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2021/07/03/%E5%BF%AB%E9%80%9F%E5%8F%91%E5%B8%83%E7%BB%84%E4%BB%B6%E5%88%B0mavencentral/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">快速发布组件到mavenCentral</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/&title=《优雅地处理运行时权限请求》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/&title=《优雅地处理运行时权限请求》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《优雅地处理运行时权限请求》 — jianyu的博客&url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2021/09/23/%E4%BC%98%E9%9B%85%E5%9C%B0%E5%A4%84%E7%90%86%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9D%83%E9%99%90%E8%AF%B7%E6%B1%82/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEjklEQVR42u3aS24bMRAFwNz/0g6QVQBH0nvdo9gc16wMSOKQRQNkf379ip+PP8/ff39+Pn//0aePRn7+nc9z2H968YMJEyZMmL4l08fT5/myH73yEdzzxW+2JN+AZPx//BYTJkyYMB3O1A6XXx2SBT8fOTngN9sQEWPChAkTph/ANFtAjt6Gwfm72jAYEyZMmDBh2iy1RUnC6WSGmDBhwoTpJzPNhsuDzNkVYX/tSDb14lw4JkyYMGH6Zkyzxp17/P32/iZMmDBhwvSlTB/ls2l82TQGta1Fs8Lqw/ExYcKECdOxTLN07ax1JgmM90F1kbQt34gJEyZMmE5nagnyxVxV+MxLm7N2nxdBMiZMmDBhOpApWd5+uu34s8addlOL8TFhwoQJ0+FM+dSvbehppzsLofPrzsNvYsKECROmw5ny0mBbdNykgPMDfk//YhWYMGHChOlwpuT4nKV9N8ueJZHbtUTBMCZMmDBhuh3TtWnfd1wLPspnVubEhAkTJkz3YNoEn3kKeJ+6bY/z2XtfVH0xYcKECdNRTG3CND+S81C2LZHOkrz70TBhwoQJ04lMyeH9/O9kqe2h214pZgXX4rqACRMmTJiOZUpesA8727A5uWrk4fplW4gJEyZMmA5kypO8s/LkLLW6CWjbxqPkuoMJEyZMmO7KNEuYzq4ICeusANleUzBhwoQJ012ZhpXPoH0nuVjsQ9Z96090IcCECRMmTAcyJYvJU6htkbJtptkXPus3YsKECROmY5lajg1lfgDnYfAmTdyOgwkTJkyYTmRqS4NtYDlLIucNOu2c22sEJkyYMGG6B1MyxdmS2qTt7PDeXBGizcOECRMmTLdgmkXM7ziw8yLobEvqJDImTJgwYTqcaZbSnU3rRYvMIqU7uy5Ev8KECRMmTMcyPT+qkxRw/qu25XQzk/clkTFhwoQJ01lMs8M4KWTmBdE87ZtfI64qc77IhWPChAkTpgOZZg09Odzm0zwAnrXsYMKECROm+zFtCpb5cf48iZwTPE8x5wnoNtWLCRMmTJjOZWpTn23DaBLK5iFuEki3gXeU+MaECRMmTMcy7Ye76hLQTjrf1Da4fTgrTJgwYcJ0LNMsYp6VOdtGnFmIOyuF1hkCTJgwYcJ0CFP+glniNW/fuQox+bTeTkyYMGHCdCDTZklt8rctheYJ3BloMWdMmDBhwnQsU7v49tDdoOes78B9EfpiwoQJE6ZDmNrSY/7i9uowO6rzbZulnjFhwoQJ052YZleBNrhtx8yLmnkSuW79wYQJEyZMxzLNSpKbC8EmUXtt4rj958CECRMmTCcyXVzwWyRq8yO/vQpsGowwYcKECdPpTO9Y9qyQmR/eeTJ6Fiq3VxZMmDBhwvT9mZJLQDu5DfqmzJmH6/k4mDBhwoTpHkyzV7Zp032SdzaT9tKDCRMmTJh+JlN+fM5aZNqG1Pa3s7YeTJgwYcL0k5k2TajtaLNwOp/ni7dgwoQJE6bDmWZJ3quae3LQNhjeJKYvK2diwoQJE6YvZdonQFvi5PvJyPnc2m++JU+MCRMmTJj+N9NvH9aVJkjADF0AAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

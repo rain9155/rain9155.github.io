@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>如何获取Android应用和系统信息 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="android,ActivityManager,PackageManager">
+    <meta name="description" content="前言本主要了解一下Android系统信息的获取，apk应用信息的获取。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何获取Android应用和系统信息">
+<meta property="og:url" content="http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言本主要了解一下Android系统信息的获取，apk应用信息的获取。">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/system1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/system2.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/system3.png">
+<meta property="article:published_time" content="2019-07-12T14:36:32.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:49.085Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="android">
+<meta property="article:tag" content="ActivityManager">
+<meta property="article:tag" content="PackageManager">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/system1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">如何获取Android应用和系统信息</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">如何获取Android应用和系统信息</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-12T14:36:32.000Z" itemprop="datePublished" class="page-time">
+  2019-07-12
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Android系统信息的获取"><span class="post-toc-text">Android系统信息的获取</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、android-os-Build"><span class="post-toc-text">1、android.os.Build</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、SystemProperty"><span class="post-toc-text">2、SystemProperty</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、实例"><span class="post-toc-text">3、实例</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Apk应用信息的获取"><span class="post-toc-text">Apk应用信息的获取</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、PackageManager"><span class="post-toc-text">1、PackageManager</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#1-1、下面列举一些常用的系统封装信息"><span class="post-toc-text">1.1、下面列举一些常用的系统封装信息</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#1-2、PackageManager常用方法"><span class="post-toc-text">1.2、PackageManager常用方法</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#1-3、实例"><span class="post-toc-text">1.3、实例</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、ActivityManager"><span class="post-toc-text">2、ActivityManager</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-1、同PackageManager一样，-ActivityManager也封装了很多Bean对象"><span class="post-toc-text">2.1、同PackageManager一样， ActivityManager也封装了很多Bean对象</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-2、实例"><span class="post-toc-text">2.2、实例</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-如何获取Android应用与系统信息"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">如何获取Android应用和系统信息</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-12 22:36:32" datetime="2019-07-12T14:36:32.000Z"  itemprop="datePublished">2019-07-12</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本主要了解一下Android系统信息的获取，apk应用信息的获取。</p>
+<a id="more"></a>
+
+<pre><code>本文相关源码在文末给出</code></pre><h2 id="Android系统信息的获取"><a href="#Android系统信息的获取" class="headerlink" title="Android系统信息的获取"></a>Android系统信息的获取</h2><p>有时我们想要获取手机系统的配置信息，通常可以从以下俩方面获取：</p>
+<ul>
+<li><p>android.os.Build</p>
+</li>
+<li><p>SystemProperty</p>
+</li>
+</ul>
+<h3 id="1、android-os-Build"><a href="#1、android-os-Build" class="headerlink" title="1、android.os.Build"></a>1、android.os.Build</h3><p>android.os.Build包含了系统编译时的大量设备，配置信息，它里面的字段含义如下：</p>
+<ul>
+<li>Build.BOARD; //主板</li>
+<li>Build.BRAND; //Android系统指定商</li>
+<li>supported_abis = null;//CPU指令集</li>
+<li>Build.DEVICE;//设备参数</li>
+<li>Build.DISPLAY;//显示屏参数</li>
+<li>Build.FINGERPRINT;//唯一编号</li>
+<li>Build.SERIAL;//硬件序列号</li>
+<li>Build.ID;//修订版本列表</li>
+<li>Build.MANUFACTURER;//硬件制造商</li>
+<li>Build.MODEL;//版本</li>
+<li>Build.HARDWARE;//硬件名</li>
+<li>Build.PRODUCT;//手机产品名</li>
+<li>Build.TAGS;//描述Build的标签</li>
+<li>Build.TYPE;//Builder类型</li>
+<li>Build.VERSION.CODENAME;//当前开发号</li>
+<li>Build.VERSION.INCREMENTAL;//源码版本控制号</li>
+<li>Build.VERSION.RELEASE;//版本字符串</li>
+<li>Build.VERSION.SDK_INT;//版本号</li>
+<li>Build.HOST;//Host值</li>
+<li>Build.USER;//User名</li>
+<li>Build.TIME;//编译时间<h3 id="2、SystemProperty"><a href="#2、SystemProperty" class="headerlink" title="2、SystemProperty"></a>2、SystemProperty</h3>SystemProperty包含许多系统，配置属性值和参数，很多与上面通过android.os.Build获取的相同,下面给出常用的信息：</li>
+<li>System.getProperty(“os.version”);//os 版本</li>
+<li>System.getProperty(“os.name”);//os 名称</li>
+<li>System.getProperty(“os.arch”);//os 架构</li>
+<li>System.getProperty(“user.home”);//Home 属性</li>
+<li>System.getProperty(“user.name”);//Name 属性</li>
+<li>System.getProperty(“user.dir”);//Dir 属性</li>
+<li>System.getProperty(“user.timezone”);//时区</li>
+<li>System.getProperty(“path.separator”);//路径分隔符</li>
+<li>System.getProperty(“line.separator”);//行分隔符</li>
+<li>System.getProperty(“file.separator”);//文件分隔符</li>
+<li>System.getProperty(“java.vendor.url”);//java vender URL 属性</li>
+<li>System.getProperty(“java.class.path”);//java Class 路径</li>
+<li>System.getProperty(“java.class.version”);//java Class 版本</li>
+<li>System.getProperty(“java.vendor”);//java Vender 属性</li>
+<li>System.getProperty(“java.version”);//java 版本</li>
+<li>System.getProperty(“java_home”);//java HOME属性<h3 id="3、实例"><a href="#3、实例" class="headerlink" title="3、实例"></a>3、实例</h3></li>
+</ul>
+<p>通过一个简单的示例查看如何使用（更多细节查看文末源码），如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 通过android.os.Build，可以直接获得一些Build提供的系统信息 */</span></span><br><span class="line">String board = Build.BOARD;</span><br><span class="line">String brand = Build.BRAND;</span><br><span class="line">Log.d(TAG, <span class="string">"android.os.Build，board："</span> + board);</span><br><span class="line">Log.d(TAG, <span class="string">"android.os.Build，brand： "</span> + brand);</span><br><span class="line"><span class="comment">/* 通过SystemProperty，要使用System.getProperty("XXX") */</span></span><br><span class="line">String os_version = System.getProperty(<span class="string">"os.version"</span>);</span><br><span class="line">String os_name = System.getProperty(<span class="string">"os.name"</span>);</span><br><span class="line">Log.d(TAG, <span class="string">"SystemProperty，os_version: "</span> + os_version);</span><br><span class="line">Log.d(TAG, <span class="string">"SystemProperty, os_name: "</span> + os_name);</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，获取系统信息还是很简单的。</p>
+<h2 id="Apk应用信息的获取"><a href="#Apk应用信息的获取" class="headerlink" title="Apk应用信息的获取"></a>Apk应用信息的获取</h2><p>Apk应用信息的获取无非分为，apk包信息的获取与应用进程信息的获取。</p>
+<h3 id="1、PackageManager"><a href="#1、PackageManager" class="headerlink" title="1、PackageManager"></a>1、PackageManager</h3><p>通过PackageManager可以获得应用的apk包信息，先看下面一张图：</p>
+<img src="/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/system1.png" class="" title="system1"> 
+
+<p>最里面的框代表了整个Activity的信息，系统提供了ActivityInfo类来进行封装，以此类推。</p>
+<h4 id="1-1、下面列举一些常用的系统封装信息"><a href="#1-1、下面列举一些常用的系统封装信息" class="headerlink" title="1.1、下面列举一些常用的系统封装信息"></a>1.1、下面列举一些常用的系统封装信息</h4><p>下面这些封装信息与PackageManager在同一个包内。</p>
+<ul>
+<li><p><strong>ActivityInfo</strong><br>ActivityInfo 封装了在Manifest文件中&lt;activity&gt;&lt;/activity&gt;和&lt;receiver&gt;&lt;/receiver&gt;之间的所有信息，包括name，icon，label，launchmod等 。</p>
+</li>
+<li><p><strong>ServiceInfo</strong><br>和ActivityInfo类似，它封装了&lt;service&gt;&lt;/service&gt;之间的所有信息 。</p>
+</li>
+<li><p><strong>ApplicationInfo</strong><br>它封装了&lt;application&gt;&lt;/application&gt;之间的信息，特别的是，Application包含很多Flag，FLAG_SYSTEM表示为系统应用，FLAG_EXTERNAL_STORAGE表示为安装在sd卡上的应用等，通过这些FLAG可以很方便的判断应用类型 。</p>
+</li>
+<li><p><strong>PackageInfo</strong><br>它用于封装Manifest文件相关节点的信息，包含了所有Activity、Service等信息 。</p>
+</li>
+<li><p><strong>ResolveInfo</strong><br>这个比较特殊，它封装的是包含&lt;intent&gt;信息的上一级信息，所以它可以返回ActivityInfo，ServiceInfo等包含<intent>的信息，它经常用来帮助我们找到那些包含特定intent条件的信息，如带分享，播放功能的应用。</p>
+<p>  通过上面的对象，PackageManager 就可以通过调用各种方法来返回不同类型的Bean</p>
+</li>
+</ul>
+<h4 id="1-2、PackageManager常用方法"><a href="#1-2、PackageManager常用方法" class="headerlink" title="1.2、PackageManager常用方法"></a>1.2、PackageManager常用方法</h4><ul>
+<li><strong>getPackagerManager</strong>: 通过调用这个方法返回一个PackageManager对象</li>
+<li><strong>getApplicationInfo</strong>: 以ApplicationInfo形式返回指定包名的Application</li>
+<li><strong>getApplicationIcon</strong>：返回指定包名的icon</li>
+<li><strong>getInstalledApplications</strong>： 以ApplicationInfo形式返回安装的应用</li>
+<li><strong>getInstalledPackages</strong>：以PackageInfo的形式返回安装的应用</li>
+<li><strong>queryIntentActivities</strong>: 返回指定intent的ResolveInfo对象、Activity集合</li>
+<li><strong>queryIntentServices</strong>：返回指定intent的ResolveInfo对象、service集合</li>
+<li><strong>resolveActivity</strong>：返回指定intent的Activity</li>
+<li><strong>resolveService</strong>：返回指定的intentService<h4 id="1-3、实例"><a href="#1-3、实例" class="headerlink" title="1.3、实例"></a>1.3、实例</h4></li>
+</ul>
+<p>下面通过一个例子来了解如何通过PackageManager来选出不同类型的app，判断app类型的依据，就是利用Applicationinfo中的FLAG_SYSTEM来进行判断，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.flags &amp; Applicationinfo.FLAG_SYSTEM</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>如果flags &amp; Applicationinfo.FLAG_SYSTEM ！= 0，则为系统应用</strong></li>
+<li><strong>如果flags &amp; Applicationinfo.FLAG_SYSTEM &lt;= 0, 则为第三方应用</strong> </li>
+<li><strong>如果flags &amp; Applicationinfo.FLAG_EXTERNAL_STORAGE != 0, 则为SD卡上的应用</strong> </li>
+<li><strong>特殊的，当系统应用经过升级后，也将成为第三方应用：flags &amp; Applicationinfo.FLAG_UPDATED_SYSTEM_APP != 0</strong></li>
+</ul>
+<p>首先封装一个Bean保存我所需要的app信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PMAppInfo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String appName;<span class="comment">//app名称</span></span><br><span class="line">    <span class="keyword">private</span> Drawable appIcon;<span class="comment">//图标</span></span><br><span class="line">    <span class="keyword">private</span> String pkgName;<span class="comment">//所在包名</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PMAppInfo</span><span class="params">(String appLabel, Drawable appIcon, String pkgName)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.appName = appLabel;</span><br><span class="line">        <span class="keyword">this</span>.appIcon = appIcon;</span><br><span class="line">        <span class="keyword">this</span>.pkgName = pkgName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getAppLabel</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> appName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAppLabel</span><span class="params">(String appName)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.appName = appName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Drawable <span class="title">getAppIcon</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> appIcon;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAppIcon</span><span class="params">(Drawable appIcon)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.appIcon = appIcon;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPkgName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pkgName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPkgName</span><span class="params">(String pkgName)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pkgName = pkgName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来，通过上面所说的方法判断各种类型的app：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> List&lt;PMAppInfo&gt; <span class="title">getAppInfoList</span><span class="params">(<span class="keyword">int</span> flag)</span></span>&#123;</span><br><span class="line">        pm = <span class="keyword">this</span>.getPackageManager();</span><br><span class="line">        <span class="comment">//获取应用信息</span></span><br><span class="line">        List&lt;ApplicationInfo&gt; applicationInfoList = pm.getInstalledApplications(PackageManager.GET_UNINSTALLED_PACKAGES);</span><br><span class="line">        List&lt;PMAppInfo&gt; appInfoList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//判断应用类型</span></span><br><span class="line">        <span class="keyword">switch</span> (flag)&#123;</span><br><span class="line">            <span class="keyword">case</span> ALL_APP:</span><br><span class="line">                appInfoList.clear();</span><br><span class="line">                <span class="keyword">for</span> (ApplicationInfo app : applicationInfoList) &#123;</span><br><span class="line">                    appInfoList.add(<span class="keyword">new</span> PMAppInfo(</span><br><span class="line">                            ((String) app.loadLabel(pm)),</span><br><span class="line">                            app.loadIcon(pm),</span><br><span class="line">                            app.packageName));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> SYSTEM_APP:</span><br><span class="line">                appInfoList.clear();</span><br><span class="line">                <span class="keyword">for</span> (ApplicationInfo app : applicationInfoList) &#123;</span><br><span class="line">                    <span class="keyword">if</span> ((app.flags &amp; ApplicationInfo.FLAG_SYSTEM) != <span class="number">0</span>) &#123;</span><br><span class="line">                        appInfoList.add(<span class="keyword">new</span> PMAppInfo(</span><br><span class="line">                                ((String) app.loadLabel(pm)),</span><br><span class="line">                                app.loadIcon(pm),</span><br><span class="line">                                app.packageName));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> THIRD_APP:</span><br><span class="line">                appInfoList.clear();</span><br><span class="line">                <span class="keyword">for</span> (ApplicationInfo app : applicationInfoList) &#123;</span><br><span class="line">                    <span class="keyword">if</span> ((app.flags &amp; ApplicationInfo.FLAG_SYSTEM) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                        appInfoList.add(<span class="keyword">new</span> PMAppInfo(</span><br><span class="line">                                ((String) app.loadLabel(pm)),</span><br><span class="line">                                app.loadIcon(pm),</span><br><span class="line">                                app.packageName));</span><br><span class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((app.flags &amp; ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != <span class="number">0</span>) &#123;</span><br><span class="line">                        appInfoList.add(<span class="keyword">new</span> PMAppInfo(</span><br><span class="line">                                ((String) app.loadLabel(pm)),</span><br><span class="line">                                app.loadIcon(pm),</span><br><span class="line">                                app.packageName));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> SDCARD_APP:</span><br><span class="line">                appInfoList.clear();</span><br><span class="line">                <span class="keyword">for</span> (ApplicationInfo app : applicationInfoList) &#123;</span><br><span class="line">                    <span class="keyword">if</span> ((app.flags &amp; ApplicationInfo.FLAG_EXTERNAL_STORAGE) != <span class="number">0</span>) &#123;</span><br><span class="line">                        appInfoList.add(<span class="keyword">new</span> PMAppInfo(</span><br><span class="line">                                ((String) app.loadLabel(pm)),</span><br><span class="line">                                app.loadIcon(pm),</span><br><span class="line">                                app.packageName));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        <span class="keyword">return</span> appInfoList;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>运行效果图：</p>
+<img src="/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/system2.png" class="" title="system2">  
+
+<p>如上图所示，通过点击不同的按钮，在下方显示出不同类型的apk信息。</p>
+<h3 id="2、ActivityManager"><a href="#2、ActivityManager" class="headerlink" title="2、ActivityManager"></a>2、ActivityManager</h3><p>前面使用了PackageManager获得了应用包的信息，PackageMessager重点在于获得应用的包信息，而ActivityManager重点在于获得在运行时的应用程序的进程信息。</p>
+<h4 id="2-1、同PackageManager一样，-ActivityManager也封装了很多Bean对象"><a href="#2-1、同PackageManager一样，-ActivityManager也封装了很多Bean对象" class="headerlink" title="2.1、同PackageManager一样， ActivityManager也封装了很多Bean对象"></a>2.1、同PackageManager一样， ActivityManager也封装了很多Bean对象</h4><p>下面的封装类都在ActivityManager的类中。</p>
+<ul>
+<li><p><strong>ActivityManager.MemoryInfo</strong><br>它封装了内存信息，MemoryInfo中有几个重要的字段：availMem - 系统可用内存，totalMen - 总内存，threshold - 低内存的阈值，即区分是否是低内存，lowMemory - 是否处于低内存。</p>
+</li>
+<li><p><strong>Debug.MemoryInfo</strong><br>android中还有一个MemoryInfo，它来自Debug.MemoryInfo,前面的MemoryInfo通常用于获取全局的内存使用信息，而它用于统计进程下的内存信息。</p>
+</li>
+<li><p><strong>RunningAppProcessInfo</strong><br>顾名思义，就是运行间进程信息，储存的字段自然进程相关的信息，processName - 进程名， pid - 进程pid, uid - 进程uid，pkgList - 该进程下所有的包 。 </p>
+</li>
+<li><p><strong>RunningServiceInfo</strong><br>RunningServiceInfo与RunningAppProcessInfo类似，用于封装运行时的服务信息，它包含了进程信息的同时还包含了其他的信息，activeSince - 第一次被激活的时间，方式，foreground - 服务是否在后台运行。</p>
+</li>
+</ul>
+<h4 id="2-2、实例"><a href="#2-2、实例" class="headerlink" title="2.2、实例"></a>2.2、实例</h4><p>下面同样通过一个例子来使用ActivityManager，先封装一个Bean来保存一个我们需要的字段：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AMProcessInfo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String uid;</span><br><span class="line">    <span class="keyword">private</span> String pid;</span><br><span class="line">    <span class="keyword">private</span> String memorySize;</span><br><span class="line">    <span class="keyword">private</span> String processName;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AMProcessInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPid</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pid;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPid</span><span class="params">(String pid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.pid = pid;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getUid</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> uid;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUid</span><span class="params">(String uid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.uid = uid;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMemorySize</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> memorySize;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMemorySize</span><span class="params">(String memorySize)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.memorySize = memorySize;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getProcessName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> processName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setProcessName</span><span class="params">(String processName)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.processName = processName;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过调用getRunningAppProcesses（）返回当前运行时的进程信息集合：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> List&lt;AMProcessInfo&gt; <span class="title">getRunningProcessesInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      amProcessInfoList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">      <span class="comment">//获取正在运行的进程集合</span></span><br><span class="line">      List&lt;ActivityManager.RunningAppProcessInfo&gt; appProcessList = am.getRunningAppProcesses();</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; appProcessList.size(); i++) &#123;</span><br><span class="line">          ActivityManager.RunningAppProcessInfo info = appProcessList.get(i);</span><br><span class="line">          <span class="keyword">int</span> pid = info.pid;</span><br><span class="line">          <span class="keyword">int</span> uid = info.uid;</span><br><span class="line">          String processName = info.processName;</span><br><span class="line">          <span class="comment">//获取该进程下的内存</span></span><br><span class="line">          <span class="keyword">int</span>[] memoryPid = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;pid&#125;;</span><br><span class="line">          Debug.MemoryInfo[] memoryInfo = am.getProcessMemoryInfo(memoryPid);</span><br><span class="line">          <span class="keyword">int</span> memorySize = memoryInfo[<span class="number">0</span>].getTotalPss();</span><br><span class="line">          AMProcessInfo processInfo = <span class="keyword">new</span> AMProcessInfo();</span><br><span class="line">          <span class="comment">//</span></span><br><span class="line">          processInfo.setPid(<span class="string">""</span> + pid);</span><br><span class="line">          processInfo.setUid(<span class="string">""</span> + uid);</span><br><span class="line">          processInfo.setMemorySize(<span class="string">""</span> + memorySize);</span><br><span class="line">          processInfo.setProcessName(processName);</span><br><span class="line">          amProcessInfoList.add(processInfo);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> amProcessInfoList;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>运行效果图： </p>
+<img src="/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/system3.png" class="" title="system3"> 
+
+<p>上图运行给出了当前运行的一个进程的pid，uid，占用内存，进程名的信息。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>PackageManager是用来获取apk包信息的，ActivityManager是用来获取运行时进程信息的，如果想要获取手机系统信息，可以通过SystemProperty和android.os.Build，本文同样是一篇学习记录，希望大家读完后和我一样有所收获。</p>
+<p><a href="https://github.com/rain9155/AndroidMessageObtainTest" target="_blank" rel="noopener">本文相关源码位置</a></p>
+<p>参考资料：</p>
+<p>《android群英传》</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:49.085Z" itemprop="dateUpdated">2023-01-07 18:44:49</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ActivityManager/" rel="tag">ActivityManager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PackageManager/" rel="tag">PackageManager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/" rel="tag">android</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/&title=《如何获取Android应用和系统信息》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/&title=《如何获取Android应用和系统信息》 — jianyu的博客&source=前言本主要了解一下Android系统信息的获取，apk应用信息的获取。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《如何获取Android应用和系统信息》 — jianyu的博客&url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">搞定两种场景下的Fragment懒加载</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">基于P2P的局域网即时通信应用</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/&title=《如何获取Android应用和系统信息》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/&title=《如何获取Android应用和系统信息》 — jianyu的博客&source=前言本主要了解一下Android系统信息的获取，apk应用信息的获取。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《如何获取Android应用和系统信息》 — jianyu的博客&url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEgklEQVR42u3a224jNxAEUP//TytAXh1pq7q5gSideTJsiZczBsi+/PzEz+Pf5/dvfj/P/pqPnM/+e65n3/39+Z+/8WDChAkTprdkerx8kqUk0yezvCZot/carl0VJkyYMGG6nakd7vUnk5GT15Ac5+2rzVeICRMmTJi+jWkfBteLCy4W+WpXK8GECRMmTF/GlCw0v0bkNPnRnof0mDBhwoTpG5hmw509gDccm1d7OBeOCRMmTJjejKktDX7Sz4cfTJgwYcL0ZkyP8skD5lMtrfmq2rRvsWtMmDBhwnQtU560bUPlU0dyPnKedJ7NiAkTJkyYbmRqS4Bt+rUtmuZLnxVHk2/9xyyYMGHChOlapnbDeRj8/yz69WvelF0xYcKECdPnMbUH+QYu38wGfTMaJkyYMGH6DKa8NbNNtrbEbWtpPs6ML6r6YsKECROmy5naFpw84JwlfJOVnHolxYUAEyZMmDC9PdMsvEyaPmdXijygzdeQv4CnnbyYMGHChOlapvz5G0BtaDprJ2rD6ejehAkTJkyYrmJq23dOHdgz1tlh3153MGHChAnT7Uz5xs427uSJ2uQVbtZZfxITJkyYMF3FtE/Itmni5Luz8meb5E3++vTehAkTJkyYrmLKD/LNxmag7QUiTz0Xq8KECRMmTJcz5WXL9oDPRzvV0LNJ8j79FiZMmDBhupZpHxZuNpO31MzmOlwoxYQJEyZMlzNtUrTtudkWF/cjb9p3MGHChAnTJzFtjufZ5vNNblpU29X+oX0HEyZMmDBdxTRLy/69ILNtP83D47woO5wGEyZMmDC9MdPriWdp37NzJQ2pLeiBBiNMmDBhwvTGTPuNzS4HmyB5lgKe7QgTJkyYMN3OlE8/uwTMyo2P4NlQHgu5MWHChAnTJUxtCbMtH87Swfurw6zk+fSTmDBhwoTpQqbH+slHywuQ++ahNoT+AxkmTJgwYfo4prMBZP5zEmznm2w/+XSPmDBhwoTpWqbZIT0LYmcEM+hZwrqu5WLChAkTprdnmm01vyKcDX0T0PbaETlgwoQJE6ZrmdpE6utk7qxEmm+jDVPz8aN/FEyYMGHCdCHTrFSZI7aHeruNWZtRsp6i6osJEyZMmC5h2oSF+aKTdG2+jfbi0s6ICRMmTJg+j6ktE54KL9vwu009r8bHhAkTJkzXMu2LlG2Imxcm9y1BbVK4/v/ChAkTJkxvz9S22myuArMGnWQleZF1ODsmTJgwYfoIpn3J8GwRMb8WzMbEhAkTJkzfwJQAbY7h/JIxa+I5lbCuE76YMGHChOkSpkf5bBK1eYEzh94XU6NXjgkTJkyYrmXad6rMmmNa+jw0zYPwTcEVEyZMmDDdxbRJ6eap1U0qNt9MfllJVnUs840JEyZMmN6AKbkE5K05dXZ5kXRuQ99hLhwTJkyYMH0BU7uUWeFzE4rPTvPocoAJEyZMmL6MqYVrNzMLmzdXjWOhLyZMmDBhekumzYF9imZ/+WjXnBc+MWHChAnTvUxtqLk/mNtiZ8K3KZqeSkljwoQJE6Y3Y/oHUjEPkJj6YGAAAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

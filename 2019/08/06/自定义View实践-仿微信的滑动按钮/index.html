@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>自定义View实践-仿微信的滑动按钮 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="自定义view">
+    <meta name="description" content="前言前几天写过一篇文章View的工作原理，有原理不行，还要有实践，刚好把以前项目写过的仿微信滑动按钮控件封装一下，所以本文记录一下我实现这个控件的细节。 地址：SwitchButton 效果图控件使用效果如下：   除了颜色，看起来和微信的还是挺像的。 准备1、选择自定义View的方式自定义View有3种途径实现：1、组合控件；2、继承现有控件(如Button)；3、继承View。下面分别介绍一下">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自定义View实践-仿微信的滑动按钮">
+<meta property="og:url" content="http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言前几天写过一篇文章View的工作原理，有原理不行，还要有实践，刚好把以前项目写过的仿微信滑动按钮控件封装一下，所以本文记录一下我实现这个控件的细节。 地址：SwitchButton 效果图控件使用效果如下：   除了颜色，看起来和微信的还是挺像的。 准备1、选择自定义View的方式自定义View有3种途径实现：1、组合控件；2、继承现有控件(如Button)；3、继承View。下面分别介绍一下">
+<meta property="og:image" content="http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/sb1.gif">
+<meta property="og:image" content="http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/sb2.png">
+<meta property="og:image" content="http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/sb3.png">
+<meta property="article:published_time" content="2019-08-06T10:30:02.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:49.248Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="自定义view">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/sb1.gif">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">自定义View实践-仿微信的滑动按钮</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">自定义View实践-仿微信的滑动按钮</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-08-06T10:30:02.000Z" itemprop="datePublished" class="page-time">
+  2019-08-06
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#效果图"><span class="post-toc-text">效果图</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#准备"><span class="post-toc-text">准备</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、选择自定义View的方式"><span class="post-toc-text">1、选择自定义View的方式</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、选择让控件内容滑动的方式"><span class="post-toc-text">2、选择让控件内容滑动的方式</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、要不要考虑padding属性"><span class="post-toc-text">3、要不要考虑padding属性</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#实现"><span class="post-toc-text">实现</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、定义控件属性"><span class="post-toc-text">1、定义控件属性</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、初始化控件属性"><span class="post-toc-text">2、初始化控件属性</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、重写onMeasure方法，设定按钮的测量宽高"><span class="post-toc-text">3、重写onMeasure方法，设定按钮的测量宽高</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、在onLayout-方法中根据View的宽高计算坐标"><span class="post-toc-text">4、在onLayout()方法中根据View的宽高计算坐标</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、重写onDraw-方法，绘制按钮内容"><span class="post-toc-text">5、重写onDraw()方法，绘制按钮内容</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6、重写onTouchEvent-方法，让按钮滑动起来"><span class="post-toc-text">6、重写onTouchEvent()方法，让按钮滑动起来</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-自定义View实践-仿微信的滑动按钮"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">自定义View实践-仿微信的滑动按钮</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-08-06 18:30:02" datetime="2019-08-06T10:30:02.000Z"  itemprop="datePublished">2019-08-06</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前几天写过一篇文章<a href="https://juejin.im/post/5d35a5fc518825019b0a3678" target="_blank" rel="noopener">View的工作原理</a>，有原理不行，还要有实践，刚好把以前项目写过的仿微信滑动按钮控件封装一下，所以本文记录一下我实现这个控件的细节。</p>
+<p>地址：<a href="https://github.com/rain9155/SwitchButton" target="_blank" rel="noopener">SwitchButton</a></p>
+<h2 id="效果图"><a href="#效果图" class="headerlink" title="效果图"></a>效果图</h2><p>控件使用效果如下：</p>
+<img src="/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/sb1.gif" class="" title="sb1">
+
+<p>除了颜色，看起来和微信的还是挺像的。</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="1、选择自定义View的方式"><a href="#1、选择自定义View的方式" class="headerlink" title="1、选择自定义View的方式"></a>1、选择自定义View的方式</h3><p>自定义View有3种途径实现：1、组合控件；2、继承现有控件(如Button)；3、继承View。下面分别介绍一下：</p>
+<ul>
+<li>1、组合控件：我们并不需要自己去绘制视图上显示的内容，而是将几个系统原生的控件组合到一起，这样创建出的控件就被称为组合控件，比如标题栏就是个很常见的组合控件。</li>
+<li>2、继承现有控件：我们并不需要自己重新去实现一个控件，只需要去继承一个现有的控件，然后在这个控件上增加一些新的功能。它的优点就是不仅能够按照我们的需求加入相应的功能，并且还可以继承现有控件已经封装好的属性，同时不用自己定义测量流程。</li>
+<li>3、继承View：我们继承View，重写相应的方法，重新去实现一个控件。它的优点就是灵活性高，它给你一张白纸，你用画笔尽情发挥。</li>
+</ul>
+<p>现实情况使用什么方式根据实际情况考虑，我这个控件的选择是方式3: <strong>继承View</strong>，重写onMeasure方法定义它的测量流程，重写onDraw()方法定义它的绘制流程。</p>
+<h3 id="2、选择让控件内容滑动的方式"><a href="#2、选择让控件内容滑动的方式" class="headerlink" title="2、选择让控件内容滑动的方式"></a>2、选择让控件内容滑动的方式</h3><p>既然是滑动按钮，肯定有滑动，当我点击按钮时，如果是打开，按钮的小圆会滑向右边，如果是关闭，按钮的小圆会滑向左边。让控件的内容滑动起来我想到的有3种方式：</p>
+<ul>
+<li>1、通过Scroller：调用Scroller的startScroll()方法，传入起始点坐标和终点坐标，然后重写View的computeScroll()方法，在这个方法里面调用Scroller的computeScrollOffset()方法开始滑动计算，然后调用View的scrollTo()或scrollBy()方法完成View的滑动距离的更新，然后调用View的invalidate()或postInvalidate()方法重绘View。</li>
+<li>2、通过Handler不断的发送延时消息：通过Handler的 sendMessageDelayed(Message msg, long delayMillis)方法不断的发送延时消息，在Handler的handlerMessage()中收到消息后，完成滑动距离的更新，然后调用View的invalidate()或postInvalidate()方法重绘View。</li>
+<li>3、通过动画：利用补间动画或属性动画的平移动画可以让View动起来，或者通过ValueAnimator，设定一个初始值和结点值，当调用ValueAnimator的start()方法后，就可以在回调中获取动画的进度，然后根据动画的进度更新滑动距离，然后调用View的invalidate()或postInvalidate()方法重绘View。</li>
+</ul>
+<p>对于方法1，它更适用于自定义ViewGroup的情景，如果自定义ViewGroup中有许多子View需要滑动起来，就可以考虑使用Scroller，例如Android的ViewPager内部就是使用了Scroller；而对于自定义View，可能方法2和3更适用，我这个控件的选择是方式3: <strong>通过ValueAnimator动画</strong>，在构造ValueAnimator时传入起点和终点，然后开启动画，根据动画进度计算滑动距离，让按钮的小圆滑动起来。</p>
+<h3 id="3、要不要考虑padding属性"><a href="#3、要不要考虑padding属性" class="headerlink" title="3、要不要考虑padding属性"></a>3、要不要考虑padding属性</h3><p>如果你在自定义控件中没有考虑padding属性，那么用户定义控件的padding值就会失效，我的选择是<strong>不考虑用户的padding值</strong>，因为滑动按钮中的内容只有一个小圆，且只在一边，padding的意义不大，考虑padding会让很多地方的坐标计算复杂，我还不如让用户直接控制小圆的半径，这样也类似于padding的效果，也简化了计算。</p>
+<p>所以现实情况要不要考虑padding属性需要根据实际情况考虑。而margin值是由父ViewGroup决定，不是由View控制的，我们不用考虑margin值。</p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="1、定义控件属性"><a href="#1、定义控件属性" class="headerlink" title="1、定义控件属性"></a>1、定义控件属性</h3><p>在自定义滑动按钮之前，我们先思考可以让用户自定义这个控件的什么属性，如按钮颜色，打开状态和关闭状态的颜色等，在 res -&gt; values 中，右键新建一个名为attrs的xml文件，在这个文件中定义控件属性，如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">declare-styleable</span> <span class="attr">name</span>=<span class="string">"SwitchButton"</span> &gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"sb_openBackground"</span> <span class="attr">format</span>=<span class="string">"color"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"sb_closeBackground"</span> <span class="attr">format</span>=<span class="string">"color"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"sb_circleColor"</span> <span class="attr">format</span>=<span class="string">"color"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"sb_circleRadius"</span> <span class="attr">format</span>=<span class="string">"dimension"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"sb_status"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"close"</span> <span class="attr">value</span>=<span class="string">"0"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"open"</span> <span class="attr">value</span>=<span class="string">"1"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">attr</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">attr</span> <span class="attr">name</span>=<span class="string">"sb_interpolator"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"Linear"</span> <span class="attr">value</span>=<span class="string">"0"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"Overshoot"</span> <span class="attr">value</span>=<span class="string">"1"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"Accelerate"</span> <span class="attr">value</span>=<span class="string">"2"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"Decelerate"</span> <span class="attr">value</span>=<span class="string">"3"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"AccelerateDecelerate"</span> <span class="attr">value</span>=<span class="string">"4"</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">enum</span> <span class="attr">name</span>=<span class="string">"LinearOutSlowIn"</span> <span class="attr">value</span>=<span class="string">"5"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">attr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">declare-styleable</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>这样用户在引用这个控件时就能使用这些属性，如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">com.example.library.SwitchButton</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">"@+id/sb_button2"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:sb_interpolator</span>=<span class="string">"Accelerate"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:sb_status</span>=<span class="string">"open"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:sb_circleRadius</span>=<span class="string">"10dp"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:sb_closeBackground</span>=<span class="string">"@android:color/black"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:sb_openBackground</span>=<span class="string">"@android:color/holo_blue_bright"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">app:sb_circleColor</span>=<span class="string">"@android:color/white"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>属性的名称要做到见名知意，app只是一个命名空间，取什么名字都可以，不要和系统android相同就行。关于这些属性什么意思可以看<a href="https://github.com/rain9155/SwitchButton" target="_blank" rel="noopener">SwitchButton</a>。</p>
+<h3 id="2、初始化控件属性"><a href="#2、初始化控件属性" class="headerlink" title="2、初始化控件属性"></a>2、初始化控件属性</h3><p>重写View的3个构造方法，分别在3个构造函数中调用init()方法获取控件属性并初始化控件，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SwitchButton</span> <span class="keyword">extends</span> <span class="title">View</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SwitchButton</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">        init(context, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SwitchButton</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs);</span><br><span class="line">        init(context, attrs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SwitchButton</span><span class="params">(Context context, @Nullable AttributeSet attrs, <span class="keyword">int</span> defStyleAttr)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs, defStyleAttr);</span><br><span class="line">        init(context, attrs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(Context context, @Nullable AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">        TypedArray typedValue = context.obtainStyledAttributes(attrs, R.styleable.SwitchButton);</span><br><span class="line">        mOpenBackground = typedValue.getColor(R.styleable.SwitchButton_sb_openBackground, DEFAULT_OPEN_BACKGROUND);</span><br><span class="line">        mCloseBackground = typedValue.getColor(R.styleable.SwitchButton_sb_closeBackground, DEFAULT_CLOSE_BACKGROUND);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        typedValue.recycle();</span><br><span class="line">         <span class="comment">//...</span></span><br><span class="line">        <span class="comment">//初始画笔，动画等</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们在attrs中定义的控件属性都在AttributeSet这个集合中，然后通过TypedArray这个类帮助我们把值获取出来，最后一定要记得调用  typedValue.recycle() 方法回收资源。</p>
+<p>为什么要重写3个构造函数呢？因为你的控件有可能在代码中引用或者在xml布局中引用，如果你的控件在xml布局中被引用，那么系统就会调用含有两个参数的构造函数来初始化控件；如果你直接在代码中 new 一个控件然后 add 到容器中，那么大多数情况你会使用含有一个参数的构造函数来初始化控件，如：SwitchButton button = new SwitchButton(this)，而不管一个参数的还是两个参数的系统最终都会调用含有三个参数的构造函数，以防万一，3个构造函数都要重写。</p>
+<h3 id="3、重写onMeasure方法，设定按钮的测量宽高"><a href="#3、重写onMeasure方法，设定按钮的测量宽高" class="headerlink" title="3、重写onMeasure方法，设定按钮的测量宽高"></a>3、重写onMeasure方法，设定按钮的测量宽高</h3><p>重写onMeasure方法在这个方法设定滑动控件的测量宽高，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> measuredWidthMode = MeasureSpec.getMode(widthMeasureSpec);</span><br><span class="line">    <span class="keyword">int</span> measuredHeightMode = MeasureSpec.getMode(heightMeasureSpec);</span><br><span class="line">    <span class="comment">//取出系统测量宽高</span></span><br><span class="line">    <span class="keyword">int</span> measuredWidth = MeasureSpec.getSize(widthMeasureSpec);</span><br><span class="line">    <span class="keyword">int</span> measureHeight = MeasureSpec.getSize(heightMeasureSpec);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> defaultWidth = (<span class="keyword">int</span>) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, <span class="number">60</span>, getResources().getDisplayMetrics());<span class="comment">//控件的默认宽</span></span><br><span class="line">    <span class="keyword">int</span> defaultHeight = (<span class="keyword">int</span>) (defaultWidth *  <span class="number">0.5f</span>);<span class="comment">//控件的默认高是默认宽的一半</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//OFFSET == 6</span></span><br><span class="line">    <span class="keyword">int</span> offset = (<span class="keyword">int</span>) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, OFFSET * <span class="number">2</span> * <span class="number">1.0f</span>, getResources().getDisplayMetrics());<span class="comment">//控件宽和高的差距不能小于12dp, 否则按钮就不好看了</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//考虑wrap_content情况</span></span><br><span class="line">    <span class="keyword">if</span>(measuredWidthMode == MeasureSpec.AT_MOST &amp;&amp; measuredHeightMode == MeasureSpec.AT_MOST)&#123;</span><br><span class="line">        measuredWidth = defaultWidth;</span><br><span class="line">        measureHeight = defaultHeight;</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(measuredHeightMode == MeasureSpec.AT_MOST)&#123;</span><br><span class="line">        measureHeight = defaultHeight;</span><br><span class="line">        <span class="keyword">if</span>(measuredWidth - measureHeight &lt; offset)</span><br><span class="line">            measuredWidth = defaultWidth;</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(measuredWidthMode == MeasureSpec.AT_MOST)&#123;</span><br><span class="line">        measuredWidth = defaultWidth;</span><br><span class="line">        <span class="keyword">if</span>(measuredWidth - measureHeight &lt; offset)</span><br><span class="line">            measureHeight = defaultHeight;</span><br><span class="line">    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//处理输入非法的宽高情况，即高度大于宽度，把它们交换就行</span></span><br><span class="line">        <span class="keyword">if</span>(measuredWidth &lt; measureHeight)&#123;</span><br><span class="line">            <span class="keyword">int</span> temp = measuredWidth;</span><br><span class="line">            measuredWidth = measureHeight;</span><br><span class="line">            measureHeight = temp;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(Math.abs(measureHeight - measuredWidth) &lt; offset) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"layout_width cannot close to layout_height nearly, the diff must less than 12dp!"</span>);</span><br><span class="line">    </span><br><span class="line">    setMeasuredDimension(measuredWidth, measureHeight);</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果知道View的工作原理，那么理解上面的代码就很简单，主要是考虑wrap_content情况，我们要给滑动按钮设置一个默认的宽或高，默认的宽是60dp，默认高是30dp即宽的一半，如果不是wrap_content情况就让View直接使用系统测量的宽或高，最后一定要记得调用setMeasuredDimension()设定View的测量宽高。</p>
+<p>同时我们还要考虑理输入非法的宽高情况，一定要保证宽 &gt; 高，如果用户输入的宽高是 宽 &lt; 高，这样会导致按钮竖起来，这种情况，我直接让高度与宽度交换；如果用户输入的宽高是 宽 &gt; 高，但是如果高很接近宽甚至相等，那么导致滑动控件就是一个圆形，按钮就不好看了，所以我们还要控制宽高不能相差得太近，为了美观，我设定阈值是12dp，如果宽高相差小于12dp，我就抛个异常提示用户。</p>
+<h3 id="4、在onLayout-方法中根据View的宽高计算坐标"><a href="#4、在onLayout-方法中根据View的宽高计算坐标" class="headerlink" title="4、在onLayout()方法中根据View的宽高计算坐标"></a>4、在onLayout()方法中根据View的宽高计算坐标</h3><p>滑动控件被分为4个部分：<strong>左圆、矩形、右圆、小圆</strong>，如下：</p>
+<img src="/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/sb2.png" class="" title="sb2">
+
+<p>在onDraw()方法中也会按顺序绘制滑动按钮的4个部分，在View的工作原理中讲到，onMeasure()有可能会被系统调用多次，所以最好在onLayout()方法中通过getHeight()和getWidth()方法获得View的真实宽高，所以在onLayout()方法中首先根据View的宽高计算出左圆的半径，小圆的半径，矩形左边界的x坐标，矩形右边界的x坐标，还有小圆圆心的x坐标，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onLayout(changed, left, top, right, bottom);</span><br><span class="line">    <span class="comment">//得出左圆的半径</span></span><br><span class="line">    mLeftSemiCircleRadius = getHeight() / <span class="number">2</span>;</span><br><span class="line">    <span class="comment">//小圆的半径 = 大圆半径减OFFER，OFFER = 6</span></span><br><span class="line">    <span class="keyword">if</span>(!checkCircleRaduis(mCircleRadius)) mCircleRadius = mLeftSemiCircleRadius - OFFSET;</span><br><span class="line">    <span class="comment">//矩形左边的x坐标</span></span><br><span class="line">    mLeftRectangleBolder = mLeftSemiCircleRadius;</span><br><span class="line">    <span class="comment">//矩形右边的x坐标</span></span><br><span class="line">    mRightRectangleBolder = getWidth() - mLeftSemiCircleRadius;</span><br><span class="line">    <span class="comment">//小圆的圆心x坐标一直在变化</span></span><br><span class="line">    mCircleCenter = isOpen ? mRightRectangleBolder : mLeftRectangleBolder;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到左圆的半径等于View高的一半，然后基于左圆的半径得出其他坐标，小圆与左圆之间会有一些空隙，所以左圆半径减去offset值得出小圆半径，矩形左边的x坐标直接等于左圆的半径，矩形右边的x坐标View的宽度减左圆的半径，小圆圆心的x坐标根据初始状态是开启还是关闭，决定它的圆心的初始坐标是在矩形的右边界还是左边界。</p>
+<p>在接下来只要你不断的改变小圆圆心的x坐标并重绘View，就可以让滑动按钮滑动起来。</p>
+<h3 id="5、重写onDraw-方法，绘制按钮内容"><a href="#5、重写onDraw-方法，绘制按钮内容" class="headerlink" title="5、重写onDraw()方法，绘制按钮内容"></a>5、重写onDraw()方法，绘制按钮内容</h3><p>View的工作原理中我们知道，View会在onDraw()方法中绘制自己，所以我们重写onDraw()方法，绘制滑动按钮的四个部分，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDraw</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//左圆</span></span><br><span class="line">    canvas.drawCircle(mLeftRectangleBolder, mLeftSemiCircleRadius, mLeftSemiCircleRadius, mPathWayPaint);</span><br><span class="line">    <span class="comment">//矩形</span></span><br><span class="line">    canvas.drawRect(mLeftRectangleBolder, <span class="number">0</span>, mRightRectangleBolder, getMeasuredHeight(), mPathWayPaint);</span><br><span class="line">    <span class="comment">//右圆</span></span><br><span class="line">    canvas.drawCircle(mRightRectangleBolder, mLeftSemiCircleRadius, mLeftSemiCircleRadius, mPathWayPaint);</span><br><span class="line">    <span class="comment">//小圆</span></span><br><span class="line">    canvas.drawCircle(mCircleCenter, mLeftSemiCircleRadius, mCircleRadius, mCirclePaint);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>canvas是系统提供给我们的画布，在canvas绘制的东西就是View显示的内容，根据在onLayout中的计算，我们用画笔Paint在canvas中绘制出滑动按钮的4个部分，绘制后显示如下：</p>
+<img src="/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/sb3.png" class="" title="sb3">
+
+<p>接下来就是让它滑动起来，这样就能达到效果图的效果。</p>
+<h3 id="6、重写onTouchEvent-方法，让按钮滑动起来"><a href="#6、重写onTouchEvent-方法，让按钮滑动起来" class="headerlink" title="6、重写onTouchEvent()方法，让按钮滑动起来"></a>6、重写onTouchEvent()方法，让按钮滑动起来</h3><p>在<a href="https://juejin.im/post/5d3f0fc3f265da03e921a397" target="_blank" rel="noopener">View的事件分发机制</a>讲到，触摸事件如果不被拦截，最终会分发到View的onTouchEvent()方法中，在这个方法中我们可以根据事件的类型做出滑动按钮的不同行为，我们知道当手指按下按钮然后抬起，滑动按钮的小圆就会滑动到另一边；当手指按下按钮然后移动，滑动按钮的小圆也会跟随手指移动，知道了这两个行为后，我们看onTouchEvent()方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouchEvent</span><span class="params">(MotionEvent event)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//不在动画的时候可以点击</span></span><br><span class="line">    <span class="keyword">if</span>(isAnim) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">switch</span>(event.getAction())&#123;</span><br><span class="line">        <span class="keyword">case</span> MotionEvent.ACTION_DOWN:</span><br><span class="line">            <span class="comment">//开始的x坐标</span></span><br><span class="line">            startX = event.getX();</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">            <span class="keyword">float</span> distance = event.getX() - startX;</span><br><span class="line">            <span class="comment">//更新小圆圆心坐标</span></span><br><span class="line">            mCircleCenter += distance / <span class="number">10</span>;</span><br><span class="line">            <span class="comment">//控制范围</span></span><br><span class="line">            <span class="keyword">if</span> (mCircleCenter &gt; mRightRectangleBolder) &#123;<span class="comment">//最右</span></span><br><span class="line">                mCircleCenter = mRightRectangleBolder;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mCircleCenter &lt; mLeftRectangleBolder) &#123;<span class="comment">//最左</span></span><br><span class="line">                mCircleCenter = mLeftRectangleBolder;</span><br><span class="line">            &#125;</span><br><span class="line">            invalidate();</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MotionEvent.ACTION_UP:</span><br><span class="line">            <span class="keyword">float</span> offset = Math.abs(event.getX() - Math.abs(startX));</span><br><span class="line">            <span class="keyword">float</span> diff;</span><br><span class="line">            <span class="comment">//分2种情况</span></span><br><span class="line">            <span class="keyword">if</span> (offset &lt; mMinDistance) &#123; <span class="comment">//1.点击, 按下和抬起的距离小于mMinDistance确定是点击了</span></span><br><span class="line">                <span class="keyword">if</span>(isOpen)&#123;</span><br><span class="line">                    diff = mLeftRectangleBolder - mCircleCenter;</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                    diff = mRightRectangleBolder - mCircleCenter;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;<span class="comment">//2.滑动</span></span><br><span class="line">                <span class="keyword">if</span> (mCircleCenter &gt; getWidth() / <span class="number">2</span>) &#123;<span class="comment">//滑过中点，滑到最右</span></span><br><span class="line">                    <span class="keyword">this</span>.isOpen = <span class="keyword">false</span>;</span><br><span class="line">                    diff = mRightRectangleBolder - mCircleCenter;</span><br><span class="line">                &#125; <span class="keyword">else</span>&#123;<span class="comment">//没滑过中点,回归原点</span></span><br><span class="line">                    <span class="keyword">this</span>.isOpen = <span class="keyword">true</span>;</span><br><span class="line">                    diff = mLeftRectangleBolder - mCircleCenter;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            mValueAnimator.setFloatValues(<span class="number">0</span>, diff);</span><br><span class="line">            mValueAnimator.start();</span><br><span class="line">            startX = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们先看ACTION_DOWN，当手指按下，我们记录手指按下的x坐标。</p>
+<p>接着看ACTION_MOVE，如果按下后移动，我们就让小圆跟随手指移动即可，所以ACTION_MOVE中先计算出手指移动的距离distance，往右移distance是正数，往左移distance是负数，然后加到小圆的圆心坐标，还要控制小圆的圆心坐标的范围，不要超出矩形左右边界，最后调用 invalidate()重绘View，这样onDraw()方法就会重新执行，更新小圆的位置，就会让小圆慢慢滑动起来。</p>
+<p>最后看ACTION_UP，<strong>mMinDistance = new ViewConfiguration().getScaledTouchSlop()</strong>，它是系统定义的临界值，当抬起手指时，如果移动的距离offset大于mMinDistance ，就认为抬起手指前，手指在移动，否则就认为在点击。如果手指在移动后抬起，这时就判断小圆圆心是否滑过中点算出滑动距离，如果滑过中点(getWidth() / 2)，就让小圆滑到最右，如果没有滑过中点，就让小圆滑到最左；如果手指只是在点击控件，这时就根据控件目前处于开启还是关闭状态算出滑动距离，如果目前处于开启状态，就让小圆滑到最左，如果目前处于关闭状态就让小圆滑到最右；而这个滑动距离diff就是小圆圆心到矩形边界的距离，至于是距离左边界还是右边界，就看上述情况了，计算出滑动距离后设置给ValueAnimator，最后开启动画，在ValueAnimator的updateListener中接收动画进度，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mValueAnimator.addUpdateListener(animation -&gt; &#123;</span><br><span class="line">    <span class="keyword">float</span> value = (<span class="keyword">float</span>)animation.getAnimatedValue();</span><br><span class="line">    mCircleCenter -= mPreAnimatedValue;</span><br><span class="line">    <span class="comment">//更新小圆圆心坐标</span></span><br><span class="line">    mCircleCenter += value;</span><br><span class="line">    mPreAnimatedValue = value;</span><br><span class="line">    invalidate();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>在里面根据动画进度更新小圆圆心坐标，然后调用 invalidate()重绘View，这样onDraw()方法就会重新执行，更新小圆的位置，这样重复执行直到动画结束，就会让小圆慢慢滑动起来。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>到最后就已经实现了效果图的效果，整个过程的原理还是挺简单，使用到了动画还有自定义View的基础知识，赶快动手实践一下。</p>
+<p>地址：<a href="https://github.com/rain9155/SwitchButton" target="_blank" rel="noopener">SwitchButton</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:49.248Z" itemprop="dateUpdated">2023-01-07 18:44:49</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%87%AA%E5%AE%9A%E4%B9%89view/" rel="tag">自定义view</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/&title=《自定义View实践-仿微信的滑动按钮》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/&title=《自定义View实践-仿微信的滑动按钮》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《自定义View实践-仿微信的滑动按钮》 — jianyu的博客&url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/08/23/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BD%BF%E7%94%A8%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF%E5%AE%9E%E7%8E%B0WaveLoadingView/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">自定义View实践-使用贝塞尔曲线实现一个loading控件</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/29/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">View的事件分发机制</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/&title=《自定义View实践-仿微信的滑动按钮》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/&title=《自定义View实践-仿微信的滑动按钮》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《自定义View实践-仿微信的滑动按钮》 — jianyu的博客&url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAT4AAAE+CAAAAAAxUyPsAAAFM0lEQVR42u3aQY7bMBAEQP//0w4Q5BBgV3L3DJVDtnRaOLZEFgNo2MPXK77ev6/7z79+5/3X9fWT/F+v7nz1lPtZ3D/x9cSFDx8+fPjwXdy0ndj9BJLB3d8z+U67bDPWyzvgw4cPHz58I76kKLl/tSfTyIueHPH+brPZJb/Chw8fPnz4nubblBr5AmwChTYO2KDjw4cPHz58/4avRTwVi++XajYLfPjw4cOH7wm+vCCYbbk3QXkbwSfQ+bOO9Trw4cOHDx++Q0XD//f3g+f78OHDhw/fD+Z7l1e9nQ6em4zqieb9xuHPHfDhw4cPH76JxjCwPhWdr7bi8aj2zYMiccGHDx8+fPgu+Pav8Fn7+f77s6WdfdI2LaKaCB8+fPjw4Qv42pIlL1+S3+bfmYUO7TijAAIfPnz48OEb8bUHwp6YTFsezYjz2UUtAXz48OHDh6/ky1vdbSt6f5prU/S0LYFNqIEPHz58+PCd4tuUEfmv8sBiE2e0yzw8EocPHz58+PDd8rWPyTnao2Mzphliu2AfDqjhw4cPHz58MV/yws434bOW875UaguvZKZtYwAfPnz48OHL+ZJptxAtVl5YzML6vEBpG+r48OHDhw9fzpdv+DdN9FN3S0qoUwVKNGZ8+PDhw4dvxNce25ptrduAvo0D8lBjP1N8+PDhw4dvxndqKKew2isPLE6VLx/+D+LDhw8fPnxdov7Ki4Z8KMkmfxb9tyFFWxLN2hL48OHDhw9fPraEpi04NtFAstXfH3TLFxgfPnz48OHb8OW3zldj9vfskFw+1Xw5i4IGHz58+PDhK/k2xUESheeN7U3N1S5n1PxuBfDhw4cPH75AoKVpG8mbWLy9noD78Ft8+PDhw4dvcudXHsS3TesZ9Czuz0c4i/6Hxvjw4cOHD1/ckN5E58nn7RiSxvyshMrbCfjw4cOHD9+GL5/27BjZpjndHoZrQ4q2UMOHDx8+fPjO8rVt41lhUQxrEXDkxceBUwb48OHDhw9fyZeUEfkjc768YNofntsE+sPgHh8+fPjw4buY+yagbxHzKKEd1Z6mLYzw4cOHDx++lq89OtYOa7MYm0IqCSnaMuWbv/Hhw4cPH77Rzrd9kW+GtS9iNtyzhv2Hb+LDhw8fPnwx3yzmzo+dtaCbkqIN9zfFED58+PDhwzfjy0uBfHo5UBtGJPffM83a8Pjw4cOHD9+M7x1feeN81qKejXDDvSmJ8OHDhw8fvoRv1uQ+tfFui5h2Gdpvtib48OHDhw/fni9/2c+ihw1QCzEbW/EsfPjw4cOHb8SXhN2bo2n7dvumMJoF8REiPnz48OHDN3r/5tH5fvKzoHw2pc1/jjrawIcPHz58+A7x7UuKvKw5dbfNYg8R8eHDhw8fvoAvP5i1j9fbKT0R5W+gh6cM8OHDhw8fvtGetw3fN+HC2VJms/xFYYcPHz58+PAFfEmkfrZlfnZ733LPSqXL3+LDhw8fPnwjvrYhfaqZnU/mVKDQIn5YHnz48OHDh2/Nlz9sFqC3If6xImMxwg8BPT58+PDhwxfzzV7bs25APqB2859Me3ao7liBhQ8fPnz48C0C+jwE38cQm3u25UhbqOHDhw8fPnwbvryAaOPvfdN6FtnPYoW2GYAPHz58+PA9x9ceGmsLglnZ0ULMxnl5H3z48OHDh+9hvjZAT4qAfDOfN7nb4H4WcODDhw8fPnwzvjaszw9ybcqdPMLIF36zYMfa5Pjw4cOH7wfz5VF4+3nb8M4j/hl3O4ZZ9IAPHz58+PBdPOsXw/cBYP965JIAAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

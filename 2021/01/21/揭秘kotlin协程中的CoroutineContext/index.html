@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>揭秘kotlin协程中的CoroutineContext | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="协程">
+    <meta name="description" content="前言从kotlin1.1开始，协程就被添加到kotlin中作为实验性功能，直到kotlin1.3，协程在kotlin中的api已经基本稳定下来了，现在kotlin已经发布到了1.4，为协程添加了更多的功能并进一步完善了它，所以我们现在在kotlin代码中可以放心的引入kotlin协程并使用它，其实协程并不是kotlin独有的功能，它是一个广泛的概念，协作式多任务的实现，除了kotlin外，很多语言">
+<meta property="og:type" content="article">
+<meta property="og:title" content="揭秘kotlin协程中的CoroutineContext">
+<meta property="og:url" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言从kotlin1.1开始，协程就被添加到kotlin中作为实验性功能，直到kotlin1.3，协程在kotlin中的api已经基本稳定下来了，现在kotlin已经发布到了1.4，为协程添加了更多的功能并进一步完善了它，所以我们现在在kotlin代码中可以放心的引入kotlin协程并使用它，其实协程并不是kotlin独有的功能，它是一个广泛的概念，协作式多任务的实现，除了kotlin外，很多语言">
+<meta property="og:image" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine1.png">
+<meta property="og:image" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine2.png">
+<meta property="og:image" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine3.png">
+<meta property="og:image" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine4.png">
+<meta property="og:image" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine5.png">
+<meta property="og:image" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine6.png">
+<meta property="article:published_time" content="2021-01-21T02:52:18.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:49.139Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="协程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">揭秘kotlin协程中的CoroutineContext</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">揭秘kotlin协程中的CoroutineContext</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2021-01-21T02:52:18.000Z" itemprop="datePublished" class="page-time">
+  2021-01-21
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/kotlin/">kotlin</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Coroutine的简单理解"><span class="post-toc-text">Coroutine的简单理解</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Coroutine的简单使用"><span class="post-toc-text">Coroutine的简单使用</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#CoroutineContext的元素"><span class="post-toc-text">CoroutineContext的元素</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、Job"><span class="post-toc-text">1、Job</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、CoroutineDispatcher"><span class="post-toc-text">2、CoroutineDispatcher</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-1、Default、IO"><span class="post-toc-text">2.1、Default、IO</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-2、Unconfined"><span class="post-toc-text">2.2、Unconfined</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-3、Main"><span class="post-toc-text">2.3、Main</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、CoroutineName"><span class="post-toc-text">3、CoroutineName</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、CoroutineExceptionHandler"><span class="post-toc-text">4、CoroutineExceptionHandler</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#CoroutineContext的结构"><span class="post-toc-text">CoroutineContext的结构</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、CombinedContext"><span class="post-toc-text">1、CombinedContext</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、CoroutineContext的plus操作"><span class="post-toc-text">2、CoroutineContext的plus操作</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#自定义CoroutineContext元素"><span class="post-toc-text">自定义CoroutineContext元素</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-揭秘kotlin协程中的CoroutineContext"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">揭秘kotlin协程中的CoroutineContext</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2021-01-21 10:52:18" datetime="2021-01-21T02:52:18.000Z"  itemprop="datePublished">2021-01-21</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/kotlin/">kotlin</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从kotlin1.1开始，协程就被添加到kotlin中作为实验性功能，直到kotlin1.3，协程在kotlin中的api已经基本稳定下来了，现在kotlin已经发布到了1.4，为协程添加了更多的功能并进一步完善了它，所以我们现在在kotlin代码中可以放心的引入kotlin协程并使用它，其实<a href="https://zh.wikipedia.org/wiki/%E5%8D%8F%E7%A8%8B" target="_blank" rel="noopener">协程</a>并不是kotlin独有的功能，它是一个广泛的概念，<a href="https://zh.wikipedia.org/wiki/%E5%8D%8F%E4%BD%9C%E5%BC%8F%E5%A4%9A%E4%BB%BB%E5%8A%A1" target="_blank" rel="noopener">协作式多任务</a>的实现，除了kotlin外，很多语言如Go、Python等都通过自己的方式实现了协程，本文阅读前希望你已经知道如何使用kotlin协程，如果不熟悉可以阅读一下官方文档：</p>
+<p><a href="https://kotlinlang.org/docs/reference/coroutines/coroutines-guide.html" target="_blank" rel="noopener">kotlin coroutines guide</a></p>
+<p>其实入门协程我还是非常推荐通过官方文档来进行学习，因为官方文档的例子是很全面的，跟着它的例子敲一遍代码，你也基本掌握了协程的使用，kotlin协程的源码被放在了两个库中，一部分是在kotlin标准库<a href="https://github.com/JetBrains/kotlin/tree/1.4.0/libraries/stdlib/src/kotlin/coroutines" target="_blank" rel="noopener">kotlin-stdlib</a>中，一部分是在kotlin协程实现库<a href="https://github.com/Kotlin/kotlinx.coroutines/tree/native-mt-1.4.20/kotlinx-coroutines-core" target="_blank" rel="noopener">kotlinx-coroutines</a>中，其中kotlinx-coroutines是基于kotlin-stdlib的，kotlin-stdlib库提供了实现协程所需的基本原语，而本文讲解的CoroutineContext的主要实现就是在kotlin-stdlib中。</p>
+<blockquote>
+<p>本文涉及到的源码都是基于kotlin1.4版本</p>
+</blockquote>
+<h2 id="Coroutine的简单理解"><a href="#Coroutine的简单理解" class="headerlink" title="Coroutine的简单理解"></a>Coroutine的简单理解</h2><p>提到协程，很对人会把它和线程进行比较，就像提到线程，很多人会把它和进程进行比较，线程和进程分别是操作系统中的CPU调度单位和资源划分单位，它们在操作系统中有专门的数据结构代表，而协程在操作系统中没有专门的数据结构代表，所以协程并不是由操作系统创建和调度，它而是<strong>由程序自己创建和调度</strong>，由于不需要操作系统调度，所以协程比线程更加的轻量，切换协程比切换线程的开销更小，即它的上下文切换比线程更快，因为操作系统切换线程时一般都会涉及到用户态内核态的转换，这是一个开销相对较大的操作。</p>
+<p>协程的实现依赖于线程，它不能脱离线程而存在，因为线程才是CPU调度的基本单位，协程通过程序的调度可以执行在<strong>一个或多个线程之中</strong>，所以协程需要运行于线程之中，由于协程是由程序自己调度的，所以程序就需要实现调度逻辑，不同语言的调度的实现不一样，在kotlin中，通过<strong>Dispatcher</strong>来调度协程，而Dispatcher它通常是一个线程池的实现或者基于特定平台(例如Android)主线程的实现，通过调度让协程运行于一个或多个线程之中，这些协程可以在同一线程的不同时刻被执行，也可以在不同线程上的不同时刻被执行。</p>
+<p>协程可以说是编程语言的能力， 是上层的能力，它并不需要操作系统和硬件的支持， 是编程语言为了让开发者更容易写出<strong>协作式任务</strong>的代码，而封装的一种任务调度能力，所以协程通常是包含一段<strong>特定逻辑的代码块</strong>，多个协程之间就组合成一段具有<strong>特定逻辑的代码流程</strong>，这些编程语言为了让开发者更方便的使用协程，它通常会提供一些关键字， 而这些关键字会通过编译器自动生成了一些支持型代码，例如kotlin中的<strong>suspend</strong>关键字，对于suspend修饰的方法，编译器会方法生成一些额外的代码。</p>
+<p>上面就是我对协程的简单理解，总的来说：协程需要线程的承载运行，协程需要程序自己完成调度，协程让你更容易写出协作式任务。</p>
+<h2 id="Coroutine的简单使用"><a href="#Coroutine的简单使用" class="headerlink" title="Coroutine的简单使用"></a>Coroutine的简单使用</h2><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">val</span> scope = CoroutineScope(CoroutineName(<span class="string">"Coroutine-Name"</span>) + Dispatchers.IO)</span><br><span class="line">    <span class="keyword">val</span> job = scope.launch(start = CoroutineStart.DEFAULT)&#123;</span><br><span class="line">        println(<span class="string">"hello world"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//进程保活1s，只有进程存活的前提下，协程才能会启动和执行</span></span><br><span class="line">    Thread.sleep(<span class="number">1000</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面首先构造了一个<strong>CoroutineScope</strong>，它是协程的作用域，用于控制协程的生命周期，构造CoroutineScope需要一个<strong>CoroutineContext</strong>，它是协程的上下文，用于提供协程启动和运行时需要的信息，这是我们后面需要重点介绍的，最后通过CoroutineScope的launch方法启动协程并输出hello world，其中启动协程时可以通过<strong>CoroutineStart</strong>指定协程的启动模式，它是一个枚举值，默认是立即启动，也通过指定CoroutineStart.LAZY变为延迟启动，延迟启动需要你主动调用返回的Job对象的start方法后协程才会启动，如果我们想取消掉这个协程的执行就可以调用CoroutineScope的cancel方法，或者调用launch方法返回的Job对象的cancel方法，其实CoroutineScope的cancel方法内部也是调用返回的Job对象的cancel方法来结束这个协程。</p>
+<p>上面就是启动一个协程的简单步骤，需要用到CoroutineScope、CoroutineContext、CoroutineStart。</p>
+<blockquote>
+<p>通过自定义CoroutineScope，可以在应用程序的某一个层次开启或者控制协程的生命周期，例如Android，在ViewModel和Lifecycle类的生命周期里提供了CoroutineScope，分别是<a href="https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:lifecycle/lifecycle-viewmodel-ktx/src/main/java/androidx/lifecycle/ViewModel.kt" target="_blank" rel="noopener">ViewModelScope</a>和<a href="https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:lifecycle/lifecycle-runtime-ktx/src/main/java/androidx/lifecycle/LifecycleOwner.kt;l=29?q=lifecycleScope&ss=androidx%2Fplatform%2Fframeworks%2Fsupportdroidx%2Fplatform%2Fframeworks%2Fsupport" target="_blank" rel="noopener">LifecycleScope</a>，通过这两个CoroutineScope启动的所有协程可以在对应类的生命周期结束时自动被取消从而避免内存泄漏。</p>
+</blockquote>
+<h2 id="CoroutineContext的元素"><a href="#CoroutineContext的元素" class="headerlink" title="CoroutineContext的元素"></a>CoroutineContext的元素</h2><p>构造CoroutineScope使用到的CoroutineContext是一个特殊的集合，这个集合它既有Map的特点，也有Set的特点，集合的每一个元素都是Element，每个Element都有一个Key与之对应，对于相同Key的Element是不可以重复存在的，Element之间可以通过 <strong>+</strong> 号组合起来，后面我会详细介绍CoroutineContext这个特殊集合的结构，接下来我先简单讲解一下组成CoroutineContext的各个Element的作用，CoroutineContext主要由以下4个Element组成：</p>
+<ul>
+<li>Job：协程的唯一标识，用来控制协程的生命周期(new、active、completing、completed、cancelling、cancelled)；</li>
+<li>CoroutineDispatcher：指定协程运行的线程(IO、Default、Main、Unconfined);</li>
+<li>CoroutineName: 指定协程的名称，默认为coroutine;</li>
+<li>CoroutineExceptionHandler: 指定协程的异常处理器，用来处理未捕获的异常.</li>
+</ul>
+<p>它们之间的关系如下：</p>
+<img src="/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine1.png" class="" title="coroutine">
+
+<p>下面分别介绍一下4个Element各自的作用：</p>
+<h3 id="1、Job"><a href="#1、Job" class="headerlink" title="1、Job"></a>1、Job</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Job</span> : <span class="type">CoroutineContext.Element &#123;</span></span></span><br><span class="line">   </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">companion</span> <span class="keyword">object</span> Key : CoroutineContext.Key&lt;Job&gt; &#123;</span><br><span class="line">        <span class="keyword">init</span> &#123;</span><br><span class="line">            CoroutineExceptionHandler</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">val</span> isActive: <span class="built_in">Boolean</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">val</span> isCompleted: <span class="built_in">Boolean</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">val</span> isCancelled: <span class="built_in">Boolean</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="title">start</span><span class="params">()</span></span>: <span class="built_in">Boolean</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="title">cancel</span><span class="params">(cause: <span class="type">CancellationException</span>? = <span class="literal">null</span>)</span></span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">join</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">val</span> children: Sequence&lt;Job&gt;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过CoroutineScope的扩展方法launch启动一个协程后，它会新建返回一个Job对象，它是协程的唯一标识，这个Job对象包含了这个协程任务的一系列状态，如下：</p>
+<img src="/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine2.png" class="" title="coroutine">
+
+<p>当一个协程<strong>创建</strong>后它就处于新建(New)状态，当调用Job的<strong>start/join</strong>方法后协程就处于活跃(Active)状态，这是运行状态，协程运行<strong>出错</strong>或者调用Job的<strong>cancel</strong>方法都会将当前协程置为取消中(Cancelling)状态, 处于取消中状态的协程会等所有子协程<strong>都完成</strong>后才进入取消 (Cancelled)状态，当协程执行<strong>完成</strong>后或者调用CompletableJob(CompletableJob是Job的一个子接口)的<strong>complete</strong>方法都会让当前协程进入完成中(Completing)状态， 处于完成中状态的协程会等所有子协程<strong>都完成</strong>后才进入完成(Completed)状态。</p>
+<p>虽然协程有New、Cancelling、Completing状态，但是外部是无法感知这三个状态的，Job只提供了isActive、isCancelled、isCompleted属性来供外部判断协程是否处于Active、Cancelled、Completed状态，当协程处于<strong>Active</strong>状态时，<strong>isActive为true</strong>，isCancelled和isCompleted为false，当协程处于<strong>Cancelled</strong>状态时，<strong>isCancelled和isCompleted为true</strong>，isActive为false，当协程处于<strong>Completed</strong>状态时，<strong>isCompleted为true</strong>，isActive和isCancelled为false。</p>
+<p>协程中有两种类型的Job，如果我们平时启动协程时没有特意地通过CoroutineContext指定一个Job，那么使用launch/async方法启动协程时返回的Job它会产生<strong>异常传播</strong>，我们知道协程有一个父子的概念，例如启动一个协程1，在协程中继续启动协程2、协程3，那么协程1就是协程2、协程3的父协程，协程2、协程3就是协程1的子协程，每个协程都会有一个对应的Job，<strong>协程之间的父子关系是通过Job对象维持的</strong>，像一颗树一样：</p>
+<img src="/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine3.png" class="" title="coroutine">
+
+<p>所以异常传播就是这个Job因为除了CancellationException以外的异常而失败时，那么父Job就会感知到并抛出异常，在抛出异常之前，父Job会取消所有子Job的运行，这也是结构化编程的一个特点，如果要抑制这种异常传播的行为，那么可以用到另外一种类型的Job - <strong>SupervisorJob</strong>，SupervisorJob它不是一个类，它是一个构造方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="title">SupervisorJob</span><span class="params">(parent: <span class="type">Job</span>? = <span class="literal">null</span>)</span></span> : CompletableJob = SupervisorJobImpl(parent)</span><br></pre></td></tr></table></figure>
+
+<p>SupervisorJob方法会返回CompletableJob的一个supervisor实现，CompletableJob是Job的一个子接口，它比Job接口多了一个complete方法，这意味着它可以调用complete方法让协程任务进入完成状态，supervisor实现的意思是这个Job它不会产生异常传播，每个Job可以单独被管理，当SupervisorJob因为除了CancellationException以外的异常而失败时，并不会影响到父Job和其他子Job，下面是SupervisorJob的一个使用例子：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line"> 	   <span class="keyword">val</span> parentJob = GlobalScope.launch &#123;</span><br><span class="line">       <span class="comment">//childJob是一个SupervisorJob</span></span><br><span class="line">        <span class="keyword">val</span> childJob = launch(SupervisorJob())&#123;</span><br><span class="line">            <span class="keyword">throw</span> NullPointerException()</span><br><span class="line">        &#125;</span><br><span class="line">        childJob.join()</span><br><span class="line">        println(<span class="string">"parent complete"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    Thread.sleep(<span class="number">1000</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>childJob抛出异常并不会影响parentJob的运行，parentJob会继续运行并输出parent complete。</p>
+<h3 id="2、CoroutineDispatcher"><a href="#2、CoroutineDispatcher" class="headerlink" title="2、CoroutineDispatcher"></a>2、CoroutineDispatcher</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">CoroutineDispatcher</span> : <span class="type">AbstractCoroutineContextElement</span></span>(ContinuationInterceptor), ContinuationInterceptor &#123;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">companion</span> <span class="keyword">object</span> Key : AbstractCoroutineContextKey&lt;ContinuationInterceptor, CoroutineDispatcher&gt;(</span><br><span class="line">    ContinuationInterceptor,</span><br><span class="line">    &#123; it <span class="keyword">as</span>? CoroutineDispatcher &#125;</span><br><span class="line">  )</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">open</span> <span class="function"><span class="keyword">fun</span> <span class="title">isDispatchNeeded</span><span class="params">(context: <span class="type">CoroutineContext</span>)</span></span>: <span class="built_in">Boolean</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="function"><span class="keyword">fun</span> <span class="title">dispatch</span><span class="params">(context: <span class="type">CoroutineContext</span>, block: <span class="type">Runnable</span>)</span></span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CoroutineDispatcher可以指定协程的运行线程，CoroutineDispatcher里面有一个<strong>dispatch</strong>方法，这个dispatch方法用于把协程任务分派到特定线程运行，kotlin已经内置了CoroutineDispatcher的4个实现，可以通过Dispatchers的<strong>Default、IO、Main、Unconfined</strong>字段分别返回使用，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">actual</span> <span class="keyword">object</span> Dispatchers &#123;</span><br><span class="line">    <span class="meta">@JvmStatic</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">actual</span> <span class="keyword">val</span> Default: CoroutineDispatcher = createDefaultDispatcher()</span><br><span class="line">  </span><br><span class="line">     <span class="meta">@JvmStatic</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">val</span> IO: CoroutineDispatcher = DefaultScheduler.IO</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JvmStatic</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">actual</span> <span class="keyword">val</span> Unconfined: CoroutineDispatcher = kotlinx.coroutines.Unconfined</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@JvmStatic</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">actual</span> <span class="keyword">val</span> Main: MainCoroutineDispatcher <span class="keyword">get</span>() = MainDispatcherLoader.dispatcher</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-1、Default、IO"><a href="#2-1、Default、IO" class="headerlink" title="2.1、Default、IO"></a>2.1、Default、IO</h4><p>Dispatchers.Default和Dispatchers.IO内部都是线程池实现，它们的含义是把协程运行在共享的线程池中，我们先看Dispatchers.Default的实现，看createDefaultDispatcher方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="keyword">actual</span> <span class="function"><span class="keyword">fun</span> <span class="title">createDefaultDispatcher</span><span class="params">()</span></span>: CoroutineDispatcher = <span class="keyword">if</span> (useCoroutinesScheduler) DefaultScheduler <span class="keyword">else</span> CommonPool</span><br></pre></td></tr></table></figure>
+
+<p>DefaultScheduler和CommonPool都是CoroutineDispatcher的子类，不同的是DefaultScheduler内部依赖的是kotlin自己实现的线程池逻辑，而CommonPool内部依赖的是java类库中的Executor，默认情况下useCoroutinesScheduler为true，所以createDefaultDispatcher方法返回的是DefaultScheduler实例，我们看一下这个DefaultScheduler：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="keyword">object</span> DefaultScheduler : ExperimentalCoroutineDispatcher() &#123;</span><br><span class="line">    <span class="keyword">val</span> IO: CoroutineDispatcher = LimitingDispatcher(</span><br><span class="line">        <span class="keyword">this</span>,<span class="comment">//DefaultScheduler实例被传进了LimitingDispatcher中</span></span><br><span class="line">        systemProp(IO_PARALLELISM_PROPERTY_NAME, <span class="number">64</span>.coerceAtLeast(AVAILABLE_PROCESSORS)),</span><br><span class="line">        <span class="string">"Dispatchers.IO"</span>,</span><br><span class="line">        TASK_PROBABLY_BLOCKING</span><br><span class="line">    )</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>DefaultScheduler中的IO字段就是Dispatchers.IO，它是LimitingDispatcher实例，所以Dispatchers.IO的实现是LimitingDispatcher，同时我们要注意到DefaultScheduler是用<strong>object</strong>字段修饰，这说明它是一个单例，并且DefaultScheduler实例被传进了LimitingDispatcher的构造方法中，所以LimitingDispatcher就会持有DefaultScheduler实例，而DefaultScheduler它的主要实现都在它的父类ExperimentalCoroutineDispatcher中：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@InternalCoroutinesApi</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">open</span> <span class="class"><span class="keyword">class</span> <span class="title">ExperimentalCoroutineDispatcher</span></span>(</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> corePoolSize: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> maxPoolSize: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> idleWorkerKeepAliveNs: <span class="built_in">Long</span>,</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> schedulerName: String = <span class="string">"CoroutineScheduler"</span></span><br><span class="line">) : ExecutorCoroutineDispatcher() &#123;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">constructor</span>(</span><br><span class="line">        corePoolSize: <span class="built_in">Int</span> = CORE_POOL_SIZE,</span><br><span class="line">        maxPoolSize: <span class="built_in">Int</span> = MAX_POOL_SIZE,</span><br><span class="line">        schedulerName: String = DEFAULT_SCHEDULER_NAME</span><br><span class="line">    ) : <span class="keyword">this</span>(corePoolSize, maxPoolSize, IDLE_WORKER_KEEP_ALIVE_NS, schedulerName)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> coroutineScheduler = createScheduler()</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">//返回CoroutineScheduler实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">createScheduler</span><span class="params">()</span></span> = CoroutineScheduler(corePoolSize, maxPoolSize, idleWorkerKeepAliveNs, schedulerName)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">dispatch</span><span class="params">(context: <span class="type">CoroutineContext</span>, block: <span class="type">Runnable</span>)</span></span>: <span class="built_in">Unit</span> =</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          	<span class="comment">//dispatch方法委托给了CoroutineScheduler的dispatch方法</span></span><br><span class="line">            coroutineScheduler.dispatch(block)</span><br><span class="line">        &#125; <span class="keyword">catch</span> (e: RejectedExecutionException) &#123;</span><br><span class="line">          	<span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">internal</span> <span class="function"><span class="keyword">fun</span> <span class="title">dispatchWithContext</span><span class="params">(block: <span class="type">Runnable</span>, context: <span class="type">TaskContext</span>, tailDispatch: <span class="type">Boolean</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//dispatchWithContext方法委托给了CoroutineScheduler的dispatch方法</span></span><br><span class="line">            coroutineScheduler.dispatch(block, context, tailDispatch)</span><br><span class="line">        &#125; <span class="keyword">catch</span> (e: RejectedExecutionException) &#123;</span><br><span class="line">          <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们再看Dispatchers.IO对应的LimitingDispatcher实现：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">LimitingDispatcher</span></span>(</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> dispatcher: ExperimentalCoroutineDispatcher,<span class="comment">//外部传进的DefaultScheduler实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> parallelism: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> name: String?,</span><br><span class="line">    <span class="keyword">override</span> <span class="keyword">val</span> taskMode: <span class="built_in">Int</span></span><br><span class="line">) : ExecutorCoroutineDispatcher(), TaskContext, Executor &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> queue = ConcurrentLinkedQueue&lt;Runnable&gt;()</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> inFlightTasks = atomic(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">dispatch</span><span class="params">(context: <span class="type">CoroutineContext</span>, block: <span class="type">Runnable</span>)</span></span> = dispatch(block, <span class="literal">false</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">dispatch</span><span class="params">(block: <span class="type">Runnable</span>, tailDispatch: <span class="type">Boolean</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">var</span> taskToSchedule = block</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            <span class="keyword">val</span> inFlight = inFlightTasks.incrementAndGet()</span><br><span class="line"></span><br><span class="line">          <span class="keyword">if</span> (inFlight &lt;= parallelism) &#123;</span><br><span class="line">            		<span class="comment">//LimitingDispatcher的dispatch方法委托给了DefaultScheduler的dispatchWithContext方法</span></span><br><span class="line">                dispatcher.dispatchWithContext(taskToSchedule, <span class="keyword">this</span>, tailDispatch)</span><br><span class="line">                <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            queue.add(taskToSchedule)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (inFlightTasks.decrementAndGet() &gt;= parallelism) &#123;</span><br><span class="line">                <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            taskToSchedule = queue.poll() ?: <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从上面分析得知，Dispatchers.Default的实现是<strong>DefaultScheduler</strong>，Dispatchers.IO的实现是<strong>LimitingDispatcher</strong>，而LimitingDispatcher持有DefaultScheduler实例，把dispatch操作委托给DefaultScheduler，DefaultScheduler内部持有<strong>CoroutineScheduler</strong>实例，把dispatch操作委托给CoroutineScheduler，而DefaultScheduler又是一个单例，所以Dispatchers.Default和Dispatchers.IO它们<strong>共用</strong>同一个CoroutineScheduler实例，它们之间的关系如下：</p>
+<img src="/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine4.png" class="" title="coroutine">
+
+<p><strong>CoroutineScheduler</strong>就是kotlin自己实现的共享线程池，是Dispatchers.Default和Dispatchers.IO内部的共同实现，Dispatchers.Default和Dispatchers.IO共享CoroutineScheduler中的线程，DefaultScheduler和LimitingDispatcher的主要作用是对CoroutineScheduler进行线程数、任务数等配置，CoroutineScheduler使用<strong>工作窃取算法</strong>(Work Stealing)重新实现了一套线程池的任务调度逻辑，它的性能、扩展性对协程的任务调度更友好，具体的逻辑可以查看这个类的dispatch方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="class"><span class="keyword">class</span> <span class="title">CoroutineScheduler</span></span>(</span><br><span class="line">    <span class="meta">@JvmField</span> <span class="keyword">val</span> corePoolSize: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="meta">@JvmField</span> <span class="keyword">val</span> maxPoolSize: <span class="built_in">Int</span>,</span><br><span class="line">    <span class="meta">@JvmField</span> <span class="keyword">val</span> idleWorkerKeepAliveNs: <span class="built_in">Long</span> = IDLE_WORKER_KEEP_ALIVE_NS,</span><br><span class="line">    <span class="meta">@JvmField</span> <span class="keyword">val</span> schedulerName: String = DEFAULT_SCHEDULER_NAME</span><br><span class="line">) : Executor, Closeable &#123;</span><br><span class="line">  </span><br><span class="line">      <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">execute</span><span class="params">(command: <span class="type">Runnable</span>)</span></span> = dispatch(command)</span><br><span class="line">  </span><br><span class="line">      <span class="function"><span class="keyword">fun</span> <span class="title">dispatch</span><span class="params">(block: <span class="type">Runnable</span>, taskContext: <span class="type">TaskContext</span> = NonBlockingContext, tailDispatch: <span class="type">Boolean</span> = <span class="literal">false</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> task = createTask(block, taskContext)</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">if</span> (task.mode == TASK_NON_BLOCKING) &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">  		<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以这个线程池既可以运行两种类型的任务：CPU密集型任务和IO密集型任务，用一个mode来区别，当你为协程指定Dispatchers.Default时，Dispatcher会把协程的任务指定为CPU密集型任务，对应mode为<strong>TASK_NON_BLOCKING</strong>，当你为协程指定Dispatchers.IO时，Dispatcher会把协程的任务指定为IO密集型任务，对应mode为<strong>TASK_PROBABLY_BLOCKING</strong>，所以这时CoroutineScheduler就可以根据task mode作出不同的线程创建、调度、唤醒策略，当启动协程时没有指定Dispatcher，默认会使用Dispatchers.Default。</p>
+<p>当运行CPU密集型任务时，CoroutineScheduler最多有corePoolSize个线程被创建，corePoolSize它的取值为<strong>max(2, CPU核心数)</strong>，即它会尽量的等于CPU核心数，当运行IO密集型任务时，它可以创建比corePoolSize更多的线程来运行IO型任务，但不能大于maxPoolSize，maxPoolSize会取一个很大的值，默认为max(corePoolSize, min(CPU核心数 * 128, 2^21 - 2))，即大于corePoolSize，小于2^21 - 2，而2^21 - 2是一个很大的数约为2M，但是CoroutineScheduler是不可能创建这么多线程的，所以就需要外部限制提交的任务数，而Dispatchers.IO构造时就通过<strong>LimitingDispatcher</strong>默认限制了最大线程并发数parallelism为<strong>max(64, CPU核心数)</strong>，即Dispatchers.IO最多只能提交parallelism个任务到CoroutineScheduler中执行，剩余的任务被放进一个队列中等待。</p>
+<blockquote>
+<p>CPU密集型任务：CPU密集型任务的特点是执行任务时CPU会处于忙碌状态，任务会消耗大量的CPU资源，例如计算复杂的算术、视频解码等，如果此时线程数太多，超过了CPU核心数，那么这些超出来的线程是得不到CPU的执行的，只会浪费内存资源，因为线程本身也有栈等空间，同时线程过多，频繁的线程切换带来的消耗也会影响线程池的性能，所以对于CPU密集型任务，线程池并发线程数等于CPU核心数才能让CPU的执行效率最大化；</p>
+<p>IO密集型任务：IO密集型任务的特点是执行任务时CPU会处于闲置状态，任务不会消耗大量的CPU资源，例如网络请求、IO操作等，线程执行IO密集型任务时大多数处于阻塞状态，处于阻塞状态的线程是不占用CPU的执行时间，这时CPU就处于闲置状态，为了让CPU忙起来，执行IO密集型任务时理应让线程的创建数量更多一点，理想情况下线程数应该等于提交的任务数，对于这些多创建出来的线程，当它们闲置时，线程池一般会有一个超时回收策略，所以大部分情况下并不会占用大量的内存资源，但也会有极端情况，所以对于IO密集型任务，线程池并发线程数应尽可能地多才能提高CPU的吞吐量，这个尽可能地多的程度并不是无限大，而是根据业务情况设定，但肯定要大于CPU核心数。</p>
+</blockquote>
+<h4 id="2-2、Unconfined"><a href="#2-2、Unconfined" class="headerlink" title="2.2、Unconfined"></a>2.2、Unconfined</h4><p>Dispatchers.Unconfined的含义是不给协程指定运行的线程，在第一次被挂起(suspend)之前，由启动协程的线程执行它，但被挂起后, 会由恢复协程的线程继续执行,  如果一个协程会被挂起多次,  那么每次被恢复后,  都有可能被不同线程继续执行，看下面的一个例子：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    GlobalScope.launch(Dispatchers.Unconfined)&#123;</span><br><span class="line">        println(Thread.currentThread().name)</span><br><span class="line"></span><br><span class="line">        <span class="comment">//挂起</span></span><br><span class="line">        withContext(Dispatchers.IO)&#123;</span><br><span class="line">            println(Thread.currentThread().name)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//恢复</span></span><br><span class="line">        println(Thread.currentThread().name)</span><br><span class="line"></span><br><span class="line">        <span class="comment">//挂起</span></span><br><span class="line">        withContext(Dispatchers.Default)&#123;</span><br><span class="line">            println(Thread.currentThread().name)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//恢复</span></span><br><span class="line">        println(Thread.currentThread().name)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//进程保活</span></span><br><span class="line">    Thread.sleep(<span class="number">1000</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">运行输出：</span><br><span class="line">main</span><br><span class="line">DefaultDispatcher-worker-<span class="number">1</span></span><br><span class="line">DefaultDispatcher-worker-<span class="number">1</span></span><br><span class="line">DefaultDispatcher-worker-<span class="number">3</span></span><br><span class="line">DefaultDispatcher-worker-<span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>协程启动时指定了Dispatchers.Unconfined，所以第一次执行时是由启动协程的线程执行，上面在主线程中启动了协程，所以第一次输出主线程main，withContext方法是一个suspend方法，它可以挂起当前协程，并把指定的代码块运行到给定的上下文中，直到代码块运行完成并返回结果，第一个代码块通过withContext方法把它运行在Dispatchers.IO中，所以第二次输出了线程池中的某一个线程DefaultDispatcher-worker-1，第一个代码块执行完毕后，协程在DefaultDispatcher-worker-1线程中恢复，所以协程恢复后执行在DefaultDispatcher-worker-1线程中，所以第三次继续输出DefaultDispatcher-worker-1，第二个代码块同理。</p>
+<p>那么Dispatchers.Unconfined是怎么做到的呢，我们看下Unconfined对应的CoroutineDispatcher实现 - kotlinx.coroutines.Unconfined：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="keyword">object</span> Unconfined : CoroutineDispatcher() &#123;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">isDispatchNeeded</span><span class="params">(context: <span class="type">CoroutineContext</span>)</span></span>: <span class="built_in">Boolean</span> = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">dispatch</span><span class="params">(context: <span class="type">CoroutineContext</span>, block: <span class="type">Runnable</span>)</span></span> &#123;</span><br><span class="line">        <span class="comment">// It can only be called by the "yield" function. See also code of "yield" function.</span></span><br><span class="line">        <span class="keyword">val</span> yieldContext = context[YieldContext]</span><br><span class="line">        <span class="keyword">if</span> (yieldContext != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// report to "yield" that it is an unconfined dispatcher and don't call "block.run()"</span></span><br><span class="line">            yieldContext.dispatcherWasUnconfined = <span class="literal">true</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> UnsupportedOperationException(<span class="string">"Dispatchers.Unconfined.dispatch function can only be used by the yield function. "</span> +</span><br><span class="line">            <span class="string">"If you wrap Unconfined dispatcher in your code, make sure you properly delegate "</span> +</span><br><span class="line">            <span class="string">"isDispatchNeeded and dispatch calls."</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Unconfined他重写了CoroutineDispatcher的isDispatchNeeded方法和dispatch方法，isDispatchNeeded方法返回了false，表示不需要dispatch，而默认CoroutineDispatcher的isDispatchNeeded方法是返回true的，Dispatchers.Default和Dispatchers.IO都没有重写这个方法，Unconfined的dispatch方法没有任何任务调度的逻辑，只是写明了只有当调用<strong>yield</strong>方法时，Unconfined的dispatch方法才会被调用，yield方法是一个suspend方法，当在协程中调用这个方法时表示当前协程让出自己所在的线程给其他协程运行，所以正常情况下是不会调用Unconfined的dispatch方法的。</p>
+<p>在kotlin中每个协程都有一个<strong>Continuation</strong>实例与之对应，当协程<strong>恢复</strong>时会调用Continuation的resumeWith方法，它的实现在<strong>DispatchedContinuation</strong>中，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="class"><span class="keyword">class</span> <span class="title">DispatchedContinuation</span>&lt;<span class="type">in T</span>&gt;</span>(</span><br><span class="line">    <span class="meta">@JvmField</span> <span class="keyword">val</span> dispatcher: CoroutineDispatcher,<span class="comment">//协程的的CoroutineDispatcher实例</span></span><br><span class="line">    <span class="meta">@JvmField</span> <span class="keyword">val</span> continuation: Continuation&lt;T&gt;<span class="comment">//代表协程的Continuation实例</span></span><br><span class="line">) : DispatchedTask&lt;T&gt;(MODE_UNINITIALIZED), CoroutineStackFrame, Continuation&lt;T&gt; <span class="keyword">by</span> continuation &#123;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">resumeWith</span><span class="params">(result: <span class="type">Result</span>&lt;<span class="type">T</span>&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> context = continuation.context</span><br><span class="line">        <span class="keyword">val</span> state = result.toState()</span><br><span class="line">        <span class="keyword">if</span> (dispatcher.isDispatchNeeded(context)) &#123;</span><br><span class="line">            _state = state</span><br><span class="line">            resumeMode = MODE_ATOMIC</span><br><span class="line">            dispatcher.dispatch(context, <span class="keyword">this</span>)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;<span class="comment">//Unconfined走这里的逻辑</span></span><br><span class="line">          	<span class="comment">//调用executeUnconfined方法</span></span><br><span class="line">            executeUnconfined(state, MODE_ATOMIC) &#123;</span><br><span class="line">                <span class="comment">//withCoroutineContext方法的作用是查找context中的ThreadContextElement元素，然后调用ThreadContextElement的相应方法更新当前线程的上下文</span></span><br><span class="line">                withCoroutineContext(<span class="keyword">this</span>.context, countOrElement) &#123;</span><br><span class="line">                  	<span class="comment">//调用Continuation的resumeWith方法</span></span><br><span class="line">                    continuation.resumeWith(result)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们注意到<strong>by</strong>关键字，这是kotlin中的委托实现，DispatchedContinuation通过<strong>类委托加强</strong>了Continuation的resumeWith方法，即在调用Continuation的resumeWith方法之前增加了一些自己的逻辑，我们可以看到DispatchedContinuation的resumeWith方法中会根据CoroutineDispatcher的isDispatchNeeded方法返回值做出不同处理，当isDispatchNeeded方法返回true时，会调用协程的CoroutineDispatcher的dispatch方法，而当isDispatchNeeded方法返回false时，不会调用CoroutineDispatcher的dispatch方法而是调用<strong>executeUnconfined</strong>方法，上面讲到Unconfined的isDispatchNeeded方法返回了false，我们看executeUnconfined方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> DispatchedContinuation<span class="type">&lt;*&gt;</span>.<span class="title">executeUnconfined</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    contState: <span class="type">Any</span>?,</span></span></span><br><span class="line"><span class="function"><span class="params">  	mode: <span class="type">Int</span>, </span></span></span><br><span class="line"><span class="function"><span class="params">  	doYield: <span class="type">Boolean</span> = <span class="literal">false</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">    block: () -&gt; <span class="type">Unit</span></span></span></span><br><span class="line"><span class="function"><span class="params">)</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">    assert &#123; mode != MODE_UNINITIALIZED &#125;</span><br><span class="line">  	<span class="comment">//从ThreadLocal中取出EventLoop</span></span><br><span class="line">    <span class="keyword">val</span> eventLoop = ThreadLocalEventLoop.eventLoop</span><br><span class="line">    <span class="keyword">if</span> (doYield &amp;&amp; eventLoop.isUnconfinedQueueEmpty) <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">  	<span class="comment">//判断是否在执行Unconfined任务</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">if</span> (eventLoop.isUnconfinedLoopActive) &#123;</span><br><span class="line">        _state = contState</span><br><span class="line">        resumeMode = mode</span><br><span class="line">      	<span class="comment">//调用EventLoop的dispatchUnconfined方法把Unconfined任务放进EventLoop中</span></span><br><span class="line">        eventLoop.dispatchUnconfined(<span class="keyword">this</span>)</span><br><span class="line">        <span class="literal">true</span> </span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      	<span class="comment">//执行Unconfined任务</span></span><br><span class="line">        runUnconfinedEventLoop(eventLoop, block = block)</span><br><span class="line">        <span class="literal">false</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">internal</span> <span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> DispatchedTask<span class="type">&lt;*&gt;</span>.<span class="title">runUnconfinedEventLoop</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    eventLoop: <span class="type">EventLoop</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">    block: () -&gt; <span class="type">Unit</span></span></span></span><br><span class="line"><span class="function"><span class="params">)</span></span> &#123;</span><br><span class="line">    eventLoop.incrementUseCount(unconfined = <span class="literal">true</span>)</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      	<span class="comment">//先执行block代码块，block()就是executeUnconfined方法传进的代码块, block()里面会调用Continuation的resumeWith方法</span></span><br><span class="line">        block()</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">          	<span class="comment">//再调用EventLoop的processUnconfinedEvent方法执行EventLoop中的Unconfined任务，直到EventLoop中的所有Unconfined任务执行完才跳出循环</span></span><br><span class="line">            <span class="keyword">if</span> (!eventLoop.processUnconfinedEvent()) <span class="keyword">break</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (e: Throwable) &#123;</span><br><span class="line">       <span class="comment">//...</span></span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        eventLoop.decrementUseCount(unconfined = <span class="literal">true</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到对于Unconfined任务，是在当前线程马上执行或者通过当前线程的EventLoop来执行的，EventLoop是存放在<a href="https://blog.csdn.net/Rain_9155/article/details/103447399" target="_blank" rel="noopener">ThreadLocal</a>中的，所以EventLoop它是跟当前线程相关联的，而EventLoop也是CoroutineDispatcher的一个子类：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">EventLoop</span> : <span class="type">CoroutineDispatcher</span></span>() &#123;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> unconfinedQueue: ArrayQueue&lt;DispatchedTask&lt;*&gt;&gt;? = <span class="literal">null</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="title">dispatchUnconfined</span><span class="params">(task: <span class="type">DispatchedTask</span>&lt;*&gt;)</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = unconfinedQueue ?: ArrayQueue&lt;DispatchedTask&lt;*&gt;&gt;().also &#123; unconfinedQueue = it &#125;</span><br><span class="line">        queue.addLast(task)</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="title">processUnconfinedEvent</span><span class="params">()</span></span>: <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> queue = unconfinedQueue ?: <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">        <span class="keyword">val</span> task = queue.removeFirstOrNull() ?: <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">        task.run()</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>EventLoop中有一个双端队列用于存放Unconfined任务，Unconfined任务是指指定了Dispatchers.Unconfined的协程任务，EventLoop的dispatchUnconfined方法用于把Unconfined任务放进队列的尾部，processUnconfinedEvent方法用于从队列的头部移出Unconfined任务执行，所以<strong>executeUnconfined</strong>方法里面的策略就是：在当前线程立即执行Unconfined任务，如果当前线程已经在执行Unconfined任务，就暂时把它放进跟当前线程关联的EventLoop中，等待执行，同时Unconfined任务里面会调用Continuation的resumeWith方法恢复协程运行，这也是为什么指定了Dispatchers.Unconfined后协程恢复能够被恢复协程的线程执行的原因。</p>
+<h4 id="2-3、Main"><a href="#2-3、Main" class="headerlink" title="2.3、Main"></a>2.3、Main</h4><p>Dispatchers.Main的含义是把协程运行在平台相关的只能操作UI对象的Main线程，所以它根据不同的平台有不同的实现，kotlin它支持下面三种平台：</p>
+<ul>
+<li>kotlin/js：kotlin/js是kotlin对JavaScript的支持，提供了转换kotlin代码，kotlin标准库的能力，npm包管理能力，在kotlin/js上Dispatchers.Main等效于Dispatchers.Default；</li>
+<li>kotlin/native：kotlin/native是一种将kotlin代码编译为无需虚拟机就可运行的原生二进制文件的技术, 它的主要目的是允许对不需要或不可能使用虚拟机的平台进行编译，例如嵌入式设备或iOS，在kotlin/native上Dispatchers.Main等效于Dispatchers.Default；</li>
+<li>kotlin/JVM：kotlin/JVM就是需要虚拟机才能编译的平台，例如Android就是属于kotlin/JVM，对于kotlin/JVM我们需要引入对应的dispatcher，例如Android就需要引入kotlinx-coroutines-android库，它里面有Android对应的Dispatchers.Main实现，其实就是把任务通过Handler运行在Android的主线程.</li>
+</ul>
+<p>我们再看Dispatchers.Main的实现 - MainDispatcherLoader.dispatcher:</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="keyword">object</span> MainDispatcherLoader &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@JvmField</span></span><br><span class="line">    <span class="keyword">val</span> dispatcher: MainCoroutineDispatcher = loadMainDispatcher()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">loadMainDispatcher</span><span class="params">()</span></span>: MainCoroutineDispatcher &#123;</span><br><span class="line">        <span class="comment">//...主要是通过反射加载实现了MainCoroutineDispatcher的类</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以Dispatchers.Main的CoroutineDispatcher实现是MainCoroutineDispatcher，MainCoroutineDispatcher的具体实现就因平台的不同而不同了，如果你直接使用Dispatchers.Main而没有引入对应的库就会引发IllegalStateException异常。</p>
+<h3 id="3、CoroutineName"><a href="#3、CoroutineName" class="headerlink" title="3、CoroutineName"></a>3、CoroutineName</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">CoroutineName</span></span>(</span><br><span class="line">    <span class="keyword">val</span> name: String</span><br><span class="line">) : AbstractCoroutineContextElement(CoroutineName) &#123;</span><br><span class="line">   </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">companion</span> <span class="keyword">object</span> Key : CoroutineContext.Key&lt;CoroutineName&gt;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">toString</span><span class="params">()</span></span>: String = <span class="string">"CoroutineName(<span class="variable">$name</span>)"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CoroutineName就是协程的名字，它的结构很简单, 我们平时开发一般是不会去指定一个CoroutineName的，因为CoroutineName只在kotlin的debug模式下才会被用的, 它在debug模式下被用于设置协程运行线程的名字：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">internal</span> <span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">CoroutineId</span></span>(</span><br><span class="line">    <span class="keyword">val</span> id: <span class="built_in">Long</span></span><br><span class="line">) : ThreadContextElement&lt;String&gt;, AbstractCoroutineContextElement(CoroutineId) &#123;</span><br><span class="line">   </span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">updateThreadContext</span><span class="params">(context: <span class="type">CoroutineContext</span>)</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">val</span> coroutineName = context[CoroutineName]?.name ?: <span class="string">"coroutine"</span></span><br><span class="line">        <span class="keyword">val</span> currentThread = Thread.currentThread()</span><br><span class="line">        <span class="keyword">val</span> oldName = currentThread.name</span><br><span class="line">        <span class="keyword">var</span> lastIndex = oldName.lastIndexOf(DEBUG_THREAD_NAME_SEPARATOR)</span><br><span class="line">        <span class="keyword">if</span> (lastIndex &lt; <span class="number">0</span>) lastIndex = oldName.length</span><br><span class="line">        currentThread.name = buildString(lastIndex + coroutineName.length + <span class="number">10</span>) &#123;</span><br><span class="line">            append(oldName.substring(<span class="number">0</span>, lastIndex))</span><br><span class="line">            append(DEBUG_THREAD_NAME_SEPARATOR)</span><br><span class="line">            append(coroutineName)</span><br><span class="line">            append(<span class="string">'#'</span>)</span><br><span class="line">            append(id)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> oldName</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以通过设置key为<strong>kotlinx.coroutines.debug</strong>的SystemProp的值为<strong>on</strong>打开协程的debug模式，这样我们指定的CoroutineName就会出现运行协程的线程的名字上。</p>
+<h3 id="4、CoroutineExceptionHandler"><a href="#4、CoroutineExceptionHandler" class="headerlink" title="4、CoroutineExceptionHandler"></a>4、CoroutineExceptionHandler</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CoroutineExceptionHandler</span> : <span class="type">CoroutineContext.Element &#123;</span></span></span><br><span class="line">   </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">companion</span> <span class="keyword">object</span> Key : CoroutineContext.Key&lt;CoroutineExceptionHandler&gt;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="title">handleException</span><span class="params">(context: <span class="type">CoroutineContext</span>, exception: <span class="type">Throwable</span>)</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CoroutineExceptionHandler就是协程的异常处理器，用来处理协程运行中未捕获的异常，如果我们没有指定它，那么协程中未捕获的异常默认会流转到Thread的uncaughtExceptionHandler中，我们可以在启动协程时通过CoroutineContext指定我们自定义的异常处理器，我们可以通过CoroutineExceptionHandler方法创建一个CoroutineExceptionHandler，它会返回一个CoroutineExceptionHandler的默认实现，默认实现的handleException方法中调用了我们传进的handler方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">inline</span> <span class="function"><span class="keyword">fun</span> <span class="title">CoroutineExceptionHandler</span><span class="params">(<span class="keyword">crossinline</span> handler: (<span class="type">CoroutineContext</span>, <span class="type">Throwable</span>) -&gt; <span class="type">Unit</span>)</span></span>: CoroutineExceptionHandler =</span><br><span class="line">    <span class="keyword">object</span> : AbstractCoroutineContextElement(CoroutineExceptionHandler), CoroutineExceptionHandler &#123;</span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">handleException</span><span class="params">(context: <span class="type">CoroutineContext</span>, exception: <span class="type">Throwable</span>)</span></span> =</span><br><span class="line">            handler.invoke(context, exception)</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>CoroutineExceptionHandler只对launch方法启动的根协程有效，而对async启动的根协程无效，因为async启动的<strong>根协程</strong>默认会捕获所有未捕获异常并把它放在Deferred中，等到用户调用Deferred的await方法才抛出，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="comment">//自定义CoroutineExceptionHandler</span></span><br><span class="line">    <span class="keyword">val</span> handler = CoroutineExceptionHandler&#123; coroutineContext, throwable -&gt;</span><br><span class="line">        println(<span class="string">"my coroutineExceptionHandler catch exception, msg = <span class="subst">$&#123;throwable.message&#125;</span>"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//handler有效</span></span><br><span class="line">    <span class="keyword">val</span> job = GlobalScope.launch(handler)&#123;</span><br><span class="line">        <span class="keyword">throw</span> IndexOutOfBoundsException(<span class="string">"exception thrown from launch"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    job.start()</span><br><span class="line"></span><br><span class="line">    <span class="comment">//handler无效</span></span><br><span class="line">    <span class="keyword">val</span> deferred = GlobalScope.async(handler)&#123;</span><br><span class="line">        <span class="keyword">throw</span> NullPointerException(<span class="string">"exception thrown from async"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    deferred.start()</span><br><span class="line"></span><br><span class="line">    Thread.sleep(<span class="number">1000</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">my coroutineExceptionHandler <span class="keyword">catch</span> exception, msg = exception thrown from launch</span><br></pre></td></tr></table></figure>
+
+<p>其中只有launch启动的根协程抛出的异常才被CoroutineExceptionHandler处理，而对于async启动的根协程抛出的异常CoroutineExceptionHandler无效，需要我们调用Deferred的await方法时try catch。</p>
+<p>还有子协程抛出的未捕获异常会委托父协程的CoroutineExceptionHandler处理，子协程设置的CoroutineExceptionHandler永远不会生效(SupervisorJob 除外)，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="comment">//根协程的Handler</span></span><br><span class="line">    <span class="keyword">val</span> parentHandler = CoroutineExceptionHandler&#123;coroutineContext, throwable -&gt;</span><br><span class="line">        println(<span class="string">"parent coroutineExceptionHandler catch exception, msg = <span class="subst">$&#123;throwable.message&#125;</span>"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//启动根协程</span></span><br><span class="line">    <span class="keyword">val</span> parentJob = GlobalScope.launch(parentHandler)&#123;</span><br><span class="line">        <span class="comment">//子协程的Handler</span></span><br><span class="line">        <span class="keyword">val</span> childHandler = CoroutineExceptionHandler&#123;coroutineContext, throwable -&gt;</span><br><span class="line">            println(<span class="string">"child coroutineExceptionHandler catch exception, msg = <span class="subst">$&#123;throwable.message&#125;</span>"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//启动子协程</span></span><br><span class="line">        <span class="keyword">val</span> childJob = launch(childHandler)&#123;</span><br><span class="line">            <span class="keyword">throw</span> IndexOutOfBoundsException(<span class="string">"exception thrown from child launch"</span>)</span><br><span class="line">        &#125;</span><br><span class="line">        childJob.start()</span><br><span class="line">    &#125;</span><br><span class="line">    parentJob.start()</span><br><span class="line">    </span><br><span class="line">    Thread.sleep(<span class="number">1000</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">parent coroutineExceptionHandler <span class="keyword">catch</span> exception, msg = exception thrown from child launch</span><br></pre></td></tr></table></figure>
+
+<p>可以看到子协程设置CoroutineExceptionHandler没有输出，只有根协程的CoroutineExceptionHandler输出了，但是也有例外，如果子协程是<strong>SupervisorJob</strong>，那么它设置的CoroutineExceptionHandler是生效的，前面也说过SupervisorJob不会产生异常传播。</p>
+<p>当父协程的子协程同时抛出多个异常时，CoroutineExceptionHandler只会捕获第一个协程抛出的异常，后续协程抛出的异常被保存在第一个异常的suppressed数组中，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">val</span> handler = CoroutineExceptionHandler&#123;coroutineContext, throwable -&gt;</span><br><span class="line">        println(<span class="string">"my coroutineExceptionHandler catch exception, msg = <span class="subst">$&#123;throwable.message&#125;</span>, suppressed = <span class="subst">$&#123;throwable.suppressed.contentToString()&#125;</span>"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> parentJob = GlobalScope.launch(handler)&#123;</span><br><span class="line">        launch &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                delay(<span class="number">200</span>)</span><br><span class="line">            &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="comment">//第二个抛出的异常</span></span><br><span class="line">                <span class="keyword">throw</span> IndexOutOfBoundsException(<span class="string">"exception thrown from first child launch"</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;.start()</span><br><span class="line"></span><br><span class="line">        launch &#123;</span><br><span class="line">            delay(<span class="number">100</span>)</span><br><span class="line">            <span class="comment">//第一个抛出的异常</span></span><br><span class="line">            <span class="keyword">throw</span> NullPointerException(<span class="string">"exception thrown from second child launch"</span>)</span><br><span class="line">        &#125;.start()</span><br><span class="line">    &#125;</span><br><span class="line">    parentJob.start()</span><br><span class="line"></span><br><span class="line">    Thread.sleep(<span class="number">1000</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">my coroutineExceptionHandler <span class="keyword">catch</span> exception, msg = exception thrown from second child launch, suppressed = [java.lang.IndexOutOfBoundsException: exception thrown from first child launch]</span><br></pre></td></tr></table></figure>
+
+<p>可以看到CoroutineExceptionHandler只处理了第一个子协程抛出的异常，后续异常都放在了第一个抛出异常的suppressed数组中。</p>
+<p>还有取消协程时会抛出一个CancellationException，它会被所有CoroutineExceptionHandler省略，但可以try catch它，同时当子协程抛出CancellationException时，并不会终止当前父协程的运行：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">val</span> handler = CoroutineExceptionHandler&#123;coroutineContext, throwable -&gt;</span><br><span class="line">        println(<span class="string">"my coroutineExceptionHandler catch exception, msg = <span class="subst">$&#123;throwable.message&#125;</span>"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> parentJob = GlobalScope.launch(handler)&#123;</span><br><span class="line">        <span class="keyword">val</span> childJob = launch &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                delay(<span class="built_in">Long</span>.MAX_VALUE)</span><br><span class="line">            &#125;<span class="keyword">catch</span> (e: CancellationException)&#123;</span><br><span class="line">                println(<span class="string">"catch cancellationException thrown from child launch"</span>)</span><br><span class="line">                println(<span class="string">"rethrow cancellationException"</span>)</span><br><span class="line">                <span class="keyword">throw</span> CancellationException()</span><br><span class="line">            &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">                println(<span class="string">"child was canceled"</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//取消子协程</span></span><br><span class="line">        childJob.cancelAndJoin()</span><br><span class="line">        println(<span class="string">"parent is still running"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    parentJob.start()</span><br><span class="line"></span><br><span class="line">    Thread.sleep(<span class="number">1000</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line"><span class="keyword">catch</span> cancellationException thrown from child launch</span><br><span class="line">rethrow cancellationException</span><br><span class="line">child was canceled</span><br><span class="line">parent <span class="keyword">is</span> still running</span><br></pre></td></tr></table></figure>
+
+<p>可以看到当抛出CancellationException时，我们可以try catch住它，同时当我们再次抛出它时，协程的CoroutineExceptionHandler并没有处理它，同时父协程不受影响，继续运行。</p>
+<p>以上就是我们平时开发常用到的CoroutineContext元素，除了这四个元素，还有一些在特定场景下会使用到的元素，例如NonCancellable、ThreadContextElement等，其中NonCancellable可以把协程运行在不可取消的上下文中，ThreadContextElement可以让协程恢复/挂起前修改当前线程的上下文信息，例如修改线程的名字为当前运行协程的名字，前面讲的CoroutineName通过CoroutineId这个ThreadContextElement就是这么干的，除了这些内置的元素，我们还可以自定义CoroutineContext元素以满足我们的开发，后面会讲到如何自定义CoroutineContext的元素。</p>
+<h2 id="CoroutineContext的结构"><a href="#CoroutineContext的结构" class="headerlink" title="CoroutineContext的结构"></a>CoroutineContext的结构</h2><p>我们再次看一下CoroutineContext的全家福：</p>
+<img src="/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine5.png" class="" title="coroutine">
+
+<p>上面讲解了组成CoroutineContext的Element，每一个Element都继承自CoroutineContext，而每一个Element都可以通过 <strong>+</strong> 号来组合，也可以通过类似map的 <strong>[key]</strong> 来取值，这和CoroutineContext的运算符重载逻辑和它的结构实现CombinedContext有关，我们先来看一下CoroutineContext类：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CoroutineContext</span> </span>&#123;</span><br><span class="line">   </span><br><span class="line">  	<span class="comment">//操作符[]重载，可以通过CoroutineContext[Key]这种形式来获取与Key关联的Element</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">operator</span> <span class="function"><span class="keyword">fun</span> <span class="type">&lt;E : Element&gt;</span> <span class="title">get</span><span class="params">(key: <span class="type">Key</span>&lt;<span class="type">E</span>&gt;)</span></span>: E?</span><br><span class="line"></span><br><span class="line">    <span class="comment">//它是一个聚集函数，提供了从left到right遍历CoroutineContext中每一个Element的能力，并对每一个Element做operation操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="type">&lt;R&gt;</span> <span class="title">fold</span><span class="params">(initial: <span class="type">R</span>, operation: (<span class="type">R</span>, <span class="type">Element</span>) -&gt; <span class="type">R</span>)</span></span>: R</span><br><span class="line"></span><br><span class="line">    <span class="comment">//操作符+重载，可以CoroutineContext + CoroutineContext这种形式把两个CoroutineContext合并成一个</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">operator</span> <span class="function"><span class="keyword">fun</span> <span class="title">plus</span><span class="params">(context: <span class="type">CoroutineContext</span>)</span></span>: CoroutineContext</span><br><span class="line">    </span><br><span class="line">  	<span class="comment">//返回一个新的CoroutineContext，这个CoroutineContext删除了Key对应的Element</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">fun</span> <span class="title">minusKey</span><span class="params">(key: <span class="type">Key</span>&lt;*&gt;)</span></span>: CoroutineContext</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//Key定义，空实现，仅仅做一个标识</span></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Key</span>&lt;<span class="type">E : Element</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  	<span class="comment">//Element定义，每个Element都是一个CoroutineContext</span></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Element</span> : <span class="type">CoroutineContext &#123;</span></span></span><br><span class="line">       </span><br><span class="line">      	<span class="comment">//每个Element都有一个Key实例</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">val</span> key: Key&lt;*&gt;</span><br><span class="line">				</span><br><span class="line">      	<span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除了plus方法，CoroutineContext中的其他三个方法都被CombinedContext、Element、EmptyCoroutineContext重写，CombinedContext就是CoroutineContext集合结构的实现，它里面是一个<strong>递归定义</strong>，Element就是CombinedContext中的元素，而EmptyCoroutineContext就表示一个空的CoroutineContext，它里面是空实现。</p>
+<h3 id="1、CombinedContext"><a href="#1、CombinedContext" class="headerlink" title="1、CombinedContext"></a>1、CombinedContext</h3><p>我们先看CombinedContext类：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//CombinedContext只包含left和element两个成员：left可能为CombinedContext或Element实例，而element就是Element实例</span></span><br><span class="line"><span class="keyword">internal</span> <span class="class"><span class="keyword">class</span> <span class="title">CombinedContext</span></span>(</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> left: CoroutineContext,</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">val</span> element: Element</span><br><span class="line">) : CoroutineContext, Serializable &#123;</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">//CombinedContext的get操作的逻辑是：</span></span><br><span class="line">  	<span class="comment">//1、先看element是否是匹配，如果匹配，那么element就是需要找的元素，返回element，否则说明要找的元素在left中，继续从left开始找，根据left是CombinedContext还是Element转到2或3</span></span><br><span class="line">  	<span class="comment">//2、如果left又是一个CombinedContext，那么重复1</span></span><br><span class="line">  	<span class="comment">//3、如果left是Element，那么调用它的get方法返回</span></span><br><span class="line"> 		<span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="type">&lt;E : Element&gt;</span> <span class="title">get</span><span class="params">(key: <span class="type">Key</span>&lt;<span class="type">E</span>&gt;)</span></span>: E? &#123;</span><br><span class="line">        <span class="keyword">var</span> cur = <span class="keyword">this</span></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            <span class="comment">//1</span></span><br><span class="line">            cur.element[key]?.let &#123; <span class="keyword">return</span> it &#125;</span><br><span class="line">            <span class="keyword">val</span> next = cur.left</span><br><span class="line">            <span class="keyword">if</span> (next <span class="keyword">is</span> CombinedContext) &#123;<span class="comment">//2</span></span><br><span class="line">                cur = next</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;<span class="comment">//3</span></span><br><span class="line">                <span class="keyword">return</span> next[key]</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  	<span class="comment">//CombinedContext的fold操作的逻辑是：先对left做fold操作，把left做完fold操作的的返回结果和element做operation操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="type">&lt;R&gt;</span> <span class="title">fold</span><span class="params">(initial: <span class="type">R</span>, operation: (<span class="type">R</span>, <span class="type">Element</span>) -&gt; <span class="type">R</span>)</span></span>: R =</span><br><span class="line">        operation(left.fold(initial, operation), element)</span><br><span class="line"></span><br><span class="line">  	<span class="comment">//CombinedContext的minusKey操作的逻辑是：</span></span><br><span class="line">  	<span class="comment">//1、先看element是否是匹配，如果匹配，那么element就是需要删除的元素，返回left，否则说明要删除的元素在left中，继续从left中删除对应的元素，根据left是否删除了要删除的元素转到2或3或4</span></span><br><span class="line">  	<span class="comment">//2、如果left中不存在要删除的元素，那么当前CombinedContext就不存在要删除的元素，直接返回当前CombinedContext实例就行</span></span><br><span class="line">  	<span class="comment">//3、如果left中存在要删除的元素，删除了这个元素后，left变为了空，那么直接返回当前CombinedContext的element就行</span></span><br><span class="line">  	<span class="comment">//4、如果left中存在要删除的元素，删除了这个元素后，left不为空，那么组合一个新的CombinedContext返回</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">minusKey</span><span class="params">(key: <span class="type">Key</span>&lt;*&gt;)</span></span>: CoroutineContext &#123;</span><br><span class="line">      	<span class="comment">//1</span></span><br><span class="line">        element[key]?.let &#123; <span class="keyword">return</span> left &#125;</span><br><span class="line">        <span class="keyword">val</span> newLeft = left.minusKey(key)</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">when</span> &#123;</span><br><span class="line">            newLeft === left -&gt; <span class="keyword">this</span><span class="comment">//2</span></span><br><span class="line">            newLeft === EmptyCoroutineContext -&gt; element<span class="comment">//3</span></span><br><span class="line">            <span class="keyword">else</span> -&gt; CombinedContext(newLeft, element)<span class="comment">//4</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现CombinedContext中的get、fold、minusKey操作都是递归形式的操作，递归的终点就是当这个left是一个Element，我们再看Element类：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Element</span> : <span class="type">CoroutineContext &#123;</span></span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">val</span> key: Key&lt;*&gt;</span><br><span class="line">		</span><br><span class="line">  	<span class="comment">//Element的get方法逻辑：如果key和自己的key匹配，那么自己就是要找的Element，返回自己，否则返回null</span></span><br><span class="line">    public override operator fun &lt;E : Element&gt; get(key: Key&lt;E&gt;): E? =</span><br><span class="line">    	<span class="keyword">if</span> (<span class="keyword">this</span>.key == key) <span class="keyword">this</span> <span class="keyword">as</span> E <span class="keyword">else</span> <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">  	<span class="comment">//Element的fold方法逻辑：对传入的initial和自己做operation操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="type">&lt;R&gt;</span> <span class="title">fold</span><span class="params">(initial: <span class="type">R</span>, operation: (<span class="type">R</span>, <span class="type">Element</span>) -&gt; <span class="type">R</span>)</span></span>: R =</span><br><span class="line">    	operation(initial, <span class="keyword">this</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Element的minusKey方法逻辑：如果key和自己的key匹配，那么自己就是要删除的Element，返回EmptyCoroutineContext(表示删除了自己)，否则说明自己不需要被删除，返回自己</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">minusKey</span><span class="params">(key: <span class="type">Key</span>&lt;*&gt;)</span></span>: CoroutineContext =</span><br><span class="line">    	<span class="keyword">if</span> (<span class="keyword">this</span>.key == key) EmptyCoroutineContext <span class="keyword">else</span> <span class="keyword">this</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在我们把CombinedContext和Element结合来看，那么CombinedContext的整体结构如下：</p>
+<img src="/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/coroutine6.png" class="" title="coroutine">
+
+<p>有点像是一个链表，left就是指向下一个结点的指针，有了这个图我们再从整体看当调用CombinedContext的get、fold、minusKey操作时的访问顺序：get、minusKey操作大体逻辑都是先访问当前element，不满足，再访问left的element，顺序都是从right到left，而fold的操作大体逻辑是先访问left，直到递归到最后的element，然后再从left到right的返回，从而访问了所有的element。</p>
+<h3 id="2、CoroutineContext的plus操作"><a href="#2、CoroutineContext的plus操作" class="headerlink" title="2、CoroutineContext的plus操作"></a>2、CoroutineContext的plus操作</h3><p>现在我们来看CoroutineContext唯一没有被重写的方法 - <strong>plus</strong>方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CoroutineContext</span> </span>&#123;</span><br><span class="line">   </span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">operator</span> <span class="function"><span class="keyword">fun</span> <span class="title">plus</span><span class="params">(context: <span class="type">CoroutineContext</span>)</span></span>: CoroutineContext =</span><br><span class="line">        <span class="keyword">if</span> (context === EmptyCoroutineContext) <span class="keyword">this</span> <span class="keyword">else</span> </span><br><span class="line">            context.fold(<span class="keyword">this</span>) &#123; acc, element -&gt;</span><br><span class="line">                <span class="keyword">val</span> removed = acc.minusKey(element.key)</span><br><span class="line">                <span class="keyword">if</span> (removed === EmptyCoroutineContext) element <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">val</span> interceptor = removed[ContinuationInterceptor]</span><br><span class="line">                    <span class="keyword">if</span> (interceptor == <span class="literal">null</span>) CombinedContext(removed, element) <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">val</span> left = removed.minusKey(ContinuationInterceptor)</span><br><span class="line">                        <span class="keyword">if</span> (left === EmptyCoroutineContext) CombinedContext(element, interceptor) <span class="keyword">else</span></span><br><span class="line">                            CombinedContext(CombinedContext(left, element), interceptor)</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法看起来有点复杂，为了方便我们理解，我把它简化一下，我把对ContinuationInterceptor的处理去掉，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CoroutineContext</span> </span>&#123;</span><br><span class="line">   </span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">operator</span> <span class="function"><span class="keyword">fun</span> <span class="title">plus</span><span class="params">(context: <span class="type">CoroutineContext</span>)</span></span>: CoroutineContext =</span><br><span class="line">  			<span class="comment">//如果要相加的CoroutineContext为空，那么不做任何处理，直接返回</span></span><br><span class="line">        <span class="keyword">if</span> (context === EmptyCoroutineContext) <span class="keyword">this</span> <span class="keyword">else</span> </span><br><span class="line">  					<span class="comment">//如果要相加的CoroutineContext不为空，那么对它进行fold操作</span></span><br><span class="line">            context.fold(<span class="keyword">this</span>) &#123; acc, element -&gt; <span class="comment">//我们可以把acc理解成+号左边的CoroutineContext，element理解成+号右边的CoroutineContext的某一个element</span></span><br><span class="line">                <span class="comment">//首先从左边CoroutineContext中删除右边的这个element</span></span><br><span class="line">                <span class="keyword">val</span> removed = acc.minusKey(element.key)</span><br><span class="line">                <span class="comment">//如果removed为空，说明左边CoroutineContext删除了和element相同的元素后为空，那么返回右边的element即可</span></span><br><span class="line">                <span class="keyword">if</span> (removed === EmptyCoroutineContext) element <span class="keyword">else</span> &#123;</span><br><span class="line">                  <span class="comment">//如果removed不为空，说明左边CoroutineContext删除了和element相同的元素后还有其他元素，那么构造一个新的CombinedContext返回</span></span><br><span class="line">                  	<span class="keyword">return</span> CombinedContext(removed, element)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>plus方法大部分情况最终下返回一个CombinedContext，即我们把两个CoroutineContext相加后，返回一个CombinedContext，在组合成CombinedContext时，+号右边的CoroutineContext中的元素会<strong>覆盖</strong>+号左边的CoroutineContext中的含有相同key的元素，如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(Dispatchers.Main, <span class="string">"name"</span>) + (Dispatchers.IO) = (Dispatchers.IO, <span class="string">"name"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这个覆盖操作就在fold方法的参数<strong>operation代码块</strong>中完成，通过<strong>minusKey</strong>方法删除掉重复元素，前面讲过当调用CombinedContext的fold方法时，会从left到right到访问所有的element，即会从left到right的把每一个element传入operation方法中，作为operation方法的第二个参数，而operation方法第一个参数acc的初始值为fold方法传入的initial值，然后它会不断的更新，每次更新的值为上一次调用operation方法的返回值，所以当两个CoroutineContext相加时，puls方法可以理解为下面的伪代码：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> acc = 左边的CoroutineContext</span><br><span class="line"> <span class="keyword">for</span>(<span class="keyword">var</span> element <span class="keyword">in</span> 右边的CoroutineContext)&#123;</span><br><span class="line">   acc = operation(acc, element)<span class="comment">//operation操作中会让element覆盖掉acc中与element相同的元素</span></span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">return</span> acc<span class="comment">//所以plus方法最终返回的CoroutineContext是不存在key相同的element的</span></span><br></pre></td></tr></table></figure>
+
+<p>所以puls方法最终返回的CoroutineContext是不存在key相同的element的，+号右边的CoroutineContext中的元素会覆盖+号左边的CoroutineContext中的含有相同key的元素，这像是Set的特性。</p>
+<p>现在我们再看回简化前的plus方法，它里面有个对ContinuationInterceptor的处理，目的是让ContinuationInterceptor在每次相加后都能变成CoroutineContext中的<strong>最后</strong>一个元素， ContinuationInterceptor它也是继承自Element，通常叫做协程上下文拦截器，它的主要作用是在协程执行前拦截它，从而在协程执行前做出一些其他的操作，前面我们讲到CoroutineDispatcher它本身也继承自ContinuationInterceptor，ContinuationInterceptor有一个interceptContinuation方法用于返回拦截协程的行为，而这个行为就是前面我们所讲到Dispatchers.Unconfined时的<strong>DispatchedContinuation</strong>，DispatchedContinuation在恢复协程前根据协程的CoroutineDispatcher类型做出不同的协程分派行为，通过把ContinuationInterceptor放在最后面，协程在查找上下文的element时，总能最快找到拦截器，避免了递归查找，从而让拦截行为前置执行。</p>
+<h2 id="自定义CoroutineContext元素"><a href="#自定义CoroutineContext元素" class="headerlink" title="自定义CoroutineContext元素"></a>自定义CoroutineContext元素</h2><p>通过前面对CoroutineContext结构的介绍，我们知道CoroutineContext中的Element和Key是一一对应的，我们可以自定义Element和对应的Key把它们放进协程的CoroutineContext中，然后在适当的时候从CoroutineContext中根据Key取出我们自定义的Element并执行相应的逻辑，你可以把协程的CoroutineContext简单地类比为线程的<a href="https://blog.csdn.net/Rain_9155/article/details/103447399" target="_blank" rel="noopener">ThreadLocal</a>，CoroutineContext保存的是跟协程运行相关的上下文信息，而ThreadLocal保存的是跟线程相关的上下文信息，与线程的ThreadLocal不同的是协程的CoroutineContext的是<strong>不可变的</strong>而线程的ThreadLocal是<strong>可变的</strong>，所以我们每次对CoroutineContext的修改返回的都是一个新的CoroutineContext，自定义的Element推荐继承自<strong>AbstractCoroutineContextElement</strong>，例如应用中有些方法需要登陆后才能调用，所以我们可以自定义一个名为的User的Element：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span></span>(<span class="keyword">val</span> name: String) : AbstractCoroutineContextElement(User) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">companion</span> <span class="keyword">object</span> Key : CoroutineContext.Key&lt;User&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后在启动协程时根据是否登陆把用户信息保存到CoroutineContext中：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">mian</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">val</span> context = <span class="keyword">if</span>(isLogin) &#123;</span><br><span class="line">        User(<span class="string">"rain9155"</span>) + Dispatchers.Main</span><br><span class="line">    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">        Dispatchers.Main</span><br><span class="line">    &#125;</span><br><span class="line">    GlobalScope.launch(context) &#123;</span><br><span class="line">        <span class="comment">//...调用其他方法</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后在执行每个需要登陆态的方法前都检查一下当前协程的CoroutineContext中是否有登陆后的用户信息：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">suspend</span> <span class="function"><span class="keyword">fun</span> <span class="title">performAction</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> name = coroutineContext[User]?.name ?: <span class="keyword">throw</span> IllegalAccessException(<span class="string">"unauthorized"</span>)</span><br><span class="line">    <span class="comment">//...根据登陆后的用户信息执行其他操作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>coroutineContext</strong>是kotlin.coroutines包中的一个字段，可以获取当前运行协程的上下文，在每个suspend方法中都可以访问这个字段，同时由于User的Key是一个伴生对象，所以我们可以直接通过User名使用Key实例。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文主要介绍了kotlin协程的CoroutineContext的元素组成和结构，CoroutineContext它是一个K-V数据结构，保存了跟协程相关联的运行上下文例如协程的线程调度策略、异常处理逻辑、日志记录、运行标识、名字等，理解CoroutineContext对于理解协程使用有很大的帮助，因为协程的启动时就离不开CoroutineContext，同时如果你以后想要更深入的学习协程，例如协程的调度过程、Continuation概念、suspend关键字等，本篇文章也能给你一个抛砖引玉的效果。</p>
+<p>以上就是本文的所有内容，希望大家有所收获！</p>
+<p>参考文章：</p>
+<p><a href="https://www.jianshu.com/p/9f720b9ccdea" target="_blank" rel="noopener">开始使用Kotlin协程</a></p>
+<p><a href="https://medium.com/androiddevelopers/coroutines-first-things-first-e6187bf3bb21" target="_blank" rel="noopener">协程中的核心概念</a></p>
+<p><a href="https://medium.com/androiddevelopers/exceptions-in-coroutines-ce8da1ec060c" target="_blank" rel="noopener">协程中的异常处理</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:49.139Z" itemprop="dateUpdated">2023-01-07 18:44:49</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%8D%8F%E7%A8%8B/" rel="tag">协程</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/&title=《揭秘kotlin协程中的CoroutineContext》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/&title=《揭秘kotlin协程中的CoroutineContext》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《揭秘kotlin协程中的CoroutineContext》 — jianyu的博客&url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2021/07/03/%E5%BF%AB%E9%80%9F%E5%8F%91%E5%B8%83%E7%BB%84%E4%BB%B6%E5%88%B0mavencentral/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">快速发布组件到mavenCentral</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">自定义Gradle插件检测函数耗时</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/&title=《揭秘kotlin协程中的CoroutineContext》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/&title=《揭秘kotlin协程中的CoroutineContext》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《揭秘kotlin协程中的CoroutineContext》 — jianyu的博客&url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ4AAAEOCAAAAABd2qZ5AAAD8ElEQVR42u3ay4rbQBAFUP//TzuQVSCRfG9Va2YCR6vB2K3uo4FSPV6v+Hr/vv7+5M8r+f79+vlq9yvkvxpeOHDgwIEjXuhqW8l3Zmvebz2/79Vu6/3jwIEDB45DHPfB9f4G9wEvOfwpuDbo4sCBAweO7+XIN7c5Rv4A2tCLAwcOHDh+Msfsk7MFyvz7OHDgwIHj6znyJCpJujaNq+S+yc4fr5XiwIEDB47Pe66D1v/y94PzHThw4MCBIw6xmyCalw7z9fNG13t04cCBAweOPUeeSuWHz0uKs3iX/3b4TRw4cODAcf6bEVMe/PbtqLZYuXmEOHDgwIFjz5GMmuVFw3xwLbljcsgEvXilwIEDBw4cC47Nbc4eb1YibINrVCvFgQMHDhwLjmRkoS0UtiN3szCcB/j8YeDAgQMHjj1HW3RLAtXZ4Yb87zxpjOY7cODAgQPHIY62JJcE6ba8OGsm5Q/s8r44cODAgWPN0WZ7+bbObndWgpyVFHHgwIEDx4bj7ABBW2SMnlJcrHyX1z/2gAMHDhw4HuBog+ImDJ9NGnNWHDhw4MDxNEc7CtAmZrPfzgYgZuvgwIEDB47nOOqaYlxVS0qBbeq4H2i47MLhwIEDB44FRz7Qlpfq8t+2gw75iEP70oADBw4cOPYcbXqWFBBnBcF9Stbu/xIRBw4cOHA8zJGEunxzs1Dalgjz0YrLtw8cOHDgwDHiaNtC7cFmgXzW3JoF8lf77oADBw4cOIJZsrxg1yZvs/Vz4rOnwIEDBw4ce462SfNc2ykfnsjDed2swoEDBw4cRznyUbNZONy3pu7XbFf4MCqHAwcOHDgWHE8MNNR55IJvU9A80HbCgQMHDhy31bDZLfdjagl6HpKHTSkcOHDgwHGII9lu2/fPg2gbFGefFMVBHDhw4MCx4NgcLz9qPqzQPp52SK44HQ4cOHDgGHHkZbVTLaInWlazMYsP/xE4cODAgWMRK/NwuCkC5u2ffSGyHXHAgQMHDhxnOfLmzawRlSdsySd5KbBtpOHAgQMHjj1H2/6ZBa08/WsTttmoxOW9cODAgQPHIY5jy5VJYJ7OtSlc3tzCgQMHDhxnOZI0aTZC1wbsPOgOc9P8FQEHDhw4cCw4ZoEtl84Lf7P124ZWNCqHAwcOHDgWHLPg17adnhiVy4ch9lg4cODAgaPl2BTg2tJbXtR7ohwZJZk4cODAgeMQRz6I0Bbv9lf+MDavDjhw4MCB4+s5ZqlUm5idTSPb8IwDBw4cOL6XIy/wJUMPeXNoNkgXQePAgQMHjkMcbXEwCV1PJHLtOEL+coADBw4cOE5xbNKnWaDdpHBtKXOWauLAgQMHjhHHLzQ6SUvyBvwHAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

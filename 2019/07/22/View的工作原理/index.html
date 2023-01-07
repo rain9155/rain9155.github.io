@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>View的工作原理 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="源码,view">
+    <meta name="description" content="前言在Android中View一直扮演着一个很重要的角色，它是我们开发中视觉的呈现，我平常也使用着Android提供的丰富且功能强大的控件，有时候遇到一个很炫酷的自定义View的开源库，我们也是拿来主义，时间长了你就会发现你只是一个只会使用控件和依赖被人开源库的程序员，这并不是一个开发者，所以我们并不能只满足于使用，我们要理解它背后的工作原理和流程，这样才能自己做出一个属于自己的控件，一直都说自定">
+<meta property="og:type" content="article">
+<meta property="og:title" content="View的工作原理">
+<meta property="og:url" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言在Android中View一直扮演着一个很重要的角色，它是我们开发中视觉的呈现，我平常也使用着Android提供的丰富且功能强大的控件，有时候遇到一个很炫酷的自定义View的开源库，我们也是拿来主义，时间长了你就会发现你只是一个只会使用控件和依赖被人开源库的程序员，这并不是一个开发者，所以我们并不能只满足于使用，我们要理解它背后的工作原理和流程，这样才能自己做出一个属于自己的控件，一直都说自定">
+<meta property="og:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view2.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view3.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view4.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view5.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view6.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view7.png">
+<meta property="article:published_time" content="2019-07-22T11:57:11.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.823Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="源码">
+<meta property="article:tag" content="view">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">View的工作原理</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">View的工作原理</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-22T11:57:11.000Z" itemprop="datePublished" class="page-time">
+  2019-07-22
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/View%E6%9C%BA%E5%88%B6/">View机制</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#View何时开始绘制？-requestLayout"><span class="post-toc-text">View何时开始绘制？- requestLayout()</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#View树绘制的起点-performTraversals"><span class="post-toc-text">View树绘制的起点 - performTraversals()</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#View的测量流程-performMeasure"><span class="post-toc-text">View的测量流程 - performMeasure()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、MeasureSpec"><span class="post-toc-text">1、MeasureSpec</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#1-1-如何确定View的MeasureSpec？"><span class="post-toc-text">1.1 如何确定View的MeasureSpec？</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#1-1-1、顶级View的MeasureSpec的创建-getRootMeasureSpec"><span class="post-toc-text">1.1.1、顶级View的MeasureSpec的创建 - getRootMeasureSpec()</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#1-1-2、子View的MeasureSpec的创建-getChildMeasureSpec"><span class="post-toc-text">1.1.2、子View的MeasureSpec的创建 - getChildMeasureSpec()</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、View和ViewGroup的measure流程"><span class="post-toc-text">2、View和ViewGroup的measure流程</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-1、View的measure流程"><span class="post-toc-text">2.1、View的measure流程</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-2、ViewGroup的measure流程-以FrameLayout为例"><span class="post-toc-text">2.2、ViewGroup的measure流程 (以FrameLayout为例)</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、小结"><span class="post-toc-text">3、小结</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#View的布局流程-performLayout"><span class="post-toc-text">View的布局流程 - performLayout()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、View和ViewGroup的layout流程"><span class="post-toc-text">1、View和ViewGroup的layout流程</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、小结"><span class="post-toc-text">2、小结</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#View的绘制流程-performDraw"><span class="post-toc-text">View的绘制流程 - performDraw()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、View和ViewGroup的draw流程"><span class="post-toc-text">1、View和ViewGroup的draw流程</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、onDraw-绘制开关-setWillNotDraw"><span class="post-toc-text">2、onDraw()绘制开关 - setWillNotDraw()</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、小结-1"><span class="post-toc-text">3、小结</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#总结"><span class="post-toc-text">总结</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-View的工作原理"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">View的工作原理</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-22 19:57:11" datetime="2019-07-22T11:57:11.000Z"  itemprop="datePublished">2019-07-22</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/View%E6%9C%BA%E5%88%B6/">View机制</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在Android中View一直扮演着一个很重要的角色，它是我们开发中视觉的呈现，我平常也使用着Android提供的丰富且功能强大的控件，有时候遇到一个很炫酷的自定义View的开源库，我们也是拿来主义，时间长了你就会发现你只是一个只会使用控件和依赖被人开源库的程序员，这并不是一个开发者，所以我们并不能只满足于使用，我们要理解它背后的工作原理和流程，这样才能自己做出一个属于自己的控件，一直都说自定View是Android进阶中的一道门槛，当其实自定义View当你理解了它的原理后，你就会发现它也不过如此。本文将从源码的角度探讨View工作的三大流程，对View做进一步的认识。俗话说的好：源码才是最好的老师。</p>
+<a id="more"></a>
+
+<pre><code>本文代码基于Android8.0，相关源码位置如下：
+frameworks/base/core/java/android/*.java(*代表View, ViewGroup, ViewRootImpl)
+frameworks/base/core/java/android/FrameLayout.java</code></pre><h2 id="View何时开始绘制？-requestLayout"><a href="#View何时开始绘制？-requestLayout" class="headerlink" title="View何时开始绘制？- requestLayout()"></a>View何时开始绘制？- requestLayout()</h2><p>提到View，就不得不讲起Window，在<a href="https://rain9155.github.io/2019/03/22/Window,%20WindowManager和WindowManagerService之间的关系/" target="_blank" rel="noopener">Window,WindowManager和WindowManagerService之间的关系</a>文章中讲过，Widnow是View得载体，在ViewRootImpl的setView方法中添加Winodw到WMS之前，会先调用requestLayout绘制整颗View Hierarchy的绘制，如下：</p>
+<img src="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view1.png" class="" title="view1">
+
+<p>所以我们先从requestLayout()中看起，该方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">requestLayout</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!mHandlingLayoutInLayoutRequest) &#123;</span><br><span class="line">        <span class="comment">//检查是否在主线程，在子线程绘制UI会抛出异常，见下方</span></span><br><span class="line">        checkThread();</span><br><span class="line">        <span class="comment">//是否measure和layout布局的开关</span></span><br><span class="line">        mLayoutRequested = <span class="keyword">true</span>;</span><br><span class="line">        <span class="comment">//1、准备开始遍历View Hierarchy绘制</span></span><br><span class="line">        scheduleTraversals();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">checkThread</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mThread != Thread.currentThread()) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> CalledFromWrongThreadException(</span><br><span class="line">            <span class="string">"Only the original thread that created a view hierarchy can touch its views."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>requestLayout()中首先会检查线程的合法性，Android规定必须在主线程中操作UI，那么为什么不能在子线程中访问UI呢？这是因为Android的UI控件都不是线程安全的，如果在多线程环境下并发访问控件会导致控件处于不可预测状态。接着我们来看注释1，调用了ViewRootImpl的scheduleTraversals方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">scheduleTraversals</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!mTraversalScheduled) &#123;<span class="comment">//防止同一帧绘制多次</span></span><br><span class="line">            mTraversalScheduled = <span class="keyword">true</span>;</span><br><span class="line">            <span class="comment">//拦截同步Message，优先处理异步Message</span></span><br><span class="line">            mTraversalBarrier = mHandler.getLooper().getQueue().postSyncBarrier();</span><br><span class="line">             <span class="comment">//1、Choreographer回调，里面执行最终会执行mTraversalRunnable中的绘制任务</span></span><br><span class="line">            mChoreographer.postCallback(</span><br><span class="line">                    Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, <span class="keyword">null</span>);</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在Android4.1之前Android的UI流畅性很差，所以在Android4.1之后引入了Choreographer机制和Vsync机制用来解决这个问题，Choreographer管理者动画、输入和绘制的时机，Vsync叫Vertical Synchronization（垂直同步）信号，每隔 16ms Choreographer就会收到来自native层的Vsync信号，这时Choreographer就会根据事件类型进行相应的回调操作，Choreographer支持4种事件类型回调：输入(CALLBACK_INPUT)、绘制(CALLBACK_TRAVERSAL)、动画(CALLBACK_ANIMATION)、提交(CALLBACK_COMMIT)，并通过postCallback方法在对应需要同步Vsync刷新处进行注册，等待回调，关于这个细节和原理可以看<a href="https://www.jianshu.com/p/bab0b454e39e" target="_blank" rel="noopener">Android图形系统-Choreographer</a>和<a href="http://www.apkbus.com/blog-705730-61226.html" target="_blank" rel="noopener">Android垂直同步和三重缓存</a>，这里我们并不深究Choreographer机制和Vsync机制，我们看到注释1中的Choreographer的postCallback方法提交了CALLBACK_TRAVERSAL类型的回调，它对应着mTraversalRunnable绘制操作，而mTraversalRunnable是一个TraversalRunnable类型的绘制任务，最终回调会执行这个任务，mTraversalRunnable的run方法源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">TraversalRunnable</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//1、里面会执行performTraversals()</span></span><br><span class="line">        doTraversal();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>doTraversal()里面会执行performTraversals方法，点开doTraversal方法看一下，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">doTraversal</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mTraversalScheduled) &#123;</span><br><span class="line">        mTraversalScheduled = <span class="keyword">false</span>;</span><br><span class="line">        <span class="comment">//移除拦截同步Message屏障</span></span><br><span class="line">        mHandler.getLooper().getQueue().removeSyncBarrier(mTraversalBarrier);</span><br><span class="line">        <span class="comment">//1、今天的主角，performTraversals()方法</span></span><br><span class="line">        performTraversals();</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在doTraversal() 方法里面我们终于看到我们熟悉的方法：<strong>performTraversals()</strong>。</p>
+<h2 id="View树绘制的起点-performTraversals"><a href="#View树绘制的起点-performTraversals" class="headerlink" title="View树绘制的起点 - performTraversals()"></a>View树绘制的起点 - performTraversals()</h2><p>performTraversals()它是整个View Hierarchy绘制的起点，它里面会执行View绘制的三大工作流程，我们先看一下精简版的performTraversals方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">performTraversals</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//mView是在View与ViewRootImpl建立关联的时候被赋值的，即调用ViewRootImpl的setView方法时，它代表着View Hierarchy的根节点，即根视图</span></span><br><span class="line">    <span class="keyword">final</span> View host = mView;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    WindowManager.LayoutParams lp = mWindowAttributes;</span><br><span class="line">    <span class="comment">//desiredWindowWidth和desiredWindowHeight分别代表着屏幕的宽度和高度</span></span><br><span class="line">    <span class="keyword">int</span> desiredWindowWidth;</span><br><span class="line">    <span class="keyword">int</span> desiredWindowHeight;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">if</span> (mLayoutRequested) &#123;</span><br><span class="line">        <span class="keyword">final</span> Resources res = mView.getContext().getResources();</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="comment">//1、这里调用了measureHierarchy方法，里面会调用performMeasure方法，执行View Hierarchy的measure流程，见下方</span></span><br><span class="line">        windowSizeMayChange |= measureHierarchy(host, lp, res,</span><br><span class="line">     	                                         desiredWindowWidth, desiredWindowHeight);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">if</span>(didLayout)&#123;</span><br><span class="line">          <span class="comment">//2、这里调用了performLayout方法，执行View Hierarchy的layout流程</span></span><br><span class="line">         performLayout(lp, mWidth, mHeight);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">if</span> (!cancelDraw &amp;&amp; !newSurface) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="comment">//3、这里调用了performDraw方法，执行View Hierarchy的draw流程</span></span><br><span class="line">   		performDraw();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">measureHierarchy</span><span class="params">(<span class="keyword">final</span> View host, <span class="keyword">final</span> WindowManager.LayoutParams lp,  <span class="keyword">final</span> Resources res, <span class="keyword">final</span> <span class="keyword">int</span> desiredWindowWidth, <span class="keyword">final</span> <span class="keyword">int</span> desiredWindowHeight)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> childWidthMeasureSpec;</span><br><span class="line">     <span class="keyword">int</span> childHeightMeasureSpec;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">     <span class="comment">//1.1、顶级View在调用performMeasure方法之前，会先调用getRootMeasureSpec方法来生成自身宽和高的MeasureSpec</span></span><br><span class="line">     childWidthMeasureSpec = getRootMeasureSpec(desiredWindowWidth, lp.width);</span><br><span class="line">     childHeightMeasureSpec = getRootMeasureSpec(desiredWindowHeight, lp.height);</span><br><span class="line">     <span class="comment">//1.2、这里调用performMeasure方法，执行View Hierarchy的measure流程</span></span><br><span class="line">     performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>performTraversals方法里面非常复杂，我们看的时候千万不要深究其中的细节，不然就走火入魔了，我们找出个整体框架就行，我们先看注释1、2、3，可以看到依此调用<strong>measureHierarchy() -&gt; performLayout() -&gt; performDraw()，</strong>而measureHierarchy()里面最终调用performMeasure()，所以performTraversals()可以看作依此调用了<strong>performMeasure() -&gt; performLayout() -&gt; performDraw()，</strong>分别对应顶级View的<strong>measure、layout和draw流程，</strong>顶级View可以理解为View Hierarchy的根节点，它一般是一个ViewGroup，就像Activity的DecorView一样。</p>
+<blockquote>
+<p>ps：</p>
+<p>1、在performTraversals()方法中，performMeasure()可能会执行多次，而performLayout()和performDraw()最多执行一次。</p>
+<p>2、本文讨论的顶级View你可以把它类比成Activity的DecorView，但是它其实就是View树的根结点，DecorView也是Activity中View树的根结点。</p>
+</blockquote>
+<p>接下来我们就照着performTraversals() 中的整体框架来讲解View工作的三大流程。</p>
+<h2 id="View的测量流程-performMeasure"><a href="#View的测量流程-performMeasure" class="headerlink" title="View的测量流程 - performMeasure()"></a>View的测量流程 - performMeasure()</h2><h3 id="1、MeasureSpec"><a href="#1、MeasureSpec" class="headerlink" title="1、MeasureSpec"></a>1、MeasureSpec</h3><p>讲解View的measure流程前，不得不先讲解一下MeasureSpec的含义，MeasureSpec是一个32位的int值，它是View的一个内部类，它的高2位代表着SpecMode，表示测量模式，它的低30位表示SpecSize，表示测量大小，系统通过位运算把SpecMode和SpecSize合二为一组成一个32位int值的MeasureSpec。</p>
+<p>下面看一下MeasureSpec的里面组成，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MeasureSpec</span> </span>&#123;</span><br><span class="line">    <span class="comment">//左移位数</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MODE_SHIFT = <span class="number">30</span>;</span><br><span class="line">    <span class="comment">//位掩码</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MODE_MASK  = <span class="number">0x3</span> &lt;&lt; MODE_SHIFT;</span><br><span class="line">    <span class="comment">//代表着三种SpecMode</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNSPECIFIED = <span class="number">0</span> &lt;&lt; MODE_SHIFT;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> EXACTLY     = <span class="number">1</span> &lt;&lt; MODE_SHIFT;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> AT_MOST     = <span class="number">2</span> &lt;&lt; MODE_SHIFT;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//makeMeasureSpec方法是把SpecMode和SpecSize通过位运算组成一个MeasureSpec并返回</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">makeMeasureSpec</span><span class="params">(<span class="keyword">int</span> size,<span class="keyword">int</span> mode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (sUseBrokenMakeMeasureSpec) &#123;</span><br><span class="line">            <span class="keyword">return</span> size + mode;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> (size &amp; ~MODE_MASK) | (mode &amp; MODE_MASK);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//getMode方法是从给定的MeasureSpec中取出SpecMode</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getMode</span><span class="params">(<span class="keyword">int</span> measureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (measureSpec &amp; MODE_MASK);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//getSize方法是从给定的MeasureSpec中取出SpecSize</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getSize</span><span class="params">(<span class="keyword">int</span> measureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (measureSpec &amp; ~MODE_MASK);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到MeasureSpec提供了三个工具方法分别用来组合MeasureSpec、从MeasureSpec中取出SpecMode、从MeasureSpec中取出SpecSize，其中SpecMode有三种取值，如下：</p>
+<ul>
+<li>UNSPECIFIED：它表示父容器对子View的绘制的大小没有任何限制，要多大给多大，这种情况一般适用于系统内部，表示一种测量状态。</li>
+<li>EXACTLY：它表示父容器已经测量出子View需要的精确大小SpecSize，这个时候View的最终大小就是SpecSize的值，它对应于LayoutParams中match_parcent和具体的数值这两种模式。</li>
+<li>AT_MOST：它表示父容器为子View的大小指定了一个最大值SpecSize，这个时候View的大小不能大于这个值，它对应于LayoutParams中的wrap_content这种模式。</li>
+</ul>
+<h4 id="1-1-如何确定View的MeasureSpec？"><a href="#1-1-如何确定View的MeasureSpec？" class="headerlink" title="1.1 如何确定View的MeasureSpec？"></a>1.1 如何确定View的MeasureSpec？</h4><p>除了顶级View，其他View的MeasureSpec都是由父容器的MeasureSpec和自身的LayoutParams共同决定的，LayoutParams就是你平时在编写View的xml属性时那些带有<strong>layout_XX</strong>前缀开头的布局属性，对于顶级View和在View树中子View的MeasureSpec的生成规则有点不一样，见下面分析：</p>
+<h5 id="1-1-1、顶级View的MeasureSpec的创建-getRootMeasureSpec"><a href="#1-1-1、顶级View的MeasureSpec的创建-getRootMeasureSpec" class="headerlink" title="1.1.1、顶级View的MeasureSpec的创建 - getRootMeasureSpec()"></a>1.1.1、顶级View的MeasureSpec的创建 - getRootMeasureSpec()</h5><p>由于顶级View是View树的根结点，所以它没有父容器，所以它的MeasureSpec是由屏幕窗口的尺寸和自身的LayoutParams来共同决定，上面注释1.1我们讲到顶级View在调用performMeasure方法之前，会先调用ViewRootImpl的getRootMeasureSpec方法来生成自身宽和高的MeasureSpec，我们来看一下getRootMeasureSpec方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getRootMeasureSpec</span><span class="params">(<span class="keyword">int</span> windowSize, <span class="keyword">int</span> rootDimension)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> measureSpec;</span><br><span class="line">    <span class="keyword">switch</span> (rootDimension) &#123;</span><br><span class="line">        <span class="keyword">case</span> ViewGroup.LayoutParams.MATCH_PARENT:<span class="comment">//如果是MATCH_PARENT,那么就是EXACTLY</span></span><br><span class="line">            measureSpec = MeasureSpec.makeMeasureSpec(windowSize, MeasureSpec.EXACTLY);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> ViewGroup.LayoutParams.WRAP_CONTENT:<span class="comment">//如果是WRAP_CONTENT,就是AT_MOST</span></span><br><span class="line">            measureSpec = MeasureSpec.makeMeasureSpec(windowSize, MeasureSpec.AT_MOST);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:<span class="comment">//如果是固定的值,也是EXACTLY</span></span><br><span class="line">            measureSpec = MeasureSpec.makeMeasureSpec(rootDimension, MeasureSpec.EXACTLY);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> measureSpec;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>windowSize就是是传入的desiredWindowWidth或desiredWindowHeight，它表示屏幕的大小，rootDimension就是传入的屏幕窗口的LayoutParams的大小模式，对应我们平时写的layout_width或layout_height属性，该属性无非就三个值：match_parent、wrap_content和固定的数值，所以从getRootMeasureSpec方法可以看到，顶级View的MeasureSpec的创建规则如下：</p>
+<img src="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view2.png" class="" title="view2">
+
+<p>其中rootSize表示顶级View大小。</p>
+<h5 id="1-1-2、子View的MeasureSpec的创建-getChildMeasureSpec"><a href="#1-1-2、子View的MeasureSpec的创建-getChildMeasureSpec" class="headerlink" title="1.1.2、子View的MeasureSpec的创建 - getChildMeasureSpec()"></a>1.1.2、子View的MeasureSpec的创建 - getChildMeasureSpec()</h5><p>在1中，顶级View的MeasureSpec已经创建好了，这时候就要根据这个MeasureSpec去生成子View的MeasureSpec，子View的MeasureSpec的创建是从ViewGroup的measureChildWithMargins方法开始，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewGroup.java</span></span><br><span class="line"><span class="function">rotected <span class="keyword">void</span> <span class="title">measureChildWithMargins</span><span class="params">(View child, <span class="keyword">int</span> parentWidthMeasureSpec, <span class="keyword">int</span> widthUsed, <span class="keyword">int</span> parentHeightMeasureSpec, <span class="keyword">int</span> heightUsed)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//得到子View的margin</span></span><br><span class="line">    <span class="keyword">final</span> MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();</span><br><span class="line">    <span class="comment">//1、这里调用了getChildMeasureSpec方法，里面就是创建子View的MeasureSpec，这里创建子View宽的MeasureSpec</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> childWidthMeasureSpec = getChildMeasureSpec(parentWidthMeasureSpec, mPaddingLeft + mPaddingRight + lp.leftMargin + lp.rightMargin + widthUsed, lp.width);</span><br><span class="line">    <span class="comment">//同理，这里创建子View高的MeasureSpec</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> childHeightMeasureSpec = getChildMeasureSpec(parentHeightMeasureSpec,  mPaddingTop + mPaddingBottom + lp.topMargin + lp.bottomMargin + heightUsed, lp.height);</span><br><span class="line">    <span class="comment">//如果子View是一个ViewGroup，递归measure下去</span></span><br><span class="line">    child.measure(childWidthMeasureSpec, childHeightMeasureSpec);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述方法会对子View进行measure，由注释1得知，在调用子View的measure方法前，会先调用getChildMeasureSpec方法获得子View的MeasureSpec，从getChildMeasureSpec方法的参数可以看出，子View的MeasureSpec的创建与父容器的MeasureSpec和子View本身的LayoutParams有关，此外还和View的margin及padding有关，下面我们来看ViewGroup的getChildMeasureSpec方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewGroup.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getChildMeasureSpec</span><span class="params">(<span class="keyword">int</span> spec, <span class="keyword">int</span> padding, <span class="keyword">int</span> childDimension)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//取出父容器的测量模式specMode</span></span><br><span class="line">    <span class="keyword">int</span> specMode = MeasureSpec.getMode(spec);</span><br><span class="line">    <span class="comment">//取出父容器的测量大小specSize</span></span><br><span class="line">    <span class="keyword">int</span> specSize = MeasureSpec.getSize(spec);</span><br><span class="line">	<span class="comment">// padding是指父容器中已占用的空间大小，因此子View最大可用大小size == 父容器剩余大小 == 父容器的尺寸减去padding </span></span><br><span class="line">    <span class="keyword">int</span> size = Math.max(<span class="number">0</span>, specSize - padding);</span><br><span class="line">    <span class="keyword">int</span> resultSize = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> resultMode = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">switch</span> (specMode) &#123;</span><br><span class="line">        <span class="keyword">case</span> MeasureSpec.EXACTLY:<span class="comment">//如果父容器是EXACTLY</span></span><br><span class="line">            <span class="keyword">if</span> (childDimension &gt;= <span class="number">0</span>) &#123;<span class="comment">//如果子View的LayoutParams是固定大小</span></span><br><span class="line">                resultSize = childDimension;</span><br><span class="line">                resultMode = MeasureSpec.EXACTLY;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childDimension == LayoutParams.MATCH_PARENT) &#123;<span class="comment">//如果子View的LayoutParams是MATCH_PARENT	//子View的MeasureSpec为父容器剩余大小 + EXACTLY</span></span><br><span class="line">                resultSize = size;</span><br><span class="line">                resultMode = MeasureSpec.EXACTLY;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childDimension == LayoutParams.WRAP_CONTENT) &#123;<span class="comment">//如果子View的LayoutParams是WRAP_CONTENT</span></span><br><span class="line">                <span class="comment">//子View的MeasureSpec为父容器剩余大小 + AT_MOST</span></span><br><span class="line">                resultSize = size;</span><br><span class="line">                resultMode = MeasureSpec.AT_MOST;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MeasureSpec.AT_MOST:<span class="comment">//如果父容器是AT_MOST</span></span><br><span class="line">            <span class="keyword">if</span> (childDimension &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">//子View的MeasureSpec为子View大小 + EXACTLY</span></span><br><span class="line">                resultSize = childDimension;</span><br><span class="line">                resultMode = MeasureSpec.EXACTLY;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childDimension == LayoutParams.MATCH_PARENT) &#123;</span><br><span class="line">                <span class="comment">//子View的MeasureSpec为父容器剩余大小 + AT_MOST</span></span><br><span class="line">                resultSize = size;</span><br><span class="line">                resultMode = MeasureSpec.AT_MOST;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childDimension == LayoutParams.WRAP_CONTENT) &#123;</span><br><span class="line">               <span class="comment">//子View的MeasureSpec为父容器剩余大小 + AT_MOST</span></span><br><span class="line">                resultSize = size;</span><br><span class="line">                resultMode = MeasureSpec.AT_MOST;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MeasureSpec.UNSPECIFIED:<span class="comment">//如果父容器是UNSPECIFIED，这个平时开发用不到</span></span><br><span class="line">            <span class="keyword">if</span> (childDimension &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                resultSize = childDimension;</span><br><span class="line">                resultMode = MeasureSpec.EXACTLY;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childDimension == LayoutParams.MATCH_PARENT) &#123;</span><br><span class="line">                resultSize = View.sUseZeroUnspecifiedMeasureSpec ? <span class="number">0</span> : size;</span><br><span class="line">                resultMode = MeasureSpec.UNSPECIFIED;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childDimension == LayoutParams.WRAP_CONTENT) &#123;</span><br><span class="line">                resultSize = View.sUseZeroUnspecifiedMeasureSpec ? <span class="number">0</span> : size;</span><br><span class="line">                resultMode = MeasureSpec.UNSPECIFIED;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> MeasureSpec.makeMeasureSpec(resultSize, resultMode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到getChildMeasureSpec方法里面的逻辑还是很清楚的，首先根据父容器的测量模式specMode分为三大类：<strong>EXACTLY、AT_MOST和UNSPECIFIED，</strong>每一类又和子View的LayoutParams的的三种大小模式：<strong>固定大小、MATCH_PARENT和WRAP_CONTENT</strong>组合，所以总共有3 X 3 = 9种组合，所以根据getChildMeasureSpec方法可以得出子View的MeasureSpec的创建规则如下：</p>
+<img src="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view3.png" class="" title="view3">
+
+<p>其中childSize表示子View的大小，parentSize表示父容器剩余大小。</p>
+<h3 id="2、View和ViewGroup的measure流程"><a href="#2、View和ViewGroup的measure流程" class="headerlink" title="2、View和ViewGroup的measure流程"></a>2、View和ViewGroup的measure流程</h3><p>分析完View的MeasureSpec的创建后，我们继续回到View的measure流程，大家都知道ViewGroup是继承自View的，所以View的measure流程，分为两种情况，一种是View的measure流程，一种是ViewGroup的measure流程，但是不管是View的measure流程还是ViewGroup的measure流程都是从ViewRootImpl的performMeasure()开始，并且都会先调用View的measure方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java </span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">performMeasure</span><span class="params">(<span class="keyword">int</span> childWidthMeasureSpec, <span class="keyword">int</span> childHeightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//1、调用了View的measure方法</span></span><br><span class="line">    mView.measure(childWidthMeasureSpec, childHeightMeasureSpec);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们继续看View的measure方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">measure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">      <span class="comment">//1、调用了onMeasure方法</span></span><br><span class="line">      onMeasure(widthMeasureSpec, heightMeasureSpec);</span><br><span class="line">	 <span class="comment">//...</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到measure方法是一个final方法，说明这个方法不能够被子类重写，这个方法把measure的具体过程交给了onMeasure方法去实现，所以View和ViewGroup的measure流程的差异就从这个onMeasure方法开始，见下面分析。</p>
+<h4 id="2-1、View的measure流程"><a href="#2-1、View的measure流程" class="headerlink" title="2.1、View的measure流程"></a>2.1、View的measure流程</h4><p>从上述知道View的measure起点在View的measure方法中，并且View的measure方法会调用View的onMeasure方法，<strong>View::measure() -&gt; View::onMeasure()</strong>，所以我们直接看onMeasure方法在View中的实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//1、 如果View没有重写onMeasure方法，则会调用setMeasuredDimension方法设置宽高，在设置之前先调用getDefaultSize方法获取默认宽高</span></span><br><span class="line">    setMeasuredDimension(</span><br><span class="line">        			    getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec),</span><br><span class="line">                         getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec)</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>View中的onMeasure方法的默认实现是先调用getDefaultSize方法获取默认宽高，然后再调用调用setMeasuredDimension方法设置View的宽高，当调用setMeasuredDimension方法设置View的宽高后，就可以通过getMeasureWidth()或getMeasureHeight()获得View测量的宽高，所以我们先看一下 getDefaultSize()方法是如何获取默认的宽高，该方法源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getDefaultSize</span><span class="params">(<span class="keyword">int</span> size, <span class="keyword">int</span> measureSpec)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> result = size;</span><br><span class="line">        <span class="keyword">int</span> specMode = MeasureSpec.getMode(measureSpec);</span><br><span class="line">        <span class="keyword">int</span> specSize = MeasureSpec.getSize(measureSpec);</span><br><span class="line">        <span class="keyword">switch</span> (specMode) &#123;</span><br><span class="line">        <span class="comment">//如果specMode是UNSPECIFIED，返回的大小就是传进来的size，而这个size就是通过getSuggestedMinimumWidth()或getSuggestedMinimumHeight()方法获得的</span></span><br><span class="line">        <span class="keyword">case</span> MeasureSpec.UNSPECIFIED:</span><br><span class="line">            result = size;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="comment">//如果specMode是AT_MOST或EXACTLY，返回的大小就是MeasureSpec中的specSize</span></span><br><span class="line">        <span class="keyword">case</span> MeasureSpec.AT_MOST:</span><br><span class="line">        <span class="keyword">case</span> MeasureSpec.EXACTLY:</span><br><span class="line">            result = specSize;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>getDefaultSize方法的逻辑很简单，除了UNSPECIFIED这种模式，其他测量模式都返回MeasureSpec中的specSize，而这个specSize就等于父容器给View测量后的大小，所以我们可以得出一个结论：<strong>直接继承View写自定义控件时需要重写onMeasure方法并设置wrap_content时自定义View自身的大小，这是因为如果自定义View在xml文件写了layout_XX = wrap_content这个属性，那么在创建它的MeasureSpec时，它的specMode就会等于AT_MOST，而从getDefaultSize方法看出，如果specMode是AT_MOST或EXACTLY，它们两个返回的值是一样的，都是MeasureSpec中的specSize，通过上面所讲的子View的MeasureSpec的创建规则可知specSize是等于parentSize即父容器剩余的大小，这样就会造成这个自定义View会填充满整个父容器，效果和match_parent一样，并不按你想象那样的大小</strong>。所以以后在自定义View时，如果有wrap_content这个场景，就要重写onMeasure方法，可以参考下面的模板，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;        			      	 </span><br><span class="line">     <span class="keyword">int</span> measureWidth = MeasureSpec.getSize(widthMeasureSpec); </span><br><span class="line">     <span class="keyword">int</span> measureHeight = MeasureSpec.getSize(heightMeasureSpec);  </span><br><span class="line">     <span class="keyword">int</span> measureWidthMode = MeasureSpec.getMode(widthMeasureSpec);   </span><br><span class="line">     <span class="keyword">int</span> measureHeightMode = MeasureSpec.getMode(heightMeasureSpec);  </span><br><span class="line">     <span class="keyword">int</span> width, height;</span><br><span class="line">     <span class="comment">//经过计算，控件所占的宽和高分别对应width和height</span></span><br><span class="line">     <span class="comment">// …………   </span></span><br><span class="line">     <span class="comment">//我们只需要在View为wrap_content时设置我们经过计算得出的View的默认宽高width和height即可</span></span><br><span class="line">     <span class="comment">//其他模式如EXACTLY，就直接设置父容器给我们测量出来的宽高即可</span></span><br><span class="line"> 	 setMeasuredDimension(</span><br><span class="line">         (measureWidthMode == MeasureSpec.AT_MOST) ? width : measureWidth , </span><br><span class="line">         (measureHeightMode == MeasureSpec.AT_MOST) ? height : measureHeight</span><br><span class="line">     );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>讲完了getDefaultSize()中AT_MOST和EXACTLY模式情况，接着讲UNSPECIFIED这种模式的情况，从getDefaultSize方法中可以看出如果specMode是UNSPECIFIED，返回的大小就是传进来的size，而这个size就是通过getSuggestedMinimumWidth()或getSuggestedMinimumHeight()方法获得的，所以我们以getSuggestedMinimumWidth方法为例子，看一些如果获取在UNSPECIFIED模式下的宽，getSuggestedMinimumHeight()方法同理，getSuggestedMinimumWidth方法源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java </span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">getSuggestedMinimumWidth</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//根据View有无背景返回大小，getMinimumWidth()见下方</span></span><br><span class="line">    <span class="keyword">return</span> (mBackground == <span class="keyword">null</span>) ? mMinWidth : max(mMinWidth, mBackground.getMinimumWidth());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Drawable.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getMinimumWidth</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//getIntrinsicWidth()返回Drawable的宽，默认返回-1</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> intrinsicWidth = getIntrinsicWidth();</span><br><span class="line">    <span class="keyword">return</span> intrinsicWidth &gt; <span class="number">0</span> ? intrinsicWidth : <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>mBackground就等于View的背景，即android:background属性，mMinWidth就等于你在View的xml布局中写了“android:minWidth”这个属性，mBackground.getMinimumWidth()就是获取View的背景的宽度，所以我们得出结论：<strong>在UNSPECIFIED模式下，如果View没有设置背景，那么View的宽就等于android:minWidth，如果View设置了背景，那么View的宽就等于View的背景background的宽和android:minWidth的最大值，高度同理</strong>。</p>
+<blockquote>
+<p>View的onMeasure方法执行完后，就可以通过getMeasureWidth()或getMeasureHeight()获得View测量的宽高，但是有可能会不准确，因为有时候系统会进行多次measure，才能确定最终测量宽高，所以最好是在onLayout方法中去获取View的宽高。</p>
+</blockquote>
+<h4 id="2-2、ViewGroup的measure流程-以FrameLayout为例"><a href="#2-2、ViewGroup的measure流程-以FrameLayout为例" class="headerlink" title="2.2、ViewGroup的measure流程 (以FrameLayout为例)"></a>2.2、ViewGroup的measure流程 (以FrameLayout为例)</h4><p>从上述知道ViewGroup的measure起点也在View的measure方法中，而View的measure方法会调用View的onMeasure方法，ViewGroup继承自View，但是它是一个抽象类并没有重写View的onMeasure方法，而是由ViewGroup的子类如LinearLayout、FrameLayout等重写onMeasure方法以实现不同的measure流程，这里以FrameLayout为例，*<em>View::measure() -&gt; FrameLayout::onMeasure() *</em>，我们来看FrameLayout的onMeasure方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//FrameLayout.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//获取子View的个数</span></span><br><span class="line">    <span class="keyword">int</span> count = getChildCount();</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//遍历所有子View，测量每个子View的大小</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">        <span class="keyword">final</span> View child = getChildAt(i);</span><br><span class="line">        <span class="keyword">if</span> (mMeasureAllChildren || child.getVisibility() != GONE) &#123;<span class="comment">//如果子View可见</span></span><br><span class="line">            <span class="comment">//1、调用ViewGroup的measureChildWithMargins方法，测量子View的大小</span></span><br><span class="line">            measureChildWithMargins(child, widthMeasureSpec, <span class="number">0</span>, heightMeasureSpec, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">final</span> LayoutParams lp = (LayoutParams) child.getLayoutParams();</span><br><span class="line">            <span class="comment">//子View测量完后，FrameLayout就可以通过View的getMeasuredWidth或getMeasuredHeight获得子View的宽高，从而得出自己的宽高</span></span><br><span class="line">            <span class="comment">//根据FrameLayout的叠加特性，它自身的测量宽高就是所有子View宽高中的最大值</span></span><br><span class="line">            maxWidth = Math.max(maxWidth,</span><br><span class="line">                                child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin);</span><br><span class="line">            maxHeight = Math.max(maxHeight,</span><br><span class="line">                                 child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到与View的onMeasure方法不同的是，FrameLayout的onMeasure方法是遍历它所有的子View，然后逐个测量子View的大小，这个测量子View是通过注释1的measureChildWithMargins方法来完成，这个方法已经在上面子View的MeasureSpec的创建中讲过一点，measureChildWithMargins方法是在FrameLayout的父类ViewGroup中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">measureChildWithMargins</span><span class="params">(View child, <span class="keyword">int</span> parentWidthMeasureSpec, <span class="keyword">int</span> widthUsed, <span class="keyword">int</span> parentHeightMeasureSpec, <span class="keyword">int</span> heightUsed)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//省略的这部分在上面已经讲过，主要是创建子View的MeasureSpec（childWidthMeasureSpec, childHeightMeasureSpec）</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//1、调用子View的measure方法，叫子View自己测量自己</span></span><br><span class="line">    child.measure(childWidthMeasureSpec, childHeightMeasureSpec);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>measureChildWithMargins方法中首先会根据父容器传进来的parenXXMeasureSpec来创建子View的childXXMeasureSpec，然后调用子View的measure方法，把测量子View的任务又推给了子View，这个过程又回到了2.1所讲的View的measure流程，就不再赘述，所有子View测量完后，ViewGroup就可以得出自己的测量宽高。</p>
+<h3 id="3、小结"><a href="#3、小结" class="headerlink" title="3、小结"></a>3、小结</h3><p>measure流程是三大流程中最复杂的一个，它的整体流程是：从ViewRootImp的performTraversals()方法进入performMeasure()方法，开始整颗View树的测量流程，在performMeasure方法里面会调用View的measure方法，然后measure方法会调用onMeasure方法，如果是View就直接开始测量，设置View的宽高，如果是ViewGroup，则在onMeasure方法中则会对所有的子View进行measure过程，如果子View是一个ViewGroup，那么继续向下传递，直到所有的View都已测量完成。如图：</p>
+<img src="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view4.png" class="" title="view4">
+
+<p>measure过后就可以通过getMeasureWidth()或getMeasureHeight()获得View测量的宽高。</p>
+<h2 id="View的布局流程-performLayout"><a href="#View的布局流程-performLayout" class="headerlink" title="View的布局流程 - performLayout()"></a>View的布局流程 - performLayout()</h2><p>前面讲解了View的measure过程，如果你理解了，那么View的布局过程也很容易理解的，和measure相似，View的布局过程是从ViewRootImpl的performLayout()开始的，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">performLayout</span><span class="params">(WindowManager.LayoutParams lp, <span class="keyword">int</span> desiredWindowWidth, <span class="keyword">int</span> desiredWindowHeight)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">final</span> View host = mView;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//1、调用了顶级View的layout方法</span></span><br><span class="line">     host.layout(<span class="number">0</span>, <span class="number">0</span>, host.getMeasuredWidth(), host.getMeasuredHeight());</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在performLayout中主要调用了顶级View的layout方法，顶级View的实例有可能是View也有可能是ViewGroup，但是这个layout方法是在View中，它不像measure方法那样，它不是final修饰，所以它可以被重写，并且ViewGroup重写了layout方法，我们先看一下ViewGroup中的layout方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewGroup.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">layout</span><span class="params">(<span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (...) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">         <span class="comment">//1、ViewGroup中的重写的layout方法还是调用了父类即View的layout方法</span></span><br><span class="line">        <span class="keyword">super</span>.layout(l, t, r, b);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">       <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到ViewGroup重写的layout方法只是做了一些判断，然后最终还是还是调用了父类即View的layout方法，所以我们直接看View的layout方法即可。</p>
+<h3 id="1、View和ViewGroup的layout流程"><a href="#1、View和ViewGroup的layout流程" class="headerlink" title="1、View和ViewGroup的layout流程"></a>1、View和ViewGroup的layout流程</h3><p>View的layout方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">layout</span><span class="params">(<span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 注意传进来的四个参数：</span></span><br><span class="line">    <span class="comment">// l 表示子View的左边缘相对于父容器的上边缘的距离</span></span><br><span class="line">    <span class="comment">// t 表示子View的上边缘相对于父容器的上边缘的距离</span></span><br><span class="line">    <span class="comment">// r 表示子View的右边缘相对于父容器的右边缘的距离</span></span><br><span class="line">    <span class="comment">// b 表示子View的下边缘相对于父容器的下边缘的距离</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">int</span> oldL = mLeft;</span><br><span class="line">    <span class="keyword">int</span> oldT = mTop;</span><br><span class="line">    <span class="keyword">int</span> oldB = mBottom;</span><br><span class="line">    <span class="keyword">int</span> oldR = mRight;</span><br><span class="line">    <span class="comment">//1、调用setFrame方法设定View的四个顶点的位置</span></span><br><span class="line">    <span class="keyword">boolean</span> changed = isLayoutModeOptical(mParent) ? setOpticalFrame(l, t, r, b) : setFrame(l, t, r, b);</span><br><span class="line">    <span class="keyword">if</span> (changed || (mPrivateFlags &amp; PFLAG_LAYOUT_REQUIRED) == PFLAG_LAYOUT_REQUIRED) &#123;</span><br><span class="line">        <span class="comment">//2、调用onlayout方法</span></span><br><span class="line">	    onLayout(changed, l, t, r, b);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>layout方法传进来的l、t、r、b分别代表着View的上下左右四个点的坐标，这个四个点的坐标是相对于它的父容器来说的，这个layout方法主要干了两件事：</p>
+<ul>
+<li>1、注释1：调用View的setFrame方法设定View的四个顶点的位置，我们先看View的setFrame()方法，如下：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">setFrame</span><span class="params">(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> changed = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (mLeft != left || mRight != right || mTop != top || mBottom != bottom) &#123;</span><br><span class="line">        changed = <span class="keyword">true</span>;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        mLeft = left;</span><br><span class="line">        mTop = top;</span><br><span class="line">        mRight = right;</span><br><span class="line">        mBottom = bottom;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> changed;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，setFrame方法主要把l、t、r、b分别赋值给mLeft、mTop、mBottom、mRight，即更新View的四个顶点的位置，这个四个顶点一旦确定，那么View在父容器中的位置也就确定了。</p>
+<ul>
+<li>2、我们继续看注释2：调用了onLayout方法，这个方法在View中是一个空实现，如下：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java </span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom)</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是在ViewGroup中是一个抽象方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewGroup.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>这是因为onLayout方法主要用途是给父容器确定子View的位置，所以如果本身就是一个View，就无需实现这个方法，但是如果是ViewGroup，它还要布局子View，所以是ViewGroup的子类就要强制实现这个方法，不同的ViewGroup具有不同的布局方式，所以不同的ViewGroup的onLayout方法的实现就不一样，我们还是以FrameLayout为例，看一下FrameLayout的onLayout方法的实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//FrameLayout.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom)</span> </span>&#123;</span><br><span class="line">        layoutChildren(left, top, right, bottom, <span class="keyword">false</span> <span class="comment">/* no force left gravity */</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FrameLayout的onLayout方法只调用了layoutChildren方法，该方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">layoutChildren</span><span class="params">(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom, <span class="keyword">boolean</span> forceLeftGravity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> count = getChildCount();</span><br><span class="line">		<span class="comment">//获取padding值</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> parentLeft = getPaddingLeftWithForeground();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> parentRight = right - left - getPaddingRightWithForeground();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> parentTop = getPaddingTopWithForeground();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> parentBottom = bottom - top - getPaddingBottomWithForeground();</span><br><span class="line">		<span class="comment">//遍历所有子View，布局每个子View</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> View child = getChildAt(i);</span><br><span class="line">            <span class="comment">//如果子View可见</span></span><br><span class="line">            <span class="keyword">if</span> (child.getVisibility() != GONE) &#123;</span><br><span class="line">                <span class="keyword">final</span> LayoutParams lp = (LayoutParams) child.getLayoutParams();</span><br><span class="line">                <span class="comment">//获得measue流程测量出来的子View的宽高</span></span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> width = child.getMeasuredWidth();</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">int</span> height = child.getMeasuredHeight();</span><br><span class="line">                <span class="comment">//子View的左边缘位置</span></span><br><span class="line">                <span class="keyword">int</span> childLeft;</span><br><span class="line">                <span class="comment">//子View的上边缘位置</span></span><br><span class="line">                <span class="keyword">int</span> childTop;</span><br><span class="line">                <span class="comment">//下面是获取布局方向</span></span><br><span class="line">                <span class="comment">//...</span></span><br><span class="line">                <span class="comment">//下面根据布局方向计算出childLeft和childTop</span></span><br><span class="line">                <span class="comment">//...</span></span><br><span class="line">			   <span class="comment">//1、根据上面的计算，就算出了一个子View的左边缘位置childLeft和上边缘位置childTop</span></span><br><span class="line">                <span class="comment">//从而根据childLeft和childTop得出子View的右边缘位置childRight = childLeft + width，下边缘位置childButtom = childTop + height</span></span><br><span class="line">                <span class="comment">//然后调用子View的layout方法</span></span><br><span class="line">                child.layout(childLeft, childTop, childLeft + width, childTop + height);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现layoutChildren里面过程和onMeasure里面的过程很像，只是注释1中调用的是子View的layout方法而不是measure方法，如果这个子View是一个View，那么layout方法里面就可以通过setFrame方法直接确定自身的位置，如果这个子View是一个ViewGroup，除了调用setFrame方法确定自身的位置外，还要重复onLayout方法中确定子View位置的过程，最后一层一层的往下，直到全部都子View的layout完成。</p>
+<h3 id="2、小结"><a href="#2、小结" class="headerlink" title="2、小结"></a>2、小结</h3><p>我们再来看一下layout的整体流程：从ViewRootImp的performTraversals()方法进入performLayout()方法，开始整颗View树的布局流程，在performLayout方法里面会调用layout方法，我们发现，View的布局过程其实也可想测量过程那样分为View的layout流程和ViewGroup的layout流程，对于View来说，执行layout方法时只需要直接确定自身四个顶点的位置即可，而onLayout方法是一个空实现；对于ViewGroup来说，执行layout方法时除了要确定自身的四个顶点的位置外，那么它在onLayout方法中还要对自己所有的子View进行layout，最后一层一层的往下，直到全部都layout完成。如下：</p>
+<img src="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view5.png" class="" title="view5">
+
+<p>layout过后就可以通过View的getWidth()和getHeight()来获取最终的宽高的，这个两个方法的实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">getWidth</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> mRight - mLeft;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">getHeight</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> mBottom - mTop;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现就是通过View的四个顶点的差值来得到View的准确宽高。</p>
+<h2 id="View的绘制流程-performDraw"><a href="#View的绘制流程-performDraw" class="headerlink" title="View的绘制流程 - performDraw()"></a>View的绘制流程 - performDraw()</h2><p>和上面两步相似，View的绘制从ViewRootImpl的performDraw()开始的，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">performDraw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> fullRedrawNeeded = mFullRedrawNeeded;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//1、调用ViewRootImpl的draw方法</span></span><br><span class="line">    draw(fullRedrawNeeded);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>performDraw()方法中并不是先调用View的draw方法，而是先调用ViewRootImpl的draw方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">(<span class="keyword">boolean</span> fullRedrawNeeded)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//获取surface绘制表面</span></span><br><span class="line">    Surface surface = mSurface;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//如果surface表面需要更新</span></span><br><span class="line">    <span class="keyword">if</span> (!dirty.isEmpty() || mIsAnimating || accessibilityFocusDirty) &#123;</span><br><span class="line">        <span class="comment">//判断是否启用硬件加速，即是否使用GPU绘制</span></span><br><span class="line">        <span class="keyword">if</span> (mAttachInfo.mThreadedRenderer != <span class="keyword">null</span> &amp;&amp; mAttachInfo.mThreadedRenderer.isEnabled()) &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">            <span class="comment">//使用GPU绘制</span></span><br><span class="line">            mAttachInfo.mThreadedRenderer.draw(mView, mAttachInfo, <span class="keyword">this</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">            <span class="comment">//1、调用drawSoftware方法，使用CPU绘制</span></span><br><span class="line">            <span class="keyword">if</span> (!drawSoftware(surface, mAttachInfo, xOffset, yOffset, scalingRequired, dirty)) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在ViewRootImpl的draw方法中首先获取需要绘制的区域，然后判断是否使用GPU进行绘制，使用硬件加速是为提高了Android系统显示和刷新的速度，是在在API 11之后引入GPU加速的支持，关于这部分知识可自行查阅资料，不是本文重点，这里我们只关心注释1，通常情况下我们使用的是CPU绘制，也就是调用ViewRootImpl的drawSoftware方法来绘制，ViewRootImpl的drawSoftware()方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewRootImpl.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">drawSoftware</span><span class="params">(Surface surface, AttachInfo attachInfo, <span class="keyword">int</span> xoff, <span class="keyword">int</span> yoff, <span class="keyword">boolean</span> scalingRequired, Rect dirty)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> Canvas canvas;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> left = dirty.left;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> top = dirty.top;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> right = dirty.right;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> bottom = dirty.bottom;</span><br><span class="line">        <span class="comment">//1、获取指定区域的Canvas对象，即画布，用于绘制</span></span><br><span class="line">        canvas = mSurface.lockCanvas(dirty);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;<span class="comment">//省略catch</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">            <span class="comment">//2、从View树的根节点开始绘制，触发整颗View树的绘制</span></span><br><span class="line">            mView.draw(canvas);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//3、释放Canvas锁，然后通知SurfaceFlinger更新这块区域</span></span><br><span class="line">            surface.unlockCanvasAndPost(canvas);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalArgumentException e) &#123;</span><br><span class="line">           <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>drawSoftware方法中主要做了3件事：</p>
+<ul>
+<li>1、获取Surface对象并锁住Canvas绘图对象</li>
+<li>2、从View树的根视图开始绘制整颗视图树</li>
+<li>3、释放Surface对象并解锁Canvas，通知SurfaceFlinger更新视图</li>
+</ul>
+<h3 id="1、View和ViewGroup的draw流程"><a href="#1、View和ViewGroup的draw流程" class="headerlink" title="1、View和ViewGroup的draw流程"></a>1、View和ViewGroup的draw流程</h3><p>第1和第3点都是操作Surface的基本流程，我们主要看第二点即注释2，调用了View的draw方法，它就是一个模板方法，定义了几个固定的绘制步骤，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">draw</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">final</span> <span class="keyword">int</span> privateFlags = mPrivateFlags;</span><br><span class="line">     <span class="keyword">final</span> <span class="keyword">boolean</span> dirtyOpaque = (privateFlags &amp; PFLAG_DIRTY_MASK) == PFLAG_DIRTY_OPAQUE &amp;&amp;</span><br><span class="line">                (mAttachInfo == <span class="keyword">null</span> || !mAttachInfo.mIgnoreDirtyState);</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">         * Draw traversal performs several drawing steps which must be executed</span></span><br><span class="line"><span class="comment">         * in the appropriate order:</span></span><br><span class="line"><span class="comment">         *</span></span><br><span class="line"><span class="comment">         *      1. Draw the background</span></span><br><span class="line"><span class="comment">         *      2. If necessary, save the canvas' layers to prepare for fading</span></span><br><span class="line"><span class="comment">         *      3. Draw view's content</span></span><br><span class="line"><span class="comment">         *      4. Draw children</span></span><br><span class="line"><span class="comment">         *      5. If necessary, draw the fading edges and restore layers</span></span><br><span class="line"><span class="comment">         *      6. Draw decorations (scrollbars for instance)</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">    <span class="comment">//1、绘制背景</span></span><br><span class="line">    <span class="keyword">if</span> (!dirtyOpaque) &#123;</span><br><span class="line">        drawBackground(canvas);</span><br><span class="line">     &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//2、保存Canvas图层，为fadin做准备</span></span><br><span class="line">    saveCount = canvas.getSaveCount();</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//3、 绘制自身内容，setWillNotDraw()可以控制dirtyOpaque这个标志位</span></span><br><span class="line">    <span class="keyword">if</span>(!dirtyOpaque) onDraw(canvas);</span><br><span class="line">    <span class="comment">//4、如果是ViewGroup，绘制子View</span></span><br><span class="line">    dispatchDraw(canvas);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//5、如果需要的话，绘制View的fading边缘并恢复图层</span></span><br><span class="line">    canvas.drawRect(left, top, right, top + length, p);</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">    <span class="comment">//6、绘制装饰，如滚动条</span></span><br><span class="line">    onDrawForeground(canvas);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你看那英文注释，它已经替我们把draw方法中的6大步骤写出来了，其中最重要的就是注释3和4，我们分别来介绍一下：</p>
+<ul>
+<li><strong>onDraw(canvas)</strong>：onDraw方法是用来绘制自身内容，如果你的自定义View或ViewGroup需要绘制内容，就要重写这个方法在Canvas上绘制自身内容。</li>
+<li><strong>dispatchDraw(canvas)</strong>：如果是ViewGroup，除了绘制自身内容外，还需要绘制子View的内容，所以dispatchDraw就是把View的绘制一层一层的传递下去，直到整颗View树绘制完毕，ViewGroup重写了该方法，我们看一下它的主要源码如下：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ViewGroup.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">dispatchDraw</span><span class="params">(Canvas canvas)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> childrenCount = mChildrenCount;</span><br><span class="line">    <span class="keyword">final</span> View[] children = mChildren;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; childrenCount; i++) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="comment">//如果子View可见</span></span><br><span class="line">        <span class="keyword">if</span> ((child.mViewFlags &amp; VISIBILITY_MASK) == VISIBLE || child.getAnimation() != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//调用drawChild方法，见下面</span></span><br><span class="line">            more |= drawChild(canvas, child, drawingTime);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//ViewGroup.java</span></span><br><span class="line"> <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">drawChild</span><span class="params">(Canvas canvas, View child, <span class="keyword">long</span> drawingTime)</span> </span>&#123;</span><br><span class="line">     <span class="comment">//还是调用了View的draw方法</span></span><br><span class="line">     <span class="keyword">return</span> child.draw(canvas, <span class="keyword">this</span>, drawingTime);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，dispatchDraw方法把绘制子View的任务通过drawChild方法分发给它的子View，如果是一个ViewGroup，又会重复dispatchDraw()过程。</p>
+<h3 id="2、onDraw-绘制开关-setWillNotDraw"><a href="#2、onDraw-绘制开关-setWillNotDraw" class="headerlink" title="2、onDraw()绘制开关 - setWillNotDraw()"></a>2、onDraw()绘制开关 - setWillNotDraw()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//View.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setWillNotDraw</span><span class="params">(<span class="keyword">boolean</span> willNotDraw)</span> </span>&#123;</span><br><span class="line">    setFlags(willNotDraw ? WILL_NOT_DRAW : <span class="number">0</span>, DRAW_MASK);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是如果你不需要绘制任何内容，你可以通过View的setWillNotDraw(true)方法关闭绘制，在默认情况下，View没有启用这个优化标志位，但是ViewGroup会启用，所以<strong>当你的自定义ViewGroup需要通过onDraw来绘制内容时，需要显式的打开这个开关setWillNotDraw(false)，当你的自定义View不需要onDraw来绘制内容时，需要显式的关闭这个开关setWillNotDraw(true)</strong>。</p>
+<h3 id="3、小结-1"><a href="#3、小结-1" class="headerlink" title="3、小结"></a>3、小结</h3><p>到这里，我们走完了View的绘制过程，我们再来看一下draw的整体流程：从ViewRootImp的performTraversals()方法进入performDraw()方法，开始整颗View树的绘制流程，在performDraw()方法中经过层层调用：<strong>ViewRootImpl :: draw() -&gt; ViewRootImpl :: drawSoftware() -&gt; View :: draw()</strong>，来到View的draw()方法，它里面定义了View绘制的6大步骤，其中对于View来说，直接调用onDraw()方法绘制自身，对于ViewGroup来说，还要通过dispatchDraw()把绘制子View的流程分发下去，一层层传递，直到所有View都绘制完毕。如图：</p>
+<img src="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view6.png" class="" title="view6">
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我们一直讲View的工作原理，但有没有发现ViewRootImpl也出现的很频繁，它虽然不是一个View，但它是连接View和Window之间的纽带，View三大工作流程的起点就是ViewRootImpl的performTraversals()方法，performTraversals()中依此调用了<strong>performMeasure() -&gt; performLayout() -&gt; performDraw()</strong>，分别对应顶级View的<strong>measure、layout和draw流程</strong>，然后顶级View的<strong>measure流程</strong>和<strong>layout流程</strong>又会分别调用我们熟悉的<strong>onMeasure()、onLayout()方法</strong> ，<strong>draw流程</strong>有点特别，它是通过<strong>dispatchDraw()方法</strong>来进行draw流程的传递, 而onDraw()方法只是单纯的绘制自身内容，在onMeasure()方法中会对所有child进行measure过程，同理onLayout()方法中会对所有child进行layout过程，dispatchDraw()方法中会对所有child进行draw过程，如此递归直到完成整颗View Hierarchy的遍历。</p>
+<p>该过程如图:</p>
+<img src="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/view7.png" class="" title="view7">
+
+<p>在阅读Android源码时，如果你只是在追踪方法的调用链，这种过程是毫无意义的，但是如果你在这个阅读过程加入了自己的思考，把它的知识点用自己的语言整理，这样才会有所收获。以上就是我对View的工作原理的理解，希望大家有所收获。</p>
+<p>参考资料：</p>
+<p>《Android开发艺术探索》</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.823Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/view/" rel="tag">view</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/&title=《View的工作原理》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/&title=《View的工作原理》 — jianyu的博客&source=前言在Android中View一直扮演着一个很重要的角色，它是我们开发中视觉的呈现，我平常也使用着Android提供的丰富且功能强大的控件，有时候遇到一个..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《View的工作原理》 — jianyu的博客&url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/29/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">View的事件分发机制</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">java学习总结之面向对象</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/&title=《View的工作原理》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/&title=《View的工作原理》 — jianyu的博客&source=前言在Android中View一直扮演着一个很重要的角色，它是我们开发中视觉的呈现，我平常也使用着Android提供的丰富且功能强大的控件，有时候遇到一个..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《View的工作原理》 — jianyu的博客&url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN4AAADeCAAAAAB3DOFrAAACwUlEQVR42u3a0WrDMAwF0P7/T2+wp0GJcyXZ6QYnTyWkro8HsXbl1yu+vn6u35/f77x/fh9h/eT7M+v72y48PDy81tSvrvUzV0uwXpoEf/W7+Zzx8PDwTvOq01q/rJNtYH1/PYfCaHh4eHgf5a1/bH2nN+n1xoCHh4f3v3jrEZIieO9C4OHh4T3PS8KI3oTyMaufN2cteHh4eDGv1wD77Ofj/T08PDy8Vlc9b3rlwcSkoVWeJx4eHt4BXlKq9srl/FvJ71aXsvzzeHh4eDEvKVKTFcpf6L2jVHkTrnAqAQ8PD6/Fqx6BmmOS9lVv+aL54+Hh4Y151YGSYLcaAU/+Gjej4eHh4T3CywHzYjdZ3OT5yzt4eHh4x3jVFtf81d/j5RsDHh4e3jO8/MU9Z1ePc/VCEzw8PLwTvDxUPfGKrwYT1agXDw8P7wQvb03lccBk46m+9G+WHg8PD+8Ar7eT5IdKqwFHL/C9WRQ8PDy8rbxJq6k6Tu+46qgEx8PDwzvGyyedH9KaHNvqHVloHrrCw8PDa/F6BWtv89hVxK8XEQ8PD+8075mmV6/srsa4r+oU8fDw8Iq8XiRRbfOPjkwFG0P5y3h4eHgDXq9ZlUcYu2LZXiCCh4eHd5rXa+rnYWsy3WozrJy14OHh4W3lTY5GTUrtKrVQZOPh4eEd4JUj0SAy6LX8e5FuodzHw8PD28RLMHkQsHcbqBbchZMReHh4eANezsgPP+XbTF7EV7el8l8JDw8PL+Z9Fa/8W0mc0Qs1Rv8l4OHh4Y15k9dur6lfjYnzeGKExMPDwyvyJpvBvFmVN7GaB7Pw8PDwjvGSeKI8dDz+fAe7XBo8PDy8P8DLy99euFCNkm8Kbjw8PLyP8vINo1c67w0v8PDw8E7z5q2s3jL1oo08qsDDw8M7was2wHoxa/XoQL40G7p8eHh4eCnvGxMO2k+ZVLHoAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

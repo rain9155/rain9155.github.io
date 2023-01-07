@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>okhttp3源码分析之请求流程 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="源码,okhttp">
+    <meta name="description" content="前言在Android开发中，当下最火的网络请求框架莫过于okhttp和retrofit，它们都是square公司的产品，两个都是非常优秀开源库，值得我们去阅读它们的源码，学习它们的设计理念，但其实retrofit底层还是用okhttp来发起网络请求的，所以深入理解了okhttp也就深入理解了retrofit，它们的源码阅读顺序应该是先看okhttp，我在retrofit上发现它最近的一次提交才把o">
+<meta property="og:type" content="article">
+<meta property="og:title" content="okhttp3源码分析之请求流程">
+<meta property="og:url" content="http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言在Android开发中，当下最火的网络请求框架莫过于okhttp和retrofit，它们都是square公司的产品，两个都是非常优秀开源库，值得我们去阅读它们的源码，学习它们的设计理念，但其实retrofit底层还是用okhttp来发起网络请求的，所以深入理解了okhttp也就深入理解了retrofit，它们的源码阅读顺序应该是先看okhttp，我在retrofit上发现它最近的一次提交才把o">
+<meta property="og:image" content="http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/okhttp1.png">
+<meta property="og:image" content="http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/okhttp2.png">
+<meta property="og:image" content="http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/okhttp3.png">
+<meta property="article:published_time" content="2019-09-03T14:49:13.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.955Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="源码">
+<meta property="article:tag" content="okhttp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/okhttp1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">okhttp3源码分析之请求流程</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">okhttp3源码分析之请求流程</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-09-03T14:49:13.000Z" itemprop="datePublished" class="page-time">
+  2019-09-03
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E4%BC%98%E7%A7%80%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%86%E6%9E%90/">优秀开源库分析</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#okhttp的简单使用"><span class="post-toc-text">okhttp的简单使用</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、创建OkHttpClient"><span class="post-toc-text">1、创建OkHttpClient</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、创建请求Request"><span class="post-toc-text">2、创建请求Request</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、创建用于发起网络请求的Call"><span class="post-toc-text">3、创建用于发起网络请求的Call</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#同步请求-RealCall-execute"><span class="post-toc-text">同步请求 - RealCall :: execute()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、Dispatcher-executed-RealCall"><span class="post-toc-text">1、Dispatcher :: executed(RealCall)</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、RealCall-getResponseWithInterceptorChain"><span class="post-toc-text">2、RealCall  :: getResponseWithInterceptorChain()</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、Dispatcher-finished-RealCall"><span class="post-toc-text">3、Dispatcher :: finished(RealCall)</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#小结"><span class="post-toc-text">小结</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#异步请求-RealCall-enqueue-Callback"><span class="post-toc-text">异步请求 - RealCall.enqueue(Callback)</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、Dispatcher-enqueue-AsyncCall"><span class="post-toc-text">1、Dispatcher :: enqueue(AsyncCall)</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、Dispatcher-promoteAndExecute"><span class="post-toc-text">2、Dispatcher :: promoteAndExecute()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-1、AsyncCall-executeOn-ExecutorService"><span class="post-toc-text">2.1、AsyncCall :: executeOn(ExecutorService)</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-2、AsyncCal-execute"><span class="post-toc-text">2.2、AsyncCal :: execute()</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#小结-1"><span class="post-toc-text">小结</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-okhttp3源码分析之请求流程"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">okhttp3源码分析之请求流程</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-09-03 22:49:13" datetime="2019-09-03T14:49:13.000Z"  itemprop="datePublished">2019-09-03</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E4%BC%98%E7%A7%80%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%86%E6%9E%90/">优秀开源库分析</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在Android开发中，当下最火的网络请求框架莫过于okhttp和retrofit，它们都是square公司的产品，两个都是非常优秀开源库，值得我们去阅读它们的源码，学习它们的设计理念，但其实retrofit底层还是用okhttp来发起网络请求的，所以深入理解了okhttp也就深入理解了retrofit，它们的源码阅读顺序应该是先看okhttp，我在retrofit上发现它最近的一次提交才把okhttp版本更新到3.14，okhttp目前最新的版本是4.0.x，okhttp从4.0.x开始采用kotlin编写，在这之前还是用java，而我本次分析的okhttp源码版本是基本3.14.x，看哪个版本的不重要，重要的是阅读过后的收获，我打算分2篇文章去分析okhttp，分别是：</p>
+<ul>
+<li>请求流程(同步、异步)</li>
+<li>拦截器(Interceptor)</li>
+</ul>
+<p>本文是第一篇 - okhttp的请求流程，okhttp项目地址：<a href="https://github.com/square/okhttp" target="_blank" rel="noopener">okhttp</a></p>
+<a id="more"></a>
+
+<h2 id="okhttp的简单使用"><a href="#okhttp的简单使用" class="headerlink" title="okhttp的简单使用"></a>okhttp的简单使用</h2><p>我们通过一个简单的GET请求来回忆一下okhttp的使用步骤，并以这个实例为例讲解okhttp的请求流程，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1、创建OkHttpClient</span></span><br><span class="line">OkHttpClient client = <span class="keyword">new</span> OkHttpClient.Builder()</span><br><span class="line">    .readTimeout(<span class="number">5</span>, TimeUnit.SECONDS)</span><br><span class="line">    .build();</span><br><span class="line"></span><br><span class="line"><span class="comment">//2、创建请求Request</span></span><br><span class="line">Request request = <span class="keyword">new</span> Request.Builder()</span><br><span class="line">    .url(<span class="string">"http://www.baidu.com"</span>)</span><br><span class="line">    .build();</span><br><span class="line"><span class="comment">//3、创建一个Call，用于发起网络请求</span></span><br><span class="line">Call call = client.newCall(request);</span><br><span class="line"></span><br><span class="line"><span class="comment">//4、发起GET请求</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//4.1、同步请求，调用Call的execute()方法</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">//接收到回复Response</span></span><br><span class="line">    Response response = call.execute();</span><br><span class="line">    Log.d(TAG, response.body().string());</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//4.2、异步请求, 调用Call的enqueue()方法</span></span><br><span class="line">call.enqueue(<span class="keyword">new</span> Callback() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Call call, IOException e)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Call call, Response response)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">//接收到回复Response</span></span><br><span class="line">        Log.d(TAG, response.body().string());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，使用okhttp发起网络请求要经过4步：</p>
+<ul>
+<li>1、创建OkHttpClient</li>
+<li>2、创建请求Request</li>
+<li>3、通过OkHttpClient和Request创建一个Call，用于发起网络请求</li>
+<li>4、调用Call的execute()或enqueue()方法发起同步或异步请求</li>
+</ul>
+<p>当服务器处理完一个请求Request后，就会返回一个响应，在okhttp中用Response代表HTTP的响应，这就是一个典型的<a href="https://rain9155.github.io/2018/12/31/Http网络请求浅析/" target="_blank" rel="noopener">HTTP</a>请求/响应流程。下面简单介绍1~3步骤：</p>
+<h3 id="1、创建OkHttpClient"><a href="#1、创建OkHttpClient" class="headerlink" title="1、创建OkHttpClient"></a>1、创建OkHttpClient</h3><p>OkHttpClient是okhttp中的大管家，它将具体的工作分发到各个子系统中去完成，它使用<a href="https://rain9155.github.io/2019/09/07/Builder%E6%A8%A1%E5%BC%8F/#more" target="_blank" rel="noopener">Builder模式</a>配置网络请求的各种参数如超时、拦截器、分发器等，Builder中可配置的参数如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//OkHttpClient.Builder</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> </span>&#123;</span><br><span class="line">    Dispatcher dispatcher;<span class="comment">//分发器</span></span><br><span class="line">    <span class="meta">@Nullable</span> Proxy proxy;<span class="comment">//代理</span></span><br><span class="line">    List&lt;Protocol&gt; protocols;<span class="comment">//应用层协议</span></span><br><span class="line">    List&lt;ConnectionSpec&gt; connectionSpecs;<span class="comment">//传输层协议</span></span><br><span class="line">    <span class="keyword">final</span> List&lt;Interceptor&gt; interceptors = <span class="keyword">new</span> ArrayList&lt;&gt;();<span class="comment">//应用拦截器</span></span><br><span class="line">    <span class="keyword">final</span> List&lt;Interceptor&gt; networkInterceptors = <span class="keyword">new</span> ArrayList&lt;&gt;();<span class="comment">//网络拦截器</span></span><br><span class="line">    EventListener.Factory eventListenerFactory;<span class="comment">//http请求回调监听</span></span><br><span class="line">    ProxySelector proxySelector;<span class="comment">//代理选择</span></span><br><span class="line">    CookieJar cookieJar;<span class="comment">//cookie</span></span><br><span class="line">    <span class="meta">@Nullable</span> Cache cache;<span class="comment">//网络缓存</span></span><br><span class="line">    <span class="meta">@Nullable</span> InternalCache internalCache;<span class="comment">//内部缓存</span></span><br><span class="line">    SocketFactory socketFactory;<span class="comment">//socket 工厂</span></span><br><span class="line">    <span class="meta">@Nullable</span> SSLSocketFactory sslSocketFactory;<span class="comment">//安全套接层socket 工厂，用于HTTPS</span></span><br><span class="line">    <span class="meta">@Nullable</span> CertificateChainCleaner certificateChainCleaner;<span class="comment">//验证确认响应证书，适用 HTTPS 请求连接的主机名</span></span><br><span class="line">    HostnameVerifier hostnameVerifier;<span class="comment">//主机名字确认</span></span><br><span class="line">    CertificatePinner certificatePinner;<span class="comment">//证书链</span></span><br><span class="line">    Authenticator proxyAuthenticator;<span class="comment">//代理身份验证</span></span><br><span class="line">    Authenticator authenticator;<span class="comment">//本地身份验证</span></span><br><span class="line">    ConnectionPool connectionPool;<span class="comment">//连接池,复用连接</span></span><br><span class="line">    Dns dns;<span class="comment">//域名</span></span><br><span class="line">    <span class="keyword">boolean</span> followSslRedirects;<span class="comment">//安全套接层重定向</span></span><br><span class="line">    <span class="keyword">boolean</span> followRedirects;<span class="comment">//本地重定向</span></span><br><span class="line">    <span class="keyword">boolean</span> retryOnConnectionFailure;<span class="comment">//错误重连</span></span><br><span class="line">    <span class="keyword">int</span> callTimeout;<span class="comment">//请求超时，它包括dns解析、connect、read、write和服务器处理的时间</span></span><br><span class="line">    <span class="keyword">int</span> connectTimeout;<span class="comment">//connect超时</span></span><br><span class="line">    <span class="keyword">int</span> readTimeout;<span class="comment">//read超时</span></span><br><span class="line">    <span class="keyword">int</span> writeTimeout;<span class="comment">//write超时</span></span><br><span class="line">    <span class="keyword">int</span> pingInterval;<span class="comment">//ping超时</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里是配置默认的参数</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Builder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      dispatcher = <span class="keyword">new</span> Dispatcher();</span><br><span class="line">      protocols = DEFAULT_PROTOCOLS;<span class="comment">//Protocol.HTTP_2和Protocol.HTTP_1_1</span></span><br><span class="line">      connectionSpecs = DEFAULT_CONNECTION_SPECS;</span><br><span class="line">      eventListenerFactory = EventListener.factory(EventListener.NONE);</span><br><span class="line">      proxySelector = ProxySelector.getDefault();</span><br><span class="line">      <span class="keyword">if</span> (proxySelector == <span class="keyword">null</span>) &#123;</span><br><span class="line">        proxySelector = <span class="keyword">new</span> NullProxySelector();</span><br><span class="line">      &#125;</span><br><span class="line">      cookieJar = CookieJar.NO_COOKIES;</span><br><span class="line">      socketFactory = SocketFactory.getDefault();</span><br><span class="line">      hostnameVerifier = OkHostnameVerifier.INSTANCE;</span><br><span class="line">      certificatePinner = CertificatePinner.DEFAULT;</span><br><span class="line">      proxyAuthenticator = Authenticator.NONE;</span><br><span class="line">      authenticator = Authenticator.NONE;</span><br><span class="line">      connectionPool = <span class="keyword">new</span> ConnectionPool();</span><br><span class="line">      dns = Dns.SYSTEM;</span><br><span class="line">      followSslRedirects = <span class="keyword">true</span>;</span><br><span class="line">      followRedirects = <span class="keyword">true</span>;</span><br><span class="line">      retryOnConnectionFailure = <span class="keyword">true</span>;</span><br><span class="line">      callTimeout = <span class="number">0</span>;</span><br><span class="line">      connectTimeout = <span class="number">10_000</span>;</span><br><span class="line">      readTimeout = <span class="number">10_000</span>;</span><br><span class="line">      writeTimeout = <span class="number">10_000</span>;</span><br><span class="line">      pingInterval = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里通过另外一个OkHttpClient配置参数</span></span><br><span class="line">    Builder(OkHttpClient okHttpClient) &#123;</span><br><span class="line">      <span class="keyword">this</span>.dispatcher = okHttpClient.dispatcher;</span><br><span class="line">      <span class="keyword">this</span>.proxy = okHttpClient.proxy;</span><br><span class="line">      <span class="keyword">this</span>.protocols = okHttpClient.protocols;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//配置完参数后，通过Builder的参数创建一个OkHttpClient</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> OkHttpClient <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> OkHttpClient(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2、创建请求Request"><a href="#2、创建请求Request" class="headerlink" title="2、创建请求Request"></a>2、创建请求Request</h3><p>在okhttp中Request代表着一个HTTP请求，它封装了请求的具体消息，如url、header、body等，它和OkHttpClient一样都是使用Budiler模式来配置自己的参数，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Request.Budiler</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> </span>&#123;</span><br><span class="line">    HttpUrl url;</span><br><span class="line">    String method;</span><br><span class="line">    Headers.Builder headers;</span><br><span class="line">    RequestBody body;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里配置默认的参数</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Builder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.method = <span class="string">"GET"</span>;<span class="comment">//默认是GET请求</span></span><br><span class="line">      <span class="keyword">this</span>.headers = <span class="keyword">new</span> Headers.Builder();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里通过另外一个Request配置参数</span></span><br><span class="line">    Builder(Request request) &#123;</span><br><span class="line">      <span class="keyword">this</span>.url = request.url;</span><br><span class="line">      <span class="keyword">this</span>.method = request.method;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//配置完参数后，通过Builder的参数创建一个Request</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Request <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (url == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"url == null"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Request(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3、创建用于发起网络请求的Call"><a href="#3、创建用于发起网络请求的Call" class="headerlink" title="3、创建用于发起网络请求的Call"></a>3、创建用于发起网络请求的Call</h3><p>Call是一个接口，它的具体实现类是RealCall，Call中定义了一些enqueue(Callback)<code>、</code>execute()等关键方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Call</span> <span class="keyword">extends</span> <span class="title">Cloneable</span> </span>&#123;</span><br><span class="line">    <span class="comment">//返回当前请求</span></span><br><span class="line">    <span class="function">Request <span class="title">request</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">//同步请求方法，此方法会阻塞当前线程直到请求结果放回</span></span><br><span class="line">    <span class="function">Response <span class="title">execute</span><span class="params">()</span> <span class="keyword">throws</span> IOException</span>;</span><br><span class="line">    <span class="comment">//异步请求方法，此方法会将请求添加到队列中，然后等待请求返回</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(Callback responseCallback)</span></span>;</span><br><span class="line">    <span class="comment">//取消请求</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="comment">//判断请求是否在执行</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isExecuted</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">//判断请求是否取消</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isCanceled</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">//返回请求的超时时间</span></span><br><span class="line">    <span class="function">Timeout <span class="title">timeout</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">//克隆一个新的请求</span></span><br><span class="line">    <span class="function">Call <span class="title">clone</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="class"><span class="keyword">interface</span> <span class="title">Factory</span> </span>&#123;</span><br><span class="line">        <span class="function">Call <span class="title">newCall</span><span class="params">(Request request)</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们看到Call接口中有一个Factory接口，Factory中有一个newCall(Request)方法，这说明Call是通过<a href="https://rain9155.github.io/2019/09/07/%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/#more" target="_blank" rel="noopener">工厂模式</a>创建，而OkHttpClient实现了Call.Factory接口，重写了newCall(Request)方法，返回了Call的具体实现类RealCall，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OkHttpClient</span> <span class="keyword">implements</span> <span class="title">Cloneable</span>, <span class="title">Call</span>.<span class="title">Factory</span>, <span class="title">WebSocket</span>.<span class="title">Factory</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Call <span class="title">newCall</span><span class="params">(Request request)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//调用了RealCall的newRealCall()</span></span><br><span class="line">        <span class="keyword">return</span> RealCall.newRealCall(<span class="keyword">this</span>, request, <span class="keyword">false</span> <span class="comment">/* for web socket */</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">RealCall</span> <span class="keyword">implements</span> <span class="title">Call</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> RealCall <span class="title">newRealCall</span><span class="params">(OkHttpClient client, Request originalRequest, <span class="keyword">boolean</span> forWebSocket)</span> 	</span>&#123;</span><br><span class="line">        <span class="comment">//返回RealCall对象</span></span><br><span class="line">        RealCall call = <span class="keyword">new</span> RealCall(client, originalRequest, forWebSocket);</span><br><span class="line">        call.transmitter = <span class="keyword">new</span> Transmitter(client, call);</span><br><span class="line">        <span class="keyword">return</span> call;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以调用<strong>client.newCall(request)</strong>其实返回的是RealCall对象，而RealCall封装了请求的调用逻辑。</p>
+<p>到这里也就走到了注释4，也就是第4步，okhttp通过Call的实现类RealCall的execute()或enqueue()方法发起同步或异步请求，也就是本文的重点，下面分别详细介绍:</p>
+<h2 id="同步请求-RealCall-execute"><a href="#同步请求-RealCall-execute" class="headerlink" title="同步请求 - RealCall :: execute()"></a>同步请求 - RealCall :: execute()</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//RealCall.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">execute</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//1、调用Dispatcher的executed(RealCall)方法</span></span><br><span class="line">        client.dispatcher().executed(<span class="keyword">this</span>);</span><br><span class="line">        <span class="comment">//2、调用getResponseWithInterceptorChain()方法</span></span><br><span class="line">        <span class="keyword">return</span> getResponseWithInterceptorChain();</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">//3、同步请求任务执行完毕，调用Dispatcher的finished(RealCall)方法</span></span><br><span class="line">        client.dispatcher().finished(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>client就是我们上面所讲的OkHttpClient的实例，它在创建RealCall时作为构造参数传了进去，而OkHttpClient的dispatcher()方法返回的是Dispatcher实例，它在OkHttpClient构造时被创建。</p>
+<p>我们先讲一下Dispatcher，那Dispatcher是什么呢？Dispatcher是一个任务调度器，它负责进行请求任务的调度，它的内部维护着3个任务队列(readyAsyncCalls、runningAsyncCalls、runningSyncCalls)和1个<a href="https://rain9155.github.io/2019/07/19/java线程池/" target="_blank" rel="noopener">线程池</a>(executorService)，Dispatcher主要内容如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Dispatcher</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> maxRequests = <span class="number">64</span>;<span class="comment">//最大请求数64个</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> maxRequestsPerHost = <span class="number">5</span>;<span class="comment">//每个主机最大请求数5个</span></span><br><span class="line">    <span class="keyword">private</span> <span class="meta">@Nullable</span> Runnable idleCallback;<span class="comment">//idle任务回调，类似于Android的idlehandler, 可以在Dispatcher没有任务调度（空闲时）时执行idleCallback中的任务</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//线程池，执行runningAsyncCalls队列里面的请求任务</span></span><br><span class="line">    <span class="keyword">private</span> <span class="meta">@Nullable</span> ExecutorService executorService;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//等待执行的异步请求任务队列</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Deque&lt;AsyncCall&gt; readyAsyncCalls = <span class="keyword">new</span> ArrayDeque&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//正在执行的异步请求任务队列</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Deque&lt;AsyncCall&gt; runningAsyncCalls = <span class="keyword">new</span> ArrayDeque&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//正在执行的同步请求任务队列</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Deque&lt;RealCall&gt; runningSyncCalls = <span class="keyword">new</span> ArrayDeque&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">executed</span><span class="params">(RealCall call)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(AsyncCall call)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;  </span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">finished</span><span class="params">(RealCall call)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">finished</span><span class="params">(AsyncCall call)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">promoteAndExecute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//...  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Dispatcher提供了executed(RealCall)和enqueue(AsyncCall)方法来进行同步和异步请求任务的入队，还提供了finished(RealCall)和finished(AsyncCalll)方法来进行同步和异步请求任务的出队，可以看到okhttp把ReadCall当作同步请求任务的代表，把AsyncCall当作异步请求任务的代表，RealCall前面已经讲过了，而AsyncCal是RealCall的一个内部类，它本质上就是一个Runnable，Dispatcher的线程池执行任务主要执行的是runningAsyncCalls队列里面的异步请求任务，也就是AsyncCall异步任务，而Dispatcher的promoteAndExecute()方法就是用来进行异步任务的调度，它的逻辑主要是按顺序把readyAsyncCalls队列中准备执行的异步任务转移到runningAsyncCalls后，再由线程池执行，对于同步任务Dispatcher只是暂时保存在runningSyncCalls队列中，并不会由线程池执行。</p>
+<p>我们继续回到RealCall的execute()方法，根据注释1、2、3分为3部分解释同步请求流程，如下：</p>
+<h3 id="1、Dispatcher-executed-RealCall"><a href="#1、Dispatcher-executed-RealCall" class="headerlink" title="1、Dispatcher :: executed(RealCall)"></a>1、Dispatcher :: executed(RealCall)</h3><p>看RealCall的execute()方法的注释1，它首先调用了Dispatcher的executed(RealCall)方法，Dispatcher的executed(RealCall)方法实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Dispatcher.java</span></span><br><span class="line"><span class="function"><span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">executed</span><span class="params">(RealCall call)</span> </span>&#123;</span><br><span class="line">    runningSyncCalls.add(call);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到没有做什么处理，只是简单的把同步请求任务放入runningSyncCalls队列。</p>
+<h3 id="2、RealCall-getResponseWithInterceptorChain"><a href="#2、RealCall-getResponseWithInterceptorChain" class="headerlink" title="2、RealCall  :: getResponseWithInterceptorChain()"></a>2、RealCall  :: getResponseWithInterceptorChain()</h3><p>看RealCall的execute()方法的注释2，调用getResponseWithInterceptorChain()方法，这里才是同步请求处理的地方，我们点进去，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//RealCall.java </span></span><br><span class="line"><span class="function">Response <span class="title">getResponseWithInterceptorChain</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">//拦截器的添加</span></span><br><span class="line">    List&lt;Interceptor&gt; interceptors = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="comment">//添加用户自定义拦截器</span></span><br><span class="line">    interceptors.addAll(client.interceptors());</span><br><span class="line">    <span class="comment">//添加默认拦截器</span></span><br><span class="line">    interceptors.add(<span class="keyword">new</span> RetryAndFollowUpInterceptor(client));</span><br><span class="line">    interceptors.add(<span class="keyword">new</span> BridgeInterceptor(client.cookieJar()));</span><br><span class="line">    interceptors.add(<span class="keyword">new</span> CacheInterceptor(client.internalCache()));</span><br><span class="line">    interceptors.add(<span class="keyword">new</span> ConnectInterceptor(client));</span><br><span class="line">    <span class="keyword">if</span> (!forWebSocket) &#123;</span><br><span class="line">      interceptors.addAll(client.networkInterceptors());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//添加的最后一个拦截器是CallServerInterceptor</span></span><br><span class="line">    interceptors.add(<span class="keyword">new</span> CallServerInterceptor(forWebSocket));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//创建一个RealInterceptorChain，传入了interceptors和Request</span></span><br><span class="line">    Interceptor.Chain chain = <span class="keyword">new</span> RealInterceptorChain(interceptors, transmitter, <span class="keyword">null</span>, <span class="number">0</span>,</span><br><span class="line">        originalRequest, <span class="keyword">this</span>, client.connectTimeoutMillis(),</span><br><span class="line">        client.readTimeoutMillis(), client.writeTimeoutMillis());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">//调用RealInterceptorChain的proceed(Request)方法处理请求</span></span><br><span class="line">      Response response = chain.proceed(originalRequest);</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">      <span class="keyword">return</span> response;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>getResponseWithInterceptorChain()方法最终返回一个Response，也就是网络请求的响应，该方法中首先把用户自定义的拦截器和okhttp默认的拦截器封装到一个List中，然后创建RealInterceptorChain并执行proceed(Request)方法处理请求，RealInterceptorChain的proceed(Request)方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//RealInterceptorChain.java</span></span><br><span class="line"><span class="meta">@Override</span> </span><br><span class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">proceed</span><span class="params">(Request request)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> proceed(request, transmitter, exchange);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">proceed</span><span class="params">(Request request, Transmitter transmitter, @Nullable Exchange exchange)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//再新建一个RealInterceptorChain，这里注意index加1，</span></span><br><span class="line">    RealInterceptorChain next = <span class="keyword">new</span> RealInterceptorChain(interceptors, transmitter, exchange,</span><br><span class="line">                                                         index + <span class="number">1</span>, request, call, connectTimeout, readTimeout, writeTimeout);</span><br><span class="line">    <span class="comment">//获取interceptors列表中的下一个拦截器</span></span><br><span class="line">    Interceptor interceptor = interceptors.get(index);</span><br><span class="line">    <span class="comment">//调用下一个拦截器的intercept(Chain)方法，传入刚才新建的RealInterceptorChain，返回Response</span></span><br><span class="line">    Response response = interceptor.intercept(next);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> response;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>proceed()方法中再次新建了一个RealInterceptorChain，传入了index + 1，而获取拦截器时是通过index获取，这样每次都能获取到下一个拦截器，然后调用下一个拦截器的intercept(Chain)方法，intercept(Chain)方法中就是拦截器的主要功能实现，里面会继续调用传入的RealInterceptorChain的proceed()方法，这样又会重复上述逻辑，我们把拦截器看作一条链中的节点，这样每个拦截器就通过一个个RealInterceptorChain连接起来，形成一条链，这就是典型的<a href="https://rain9155.github.io/2019/09/07/%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/#more" target="_blank" rel="noopener">责任链模式</a>，从节点的首部开始把请求传递下去，每一个拦截器都有机会处理这个请求，这又像是一个递归的过程，直到最后一个拦截器器处理完请求后，才开始逐层返回Resquese，拦截器才是Okhttp核心功能所在，关于拦截器介绍下篇文章再讲，这里只需要知道每一个拦截器都代表了一个功能。</p>
+<p>经过对拦截器的简单介绍后，我们知道最后一个添加的拦截器才是把请求发送出去并且返回响应的地方，我们看getResponseWithInterceptorChain()方法，最后一个拦截器的添加是CallServerInterceptor，所以我们直接看CallServerInterceptor的intercept(Chain)方法实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//CallServerInterceptor.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">intercept</span><span class="params">(Chain chain)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">//强转成RealInterceptorChain</span></span><br><span class="line">    RealInterceptorChain realChain = (RealInterceptorChain) chain;</span><br><span class="line">    <span class="comment">//获取Exchange</span></span><br><span class="line">    Exchange exchange = realChain.exchange();</span><br><span class="line">    <span class="comment">//获取Request</span></span><br><span class="line">    Request request = realChain.request();</span><br><span class="line"></span><br><span class="line">	<span class="comment">//1、通过Exchange的writeRequestHeaders(request)方法发送Request的header</span></span><br><span class="line">    exchange.writeRequestHeaders(request);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> responseHeadersStarted = <span class="keyword">false</span>;</span><br><span class="line">    Response.Builder responseBuilder = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">//因为前面已经讲了，默认是GET请求，而GET请求是没有body的，所以不会进入if分支</span></span><br><span class="line">    <span class="keyword">if</span> (HttpMethod.permitsRequestBody(request.method()) &amp;&amp; request.body() != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="comment">//省略的是发送Request的body过程</span></span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      exchange.noRequestBody();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//GET请求body为空，进入这个分支，完成请求</span></span><br><span class="line">    <span class="keyword">if</span> (request.body() == <span class="keyword">null</span> || !request.body().isDuplex()) &#123;</span><br><span class="line">      exchange.finishRequest();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//省略的是一些监听回调</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//下面开始获取网络请求返回的响应</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//2、通过Exchange的readResponseHeaders(boolean)方法获取响应的header</span></span><br><span class="line">    <span class="keyword">if</span> (responseBuilder == <span class="keyword">null</span>) &#123;</span><br><span class="line">        responseBuilder = exchange.readResponseHeaders(<span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//获取响应后，通过Builder模式构造Response</span></span><br><span class="line">    Response response = responseBuilder</span><br><span class="line">        .request(request)</span><br><span class="line">        .handshake(exchange.connection().handshake())</span><br><span class="line">        .sentRequestAtMillis(sentRequestMillis)</span><br><span class="line">        .receivedResponseAtMillis(System.currentTimeMillis())</span><br><span class="line">        .build();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//省略的是response对状态码code的处理</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//构造Response的body</span></span><br><span class="line">    <span class="keyword">if</span> (forWebSocket &amp;&amp; code == <span class="number">101</span>) &#123;</span><br><span class="line">        <span class="comment">//构造一个空的body的Response</span></span><br><span class="line">        response = response.newBuilder()</span><br><span class="line">            .body(Util.EMPTY_RESPONSE)</span><br><span class="line">            .build();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//通过Exchange的openResponseBody(Response)方法获取响应的body，然后通过响应的body继续构造Response</span></span><br><span class="line">        response = response.newBuilder()</span><br><span class="line">            .body(exchange.openResponseBody(response))</span><br><span class="line">            .build();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//返回响应Response</span></span><br><span class="line">    <span class="keyword">return</span> response;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>intercept(Chain）方法中主要做的就是<strong>发送请求，获取响应</strong>的事情，注释中已经写的很清楚了，发送请求要把header和body分开发送，而获取响应时也要分别获取header和body，而发送请求和获取响应两个过程都是通过一个Exchange对象进行的，Exchange是在构造RealInterceptorChain时就作为构造参数传进RealInterceptorChain中，一直都为null，直到在ConnectInterceptor的intercept()中才通过Transmitter的newExchange()被赋值，而ConnectInterceptor的下一个拦截器就是CallServerInterceptor，所以CallServerInterceptor可以通过Chain获取到Exchange实例，这里不用细究这个赋值过程，Exchange它主要是用来负责完成一次网络请求和响应的过程。</p>
+<p>这里我以intercept(Chain）方法中注释1和注释2请求header的发送(wirte)和获取(read)为例了解Exchange的工作过程，首先看Exchange的writeRequestHeaders(Request)方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Exchange.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeRequestHeaders</span><span class="params">(Request request)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//主要是调用了codec的writeRequestHeaders(request)</span></span><br><span class="line">        codec.writeRequestHeaders(request);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们再看Exchange的readResponseHeaders(boolean)方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Exchange.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@Nullable</span> Response.<span class="function">Builder <span class="title">readResponseHeaders</span><span class="params">(<span class="keyword">boolean</span> expectContinue)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">//主要是调用了codec的readResponseHeaders(boolean)</span></span><br><span class="line">      Response.Builder result = codec.readResponseHeaders(expectContinue);</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">      <span class="keyword">return</span> result;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>从Exchange的两个方法可以看出，它把 wirt和read header的任务都交给了codec，codec是什么呢？codec是ExchangeCodec类型，它是一个接口，它主要用来编码http请求并解码http返回结果，所以Exchange中真正干活的是ExchangeCodec，它的有两个实现类，分别是Http2ExchangeCodec和Http1ExchangeCodec，分别对应Http2.x和Http1.x，这里我们以Http1ExchangeCodec为例，查看它的writeRequestHeaders(request)和readResponseHeaders(boolean)方法，首先看Http1ExchangeCodec的writeRequestHeaders(request)方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Http1ExchangeCodec.java</span></span><br><span class="line"><span class="meta">@Override</span> </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeRequestHeaders</span><span class="params">(Request request)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    String requestLine = RequestLine.get(</span><br><span class="line">        request, realConnection.route().proxy().type());</span><br><span class="line">    <span class="comment">//调用了writeRequest()</span></span><br><span class="line">    writeRequest(request.headers(), requestLine);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeRequest</span><span class="params">(Headers headers, String requestLine)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (state != STATE_IDLE) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"state: "</span> + state);</span><br><span class="line">    <span class="comment">//可以看到通过sink把请求头写入IO流，发送到服务器，sink是BufferedSink类型</span></span><br><span class="line">    sink.writeUtf8(requestLine).writeUtf8(<span class="string">"\r\n"</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, size = headers.size(); i &lt; size; i++) &#123;</span><br><span class="line">      sink.writeUtf8(headers.name(i))</span><br><span class="line">          .writeUtf8(<span class="string">": "</span>)</span><br><span class="line">          .writeUtf8(headers.value(i))</span><br><span class="line">          .writeUtf8(<span class="string">"\r\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    sink.writeUtf8(<span class="string">"\r\n"</span>);</span><br><span class="line">    state = STATE_OPEN_REQUEST_BODY;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们再看Http1ExchangeCodec的readResponseHeaders(boolean)方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Http1ExchangeCodec.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Response.<span class="function">Builder <span class="title">readResponseHeaders</span><span class="params">(<span class="keyword">boolean</span> expectContinue)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">   <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        StatusLine statusLine = StatusLine.parse(readHeaderLine());</span><br><span class="line">        Response.Builder responseBuilder = <span class="keyword">new</span> Response.Builder()</span><br><span class="line">            .protocol(statusLine.protocol)</span><br><span class="line">            .code(statusLine.code)</span><br><span class="line">            .message(statusLine.message)</span><br><span class="line">            .headers(readHeaders());<span class="comment">//调用了readHeaders()</span></span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">return</span> responseBuilder;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (EOFException e) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">private</span> Headers <span class="title">readHeaders</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    Headers.Builder headers = <span class="keyword">new</span> Headers.Builder();</span><br><span class="line">    <span class="comment">//调用了readHeaderLine()，一行一行的读取header</span></span><br><span class="line">    <span class="keyword">for</span> (String line; (line = readHeaderLine()).length() != <span class="number">0</span>; ) &#123;</span><br><span class="line">      Internal.instance.addLenient(headers, line);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> headers.build();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">private</span> String <span class="title">readHeaderLine</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">     <span class="comment">//服务器响应返回，通过source从IO读取响应头，source是BufferedSource类型</span></span><br><span class="line">    String line = source.readUtf8LineStrict(headerLimit);</span><br><span class="line">    headerLimit -= line.length();</span><br><span class="line">    <span class="keyword">return</span> line;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>从Http1ExchangeCodec的两个方法可以看出，底层是通过BufferedSink把信息写入IO流，通过BufferedSource从IO流读取信息，BufferedSink和BufferedSource都是来自<a href="https://github.com/square/okio" target="_blank" rel="noopener">okio</a>这个开源库的，okhttp底层是通过okio来向网络中写入和读取IO的，想要了解更多可自行查看okio源码(okio也是square公司的产品)。</p>
+<p>到此RealCall的 getResponseWithInterceptorChain()分析完，getResponseWithInterceptorChain()返回Response后，RealCall的execute() 方法就return了，我们就可以通过返回的Response获取我们想要的信息，但RealCall的execute() 方法就return后，还要继续执行finally 分支中的逻辑。</p>
+<h3 id="3、Dispatcher-finished-RealCall"><a href="#3、Dispatcher-finished-RealCall" class="headerlink" title="3、Dispatcher :: finished(RealCall)"></a>3、Dispatcher :: finished(RealCall)</h3><p>我们继续看RealCall的execute()方法的注释3，调用Dispatcher的finished(AsyncCall)方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Dispatcher.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">finished</span><span class="params">(RealCall call)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//传进了runningSyncCalls队列</span></span><br><span class="line">    finished(runningSyncCalls, call);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">finished</span><span class="params">(Deque&lt;T&gt; calls, T call)</span> </span>&#123;</span><br><span class="line">    Runnable idleCallback;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="comment">//尝试移除队列中的同步请求任务</span></span><br><span class="line">        <span class="keyword">if</span> (!calls.remove(call)) <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError(<span class="string">"Call wasn't in-flight!"</span>);</span><br><span class="line">        idleCallback = <span class="keyword">this</span>.idleCallback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//紧接着调用promoteAndExecute()方法进行异步任务的调度，如果没有异步任务要进行，promoteAndExecute()返回false</span></span><br><span class="line">    <span class="keyword">boolean</span> isRunning = promoteAndExecute();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//isRunning等于false且设置了idleCallback，会执行一遍idle任务</span></span><br><span class="line">    <span class="keyword">if</span> (!isRunning &amp;&amp; idleCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">        idleCallback.run();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>finished()方法中首先尝试从runningSyncCalls队列把刚才通过 executed()入队的同步任务RealCall移除，如果移除失败，就抛出异常，如果移除成功，就紧接着调用promoteAndExecute()方法进行异步任务的调度并尝试执行一遍idle任务，promoteAndExecute()方法在异步请求中再详细介绍。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>至此okhttp的同步请求过程分析完毕，这里总结一下：当我们调用call.execute()时，就会发起一个同步请求，而call的实现类是RealCall，所以实际执行的是realCall.execute()，realCall.execute()中执行Dispatcher的executed(RealCall)把这个同步请求任务保存进runningSyncCalls队列中，然后RealCall执行getResponseWithInterceptorChain()处理同步请求，请求经过层层拦截器后到达最后一个拦截器CallServerInterceptor，在这个拦截器中通过Exchange把请求发送到服务器，然后同样的通过Exchange获得服务器的响应，根据响应构造Response，然后返回，最后RealCall执行Dispatcher的finished(RealCall)把之前暂时保存的同步请求任务从runningSyncCalls队列中移除。</p>
+<p>下面是同步请求过程的调用链：</p>
+<img src="/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/okhttp1.png" class="" title="okhttp">
+
+<h2 id="异步请求-RealCall-enqueue-Callback"><a href="#异步请求-RealCall-enqueue-Callback" class="headerlink" title="异步请求 - RealCall.enqueue(Callback)"></a>异步请求 - RealCall.enqueue(Callback)</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//RealCall.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(Callback responseCallback)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//1、调用Dispatcher的enqueue(AsyncCall)方法</span></span><br><span class="line">    client.dispatcher().enqueue(<span class="keyword">new</span> AsyncCall(responseCallback));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>异步请求执行的是RealCall的enqueue(Callback)方法，它比同步请求只是多了一个Callback，在Callback的 onResponse(Call, Response)回调中我们可以拿到网络响应返回的Response，RealCall的enqueue(Callback)方法中首先把Callback用AsyncCall包装起来，然后调用调用Dispatcher的enqueue(AsyncCall)方法。</p>
+<h3 id="1、Dispatcher-enqueue-AsyncCall"><a href="#1、Dispatcher-enqueue-AsyncCall" class="headerlink" title="1、Dispatcher :: enqueue(AsyncCall)"></a>1、Dispatcher :: enqueue(AsyncCall)</h3><p>我们看Dispatcher的enqueue(AsyncCall)方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Dispatcher.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(AsyncCall call)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">       readyAsyncCalls.add(call);</span><br><span class="line">       <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    promoteAndExecute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该方法首先把异步请求任务AsyncCall放入readyAsyncCalls队列，然后调用promoteAndExecute()进行异步任务的调度，我们看一下Dispatcher 是如何进行异步任务的调度的。</p>
+<h3 id="2、Dispatcher-promoteAndExecute"><a href="#2、Dispatcher-promoteAndExecute" class="headerlink" title="2、Dispatcher :: promoteAndExecute()"></a>2、Dispatcher :: promoteAndExecute()</h3><p>promoteAndExecute()方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Dispatcher.java</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">promoteAndExecute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//准备一个正在执行任务列表executableCalls</span></span><br><span class="line">    List&lt;AsyncCall&gt; executableCalls = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="keyword">boolean</span> isRunning;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="comment">//1、这个for循环主要把readyAsyncCalls中等待执行的异步任务转移到runningAsyncCalls队列和executableCalls列表中去</span></span><br><span class="line">        <span class="keyword">for</span> (Iterator&lt;AsyncCall&gt; i = readyAsyncCalls.iterator(); i.hasNext(); ) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//取出readyAsyncCalls中等待执行的异步任务</span></span><br><span class="line">            AsyncCall asyncCall = i.next();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//判断条件：1、正在运行的异步请求任务不能大于maxRequests；2、等待执行的异步任务的主机请求数不能大于maxRequestsPerHost</span></span><br><span class="line">            <span class="keyword">if</span> (runningAsyncCalls.size() &gt;= maxRequests) <span class="keyword">break</span>; </span><br><span class="line">            <span class="keyword">if</span> (asyncCall.callsPerHost().get() &gt;= maxRequestsPerHost) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="comment">//满足条件，进入下面逻辑</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">//把这个等待执行的异步任务从readyAsyncCalls中移除</span></span><br><span class="line">            i.remove();</span><br><span class="line">            asyncCall.callsPerHost().incrementAndGet();</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//把这个等待执行的异步任务添加进executableCalls列表</span></span><br><span class="line">            executableCalls.add(asyncCall);</span><br><span class="line">            <span class="comment">//把这个等待执行的异步任务添加进runningAsyncCalls队列</span></span><br><span class="line">            runningAsyncCalls.add(asyncCall);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//runningCallsCount()里面的逻辑： return runningAsyncCalls.size() + runningSyncCalls.size();</span></span><br><span class="line">        isRunning = runningCallsCount() &gt; <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//2、这个for循环主要是执行executableCalls列表中的异步任务</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, size = executableCalls.size(); i &lt; size; i++) &#123;</span><br><span class="line">        AsyncCall asyncCall = executableCalls.get(i);</span><br><span class="line">        <span class="comment">//传进executorService，调用AsyncCall的executeOn()方法，由线程池执行这个异步任务</span></span><br><span class="line">        asyncCall.executeOn(executorService());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> isRunning;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>promoteAndExecute()方法中主要是2个for循环，注释1的第一个for循环是把符合条件的异步请求任务从readyAsyncCalls转移（提升）到runningAsyncCalls队列和添加到executableCalls列表中去，紧接着注释2的第二个for循环就是遍历executableCalls列表，从executableCalls列表中获取AsyncCall对象，并且调用它的executeOn()方法，executeOn()方法传进了一个Dispatcher的executorService，所以我们看AsyncCall的executeOn()方法，里面是真正执行异步请求任务的地方。</p>
+<h4 id="2-1、AsyncCall-executeOn-ExecutorService"><a href="#2-1、AsyncCall-executeOn-ExecutorService" class="headerlink" title="2.1、AsyncCall :: executeOn(ExecutorService)"></a>2.1、AsyncCall :: executeOn(ExecutorService)</h4><p>AsyncCall的executeOn()方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AsyncCall.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">executeOn</span><span class="params">(ExecutorService executorService)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> success = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//传进this，执行AsyncCall异步任务，AsyncCall本质是Runnable</span></span><br><span class="line">        executorService.execute(<span class="keyword">this</span>);</span><br><span class="line">        success = <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RejectedExecutionException e) &#123;</span><br><span class="line">       <span class="comment">//...</span></span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!success) &#123;</span><br><span class="line">            <span class="comment">//异步任务执行失败，调用Dispatcher的finished(AsyncCall)方法</span></span><br><span class="line">            client.dispatcher().finished(<span class="keyword">this</span>); </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，里面的主要逻辑就是调用 executorService.execute(this)执行当前的AsyncCall异步任务，前面已经说过AsyncCall实现了NamedRunnable，本质是Runnable，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncCall</span> <span class="keyword">extends</span> <span class="title">NamedRunnable</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">NamedRunnable</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">	<span class="comment">//...	</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String oldName = Thread.currentThread().getName();</span><br><span class="line">    Thread.currentThread().setName(name);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">//run方法中执行execute()方法</span></span><br><span class="line">      execute();</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      Thread.currentThread().setName(oldName);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>线程池执行到此异步任务时，它的run方法就会被执行，而run方法主要调用execute()方法，而execute()方法是一个抽象方法，AsyncCall实现了NamedRunnable，所以AsyncCall重写了execute()实现了执行逻辑，所以我们直接看AsyncCal的execute()方法。</p>
+<h4 id="2-2、AsyncCal-execute"><a href="#2-2、AsyncCal-execute" class="headerlink" title="2.2、AsyncCal :: execute()"></a>2.2、AsyncCal :: execute()</h4><p>AsyncCal的execute()方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AsyncCall.java</span></span><br><span class="line"><span class="meta">@Override</span> </span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//调用RealCall的getResponseWithInterceptorChain()方法处理请求</span></span><br><span class="line">        Response response = getResponseWithInterceptorChain();</span><br><span class="line">        signalledCallback = <span class="keyword">true</span>;</span><br><span class="line">        <span class="comment">//请求处理完毕，返回响应，回调Callback的onResponse()方法</span></span><br><span class="line">        responseCallback.onResponse(RealCall.<span class="keyword">this</span>, response);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">//异步请求任务执行完毕，调用Dispatcher的finished(AsyncCall)方法</span></span><br><span class="line">        client.dispatcher().finished(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>AsyncCal的execute()方法的逻辑和前面介绍的同步请求过程殊途同归，首先调用RealCall的getResponseWithInterceptorChain()方法处理请求，请求处理完毕后，返回响应Response，这时回调我们调用Call.enqueue(Callback)时传进来的Callback的onResponse()方法，最后在finally语句中调用Dispatcher的finished(AsyncCall)方法来把异步请求任务从runningAsyncCalls队列中移除出去，这个移除逻辑和上面同步请求任务的移除逻辑一样，只是这次是从runningAsyncCalls移除而不是runningSyncCalls，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Dispatcher.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">finished</span><span class="params">(AsyncCal call)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//传进runningAsyncCalls，而不是runningSyncCalls</span></span><br><span class="line">    finished(runningSyncCalls, call);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h3><p>至此okhttp的异步请求过程分析完毕，这里再次总结一下，当我们调用call.enqueue(Callback)时，就会发起一个异步请求，实际执行的是realCall.enqueue(Callback)，它比同步请求只是多了一个Callback参数，然后realCall.execute()中先把传进来的Callback包装成一个AsyncCall，然后执行Dispatcher的enqueue(AsyncCall)把这个异步请求任务保存进readyAsyncCalls队列中，保存后开始执行 promoteAndExecute()进行异步任务的调度，它会先把符合条件的异步请求任务从readyAsyncCalls转移到runningAsyncCalls队列和添加到executableCalls列表中去，然后遍历executableCalls列表，逐个执行AsyncCall 的executeOn(ExecutorService)，然后在这个方法中AsyncCall会把自己放进Dispatcher 的线程池，等待线程池的调度，当线程池执行到这个AsyncCall时，它的run方法就会被执行，从而执行重写的execute()方法，execute()方法中的流程和同步请求流程大致相同。</p>
+<p>下面是异步请求过程的调用链：</p>
+<img src="/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/okhttp2.png" class="" title="okhttp">
+
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>okhttp通过Builder模式创建OkHttpClient、Request和Response，通过client.newCall(Resquest)创建一个Call，用于发起异步或同步请求，请求会经过Dispatcher、一系列拦截器，最后通过okio与服务器建立连接、发送数据并解析返回结果，这个过程如图：</p>
+<img src="/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/okhttp3.png" class="" title="okhttp">
+
+<p>以上就是对okhttp的请求流程的分析，如有错误，欢迎指出。</p>
+<p>参考文章：</p>
+<p><a href="https://tamicer.github.io/2017/10/31/okhttp3-2/" target="_blank" rel="noopener">OkHttp 3.x 源码解析之Dispather分发器</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.955Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/okhttp/" rel="tag">okhttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/&title=《okhttp3源码分析之请求流程》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/&title=《okhttp3源码分析之请求流程》 — jianyu的博客&source=前言在Android开发中，当下最火的网络请求框架莫过于okhttp和retrofit，它们都是square公司的产品，两个都是非常优秀开源库，值得我们去..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《okhttp3源码分析之请求流程》 — jianyu的博客&url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/09/07/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%8B%A6%E6%88%AA%E5%99%A8/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">okhttp3源码分析之拦截器</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/08/23/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BD%BF%E7%94%A8%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF%E5%AE%9E%E7%8E%B0WaveLoadingView/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">自定义View实践-使用贝塞尔曲线实现一个loading控件</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/&title=《okhttp3源码分析之请求流程》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/&title=《okhttp3源码分析之请求流程》 — jianyu的博客&source=前言在Android开发中，当下最火的网络请求框架莫过于okhttp和retrofit，它们都是square公司的产品，两个都是非常优秀开源库，值得我们去..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《okhttp3源码分析之请求流程》 — jianyu的博客&url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ4AAAEOCAAAAABd2qZ5AAAD20lEQVR42u3aOXLDQAwEQP3/03bqKpviDLBUOWhGLvHYZTOAcbxe8fH16/j5++8r83uvjmQ/V6tcXXPswIEDBw4c5avmWz+FmONenb3abU2PAwcOHDgOcSSLXT3iPdAsKOYf4P3Ltx8ABw4cOHB8niMJcskrzV4vWTc5iwMHDhw4/htHEoDP1ixPJXg4cODAgeMzHHlQzLeVbPe5QuTjtVIcOHDgwJE+uW7w/P+/H5nvwIEDBw4ccXBqw9IsdOV3tXsbvhcOHDhw4FhztOMFsybQJlk621jCgQMHDhxPc+SNpTZBasfp9qXDfGzi8iwOHDhw4DjKkWw9J2tH4vLAvGG9+R0HDhw4cKw5kiJdEuqGC8fjC0lyeGoIAwcOHDhwPM0xS6tyoE3LajN4EdVKceDAgQNHyVF3qEYjaO3WZ8XKJIEctp1w4MCBA8fkHV/tQ/MF8mbVLOXL76rTORw4cODAUXK0KdYm0OagT4w4ROviwIEDB441RzvoNrtykwTmaeSsfRXtBAcOHDhwxBybUmCSRLWlvU05b180xIEDBw4cpzjObrcNxptG0Wz1y7M4cODAgWPNkW+uTYqSsmMetpOELSkmRs/HgQMHDhwLjqL1sk6xZkc7l9EOTNwUB3HgwIEDR8mxSc9mZbt8W6fGF5IiJg4cOHDgOMWRl9WS4l1bcNzclb92sS4OHDhw4DjK0RbgZmXBYSo1Wrd+Oxw4cODAcahT024rScnaIYlTz9mw4sCBAweOPUdbtkvIZsMKm5Jf/k/AzW5x4MCBA8eaYwaRp0abImPbDJuB3qDgwIEDB44FRxsgk+GGtiyY37X5SDhw4MCB4zMcbXku/2WGOysU7v8VwIEDBw4ce47Zzblu0tbaB8h8nzefEAcOHDhwLDja8tl+W3nLavZ5ZkXJutuGAwcOHDjK5C0PqKfIZq2jvCk1HKrDgQMHDhwlR3LbfvhgM2CdX9kmfn88BwcOHDhwPMAxGxqYFf5mEHmQboM3Dhw4cOA4y7FPuvKGU54cJgMK+/3gwIEDB46zHPmji4ZNuUpbNJyFXhw4cODA8TTH2YLdrFyYH3lZMHlOkdfiwIEDB46Y46s89i2iWZjc0Bfr4sCBAweONUcb5HKUDeWmTdUmnEMUHDhw4MDxlqMNrm17qQ2E+4GGVaDFgQMHDhyHODYNoTYwb8qCs4JgcRcOHDhw4PggR3vXJunKW1yzT3WTwuHAgQMHjo9wJGW7NvHblCNnba2bwIwDBw4cOA5xJMXB/dm2xZWUAvf7HLadcODAgQPHYkIsT5DOBuw2VM+GGHDgwIEDxyGOb28pFqhewZ1KAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

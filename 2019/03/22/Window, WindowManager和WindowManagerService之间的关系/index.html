@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>Window,WindowManager和WindowManagerService之间的关系 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="window,windowManager,WMS">
+    <meta name="description" content="前言上面3个名词在开发中经常听到，在Android开发中，Window是所有视图的载体，如Activity，Dialog和Toast的视图，我们想要对Window进行添加和删除就要通过WindowManager来操作，而WindowManager就是通过Binder与WindowManagerService进行跨进程通信，把具体的实现工作交给WindowManagerService（下面简称WMS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Window,WindowManager和WindowManagerService之间的关系">
+<meta property="og:url" content="http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言上面3个名词在开发中经常听到，在Android开发中，Window是所有视图的载体，如Activity，Dialog和Toast的视图，我们想要对Window进行添加和删除就要通过WindowManager来操作，而WindowManager就是通过Binder与WindowManagerService进行跨进程通信，把具体的实现工作交给WindowManagerService（下面简称WMS">
+<meta property="og:image" content="http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/window1.jpg">
+<meta property="og:image" content="http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/window2.jpg">
+<meta property="article:published_time" content="2019-03-22T14:36:32.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.838Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="window">
+<meta property="article:tag" content="windowManager">
+<meta property="article:tag" content="WMS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/window1.jpg">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Window,WindowManager和WindowManagerService之间的关系</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Window,WindowManager和WindowManagerService之间的关系</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-03-22T14:36:32.000Z" itemprop="datePublished" class="page-time">
+  2019-03-22
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Window%E6%9C%BA%E5%88%B6/">Window机制</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Window"><span class="post-toc-text">Window</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#1、Window是什么"><span class="post-toc-text">1、Window是什么</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2、Window的类型（应用窗口，子窗口，系统窗口-与层级"><span class="post-toc-text">2、Window的类型（应用窗口，子窗口，系统窗口)与层级</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#3、Window的属性"><span class="post-toc-text">3、Window的属性</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#WindowManager"><span class="post-toc-text">WindowManager</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#WindowManagerService"><span class="post-toc-text">WindowManagerService</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、窗口管理"><span class="post-toc-text">1、窗口管理</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、输入事件的中转站"><span class="post-toc-text">2、输入事件的中转站</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#总结"><span class="post-toc-text">总结</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-Window, WindowManager和WindowManagerService之间的关系"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Window,WindowManager和WindowManagerService之间的关系</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-03-22 22:36:32" datetime="2019-03-22T14:36:32.000Z"  itemprop="datePublished">2019-03-22</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Window%E6%9C%BA%E5%88%B6/">Window机制</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上面3个名词在开发中经常听到，在Android开发中，Window是所有视图的载体，如Activity，Dialog和Toast的视图，我们想要对Window进行添加和删除就要通过WindowManager来操作，而WindowManager就是通过Binder与WindowManagerService进行跨进程通信，把具体的实现工作交给WindowManagerService（下面简称WMS）。下面分别介绍它们，理清它们的基本脉络。</p>
+<a id="more"></a>
+
+<pre><code>本文基于Android8.0, 相关源码位置如下:
+frameworks/base/core/java/android/view/*.java（*代表Window, WindowManager, ViewManager, WindowManagerImpl，WindowManagerGlobal, ViewRootImpl）
+frameworks/base/core/java/com/android/internal/policy/PhoneWindow.java    
+frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java    
+frameworks/base/services/core/java/com/android/server/wm/Session.java</code></pre><h2 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h2><h4 id="1、Window是什么"><a href="#1、Window是什么" class="headerlink" title="1、Window是什么"></a>1、Window是什么</h4><p>Window在Android开发中是一个窗口的概念，它是一个抽象类，我们打开Window，如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Window</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FEATURE_NO_TITLE = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FEATURE_CONTENT_TRANSITIONS = <span class="number">12</span>;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> View <span class="title">getDecorView</span><span class="params">()</span></span>;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(@LayoutRes <span class="keyword">int</span> layoutResID)</span></span>;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(View view)</span></span>;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(View view, ViewGroup.LayoutParams params)</span></span>;</span><br><span class="line">     <span class="keyword">public</span> &lt;T extends View&gt; <span class="function">T <span class="title">findViewById</span><span class="params">(@IdRes <span class="keyword">int</span> id)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> getDecorView().findViewById(id);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>可以看到里面有我们熟悉的一些字段和方法，以Activity对应的Window为例，具体的实现类是PhoneWindow，在PhoneWindow中有一个顶级View—DecorView，继承自FrameLayout，我们可以通过getDecorView()获得它，当我们调用Activity的setContentView时，其实最终会调用Window的setContentView，当我们调用Activity的findViewById时，其实最终调用的是Window的findViewById，这也间接的说明了Window是View的直接管理者。但是Window并不是真实存在的，它更多的表示一种抽象的功能集合，View才是Android中的视图呈现形式，绘制到屏幕上的是View不是Window，但是View不能单独存在，它必需依附在Window这个抽象的概念上面，Android中需要依赖Window提供视图的有Activity，Dialog，Toast，PopupWindow，StatusBarWindow（系统状态栏），输入法窗口等，因此Activity，Dialog等视图都对应着一个Window。</p>
+<h4 id="2、Window的类型（应用窗口，子窗口，系统窗口-与层级"><a href="#2、Window的类型（应用窗口，子窗口，系统窗口-与层级" class="headerlink" title="2、Window的类型（应用窗口，子窗口，系统窗口)与层级"></a>2、Window的类型（应用窗口，子窗口，系统窗口)与层级</h4><p>Window的类型type被定义在WindowManager中的静态内部类LayoutParams中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">WindowManager</span> <span class="keyword">extends</span> <span class="title">ViewManager</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">LayoutParams</span> <span class="keyword">extends</span> <span class="title">ViewGroup</span>.<span class="title">LayoutParams</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</span><br><span class="line">        <span class="comment">//应用程序窗口type值</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FIRST_APPLICATION_WINDOW = <span class="number">1</span>;<span class="comment">//代表应用程序窗口的起始值</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_BASE_APPLICATION   = <span class="number">1</span>;<span class="comment">//窗口的基础值，其他窗口的type值要大于这个值</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION        = <span class="number">2</span>;<span class="comment">//普通应用程序窗口，token必须设置为Activity的token来指定窗口属于谁</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION_STARTING = <span class="number">3</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_DRAWN_APPLICATION = <span class="number">4</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> LAST_APPLICATION_WINDOW = <span class="number">99</span>;<span class="comment">//代表应用程序窗口的结束值</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">//子窗口type值</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FIRST_SUB_WINDOW = <span class="number">1000</span>;<span class="comment">//代表子窗口的起始值</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION_PANEL = FIRST_SUB_WINDOW;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION_MEDIA = FIRST_SUB_WINDOW + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION_SUB_PANEL = FIRST_SUB_WINDOW + <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION_ATTACHED_DIALOG = FIRST_SUB_WINDOW + <span class="number">3</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION_MEDIA_OVERLAY  = FIRST_SUB_WINDOW + <span class="number">4</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_APPLICATION_ABOVE_SUB_PANEL = FIRST_SUB_WINDOW + <span class="number">5</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> LAST_SUB_WINDOW = <span class="number">1999</span>;<span class="comment">//代表子窗口的结束值</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">//系统窗口的type值</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FIRST_SYSTEM_WINDOW     = <span class="number">2000</span>;<span class="comment">//代表系统窗口的起始值</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_STATUS_BAR         = FIRST_SYSTEM_WINDOW;<span class="comment">//系统状态栏</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_SEARCH_BAR         = FIRST_SYSTEM_WINDOW+<span class="number">1</span>;<span class="comment">//搜索条窗口</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_PHONE              = FIRST_SYSTEM_WINDOW+<span class="number">2</span>;<span class="comment">//通话窗口</span></span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> LAST_SYSTEM_WINDOW      = <span class="number">2999</span>;<span class="comment">//代表系统窗口结束值</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>LayoutParams中以TYPE开头的值有很多，但总体可以分为3类：</p>
+<ul>
+<li>应用程序窗口：type值范围是1~99，Activity就是一个典型的应用程序窗口，type值是TYPE_BASE_APPLICATION，WindowManager的LayoutParams默认type值是TYPE_APPLICATION。</li>
+<li>子窗口：type值范围是1000~1999，PupupWindow就是一个典型的子窗口，type值是TYPE_APPLICATION_PANEL，子窗口不能独立存在，必须依附于父窗口</li>
+<li>系统窗口：type值范围是2000~2999,系统窗口的类型很多，上面并没有全部列举出来，系统状态栏就是一个典型的系统窗口，type值是TYPE_STATUS_BAR，与应用程序窗口不同的是，系统窗口的创建是需要声明权限的。</li>
+</ul>
+<p>type值决定了决定了Window显示的层级（z-ordered），即在屏幕Z轴方向的显示次序，一般情况下type值越大，则窗口显示的越靠前，在Window的3种类型中，应用程序窗口的层级范围是1<del>99，子窗口的层级范围是1000</del>1999，系统窗口的层级范围是2000~2999，层级范围对应着type值，如果想要Window位于所有的Window上，采用较大的层级即可，例如系统层级。</p>
+<h4 id="3、Window的属性"><a href="#3、Window的属性" class="headerlink" title="3、Window的属性"></a>3、Window的属性</h4><p>Window的类型flag同样被定义在WindowManager中的静态内部类LayoutParams中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">WindowManager</span> <span class="keyword">extends</span> <span class="title">ViewManager</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">LayoutParams</span> <span class="keyword">extends</span> <span class="title">ViewGroup</span>.<span class="title">LayoutParams</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FLAG_ALLOW_LOCK_WHILE_SCREEN_ON     = <span class="number">0x00000001</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FLAG_DIM_BEHIND        = <span class="number">0x00000002</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FLAG_BLUR_BEHIND        = <span class="number">0x00000004</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FLAG_NOT_FOCUSABLE      = <span class="number">0x00000008</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FLAG_NOT_TOUCHABLE      = <span class="number">0x00000010</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FLAG_NOT_TOUCH_MODAL    = <span class="number">0x00000020</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FLAG_KEEP_SCREEN_ON     = <span class="number">0x00000080</span>;</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>LayoutParams中定义的flag属性同样很多，这里挑几个常见的讲解：</p>
+<ul>
+<li>FLAG_ALLOW_LOCK_WHILE_SCREEN_ON：只要窗口对用户可见，就允许在屏幕开启状态下锁屏。</li>
+<li>FLAG_KEEP_SCREEN_ON： 只要窗口对用户可见，屏幕就一直亮着。</li>
+<li>FLAG_SHOW_WHEN_LOCKED：窗口可以在锁屏的界面上显示。</li>
+<li>FLAG_NOT_FOCUSABLE：窗口不能获取焦点，也不能接受任何输入事件，此标志同时会启用FLAG_NOT_TOUCH_MODAL，最终事件会直接传递给下层的具有焦点的窗口。</li>
+<li>FLAG_NOT_TOUCH_MODAL：当前窗口区域以外的触摸事件会传递给底层的窗口，当前窗口区域内的触摸事件则自己处理，一般来说都要开启此标记，否则其他Window将无法收到单机事件。</li>
+<li>FLAG_NOT_TOUCHABLE：窗口不接收任何触摸事件</li>
+</ul>
+<p>可以看到LayoutParams中的type和flag非常重要，可以控制Window的显示特性。知道了Window的相关信息，就能更好的了解WindowManager。</p>
+<h2 id="WindowManager"><a href="#WindowManager" class="headerlink" title="WindowManager"></a>WindowManager</h2><p>WindowManager是一个接口，里面常用的方法有：添加View，更新View和删除View，WindowManager继承自ViewManager，这三个方法定义在ViewManager中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ViewManager</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addView</span><span class="params">(View view, ViewGroup.LayoutParams params)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateViewLayout</span><span class="params">(View view, ViewGroup.LayoutParams params)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">removeView</span><span class="params">(View view)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这些方法传入的参数是View，不是Window，说明WindowManager管理的是Window中的View，我们通过WindowManager操作Window就是在操作Window中的View。WindowManager的具体实现类是WindowManagerImp，我们看一下相应方法的实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">WindowManagerImpl</span> <span class="keyword">implements</span> <span class="title">WindowManager</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> WindowManagerGlobal mGlobal = WindowManagerGlobal.getInstance();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Context mContext;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Window mParentWindow;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">WindowManagerImpl</span><span class="params">(Context context, Window parentWindow)</span> </span>&#123;</span><br><span class="line">        mContext = context;</span><br><span class="line">        mParentWindow = parentWindow;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">      <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addView</span><span class="params">(@NonNull View view, @NonNull ViewGroup.LayoutParams params)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        mGlobal.addView(view, params, mContext.getDisplay(), mParentWindow);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateViewLayout</span><span class="params">(@NonNull View view, @NonNull ViewGroup.LayoutParams params)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        mGlobal.updateViewLayout(view, params);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">removeView</span><span class="params">(View view)</span> </span>&#123;</span><br><span class="line">        mGlobal.removeView(view, <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到WindowManagerImp也没有做什么，它把3个方法的操作都委托给了WindowManagerGlobal这个单例类，我们还看到了mParentWindow这个字段，它是Window类型，是从构造中被传入，所以WindowManager会持有Window的引用，这样WindowManager就可以对Window做操作了。比如<strong>mGlobal.addView</strong>，我们可以理解为往window中添加View，在WindowManagerGlobal中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addView</span><span class="params">(View view, ViewGroup.LayoutParams params,Display display, Window parentWindow)</span></span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    ViewRootImpl root;</span><br><span class="line">    root = <span class="keyword">new</span> ViewRootImpl(view.getContext(), display);<span class="comment">//注释1</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    root.setView(view, wparams, panelParentView);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终会走到ViewRootlmp的setView中, 如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setView</span><span class="params">(View view, WindowManager.LayoutParams attrs, View panelParentView)</span> </span>&#123;</span><br><span class="line">  	<span class="comment">//...	</span></span><br><span class="line">    <span class="comment">//这里会进行View的绘制流程</span></span><br><span class="line">    requestLayout();</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//通过session与WMS建立通信</span></span><br><span class="line">     res = mWindowSession.addToDisplay(mWindow, mSeq, mWindowAttributes,</span><br><span class="line">                                getHostVisibility(), mDisplay.getDisplayId(),</span><br><span class="line">                                mAttachInfo.mContentInsets, mAttachInfo.mStableInsets,</span><br><span class="line">                                mAttachInfo.mOutsets, mInputChannel);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在ViewRootlmp的setView中，首先通过requestLayout()发起View绘制流程，然后在mWindowSession的addToDisplay中通过Binder与WMS进行跨进程通信，请求显示窗口上的视图，至此View就会显示到屏幕上。这个mWindowSession是一个IWindowSession.AIDL接口类型，用来实现跨进程通信，在WMS内部会为每一个应用的请求保留一个单独的Session，同样实现了IWindowSession接口，应用与WMS之间的通信就通过这个Session。那么这个mWindowSession什么时候被赋值的呢？就在上面的注释1中，我们打开ViewRootlmp的构造函数，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ViewRootImpl</span><span class="params">(Context context, Display display)</span> </span>&#123;</span><br><span class="line">    mWindowSession = WindowManagerGlobal.getWindowSession();</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到mWindowSession是通过WindowManagerGlobal的单例类的getWindowSession()获得的，我们打开WindowManagerGlobal的getWindowSession()，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> IWindowSession <span class="title">getWindowSession</span><span class="params">()</span> </span>&#123;</span><br><span class="line">       <span class="keyword">synchronized</span> (WindowManagerGlobal<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">           <span class="keyword">if</span> (sWindowSession == <span class="keyword">null</span>) &#123;</span><br><span class="line">               <span class="keyword">try</span> &#123;</span><br><span class="line">                   InputMethodManager imm = InputMethodManager.getInstance();</span><br><span class="line">                   <span class="comment">//1、首先获取WMS的本地代理</span></span><br><span class="line">                   IWindowManager windowManager = getWindowManagerService();</span><br><span class="line">                   <span class="comment">//2、通过WMS的本地代理的openSession来获取Session</span></span><br><span class="line">                   sWindowSession = windowManager.openSession(</span><br><span class="line">                           <span class="keyword">new</span> IWindowSessionCallback.Stub() &#123;</span><br><span class="line">                               <span class="meta">@Override</span></span><br><span class="line">                               <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimatorScaleChanged</span><span class="params">(<span class="keyword">float</span> scale)</span> </span>&#123;</span><br><span class="line">                                   ValueAnimator.setDurationScale(scale);</span><br><span class="line">                               &#125;</span><br><span class="line">                           &#125;,</span><br><span class="line">                           imm.getClient(), imm.getInputContext());</span><br><span class="line">               &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">                   <span class="keyword">throw</span> e.rethrowFromSystemServer();</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">return</span> sWindowSession;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们首先看1，getWindowManagerService()源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> IWindowManager <span class="title">getWindowManagerService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (WindowManagerGlobal<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (sWindowManagerService == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">//获取WMS的本地代理对象</span></span><br><span class="line">                sWindowManagerService = IWindowManager.Stub.asInterface(</span><br><span class="line">                        ServiceManager.getService(<span class="string">"window"</span>));</span><br><span class="line">              	<span class="comment">//...</span></span><br><span class="line">                &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> e.rethrowFromSystemServer();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> sWindowManagerService;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到， ServiceManager.getService(“window”)就是获得WMS，然后通过IWindowManager.Stub.asInterface()转换成WMS在应用进程的本地代理，getWindowManagerService()就是返回WMS在本地应用进程的代理。（这里涉及到Binder知识）</p>
+<p>然后看2，通过WMS的本地代理的openSession来获取Session，我们可以在WMS中找到这个函数实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> IWindowSession <span class="title">openSession</span><span class="params">(IWindowSessionCallback callback, IInputMethodClient client,</span></span></span><br><span class="line"><span class="function"><span class="params">          IInputContext inputContext)</span> </span>&#123;</span><br><span class="line">      <span class="comment">//...</span></span><br><span class="line">      <span class="comment">//为每个窗口请求创建一个Session并返回</span></span><br><span class="line">      Session session = <span class="keyword">new</span> Session(<span class="keyword">this</span>, callback, client, inputContext);</span><br><span class="line">      <span class="keyword">return</span> session;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>至此建立起与WMS的通信的桥梁。然后WindowManager就间接的通过Session向WMS发起显示窗口视图的请求，WMS会向应用返回和窗口交互的信息。至于mGlobal.updateViewLayout和mClobal.removeView也是类似的过程，可自行研究。</p>
+<h2 id="WindowManagerService"><a href="#WindowManagerService" class="headerlink" title="WindowManagerService"></a>WindowManagerService</h2><p>WindowManagerService是一个系统级服务，由SystemService启动，实现了IWindowManager.AIDL接口，它的主要功能分为以下俩方面:</p>
+<h3 id="1、窗口管理"><a href="#1、窗口管理" class="headerlink" title="1、窗口管理"></a>1、窗口管理</h3><p>它负责窗口的启动，添加和删除，它还负责窗口的层级显示（z-orderes）和维护窗口的状态。我们继续上面的<strong>mGlobal.addView</strong>，上面讲到这个方法是向WMS发起一个显示窗口视图的请求，最终会走到mWindowSession.addToDisplay()方法，我们可以在Session中找到这个函数实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">addToDisplay</span><span class="params">(IWindow window, <span class="keyword">int</span> seq, WindowManager.LayoutParams attrs,</span></span></span><br><span class="line"><span class="function"><span class="params">           <span class="keyword">int</span> viewVisibility, <span class="keyword">int</span> displayId, Rect outContentInsets, Rect outStableInsets,</span></span></span><br><span class="line"><span class="function"><span class="params">           Rect outOutsets, InputChannel outInputChannel)</span> </span>&#123;</span><br><span class="line">       <span class="comment">//返回WMS中addWindow所返回的结果</span></span><br><span class="line">       <span class="keyword">return</span> mService.addWindow(<span class="keyword">this</span>, window, seq, attrs, viewVisibility, displayId,</span><br><span class="line">               outContentInsets, outStableInsets, outOutsets, outInputChannel);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到addToDisplay方法中最终返回了WMS中addWindow所返回的结果，Window的添加请求就交给WMS去处理，addWindow的实现在WMS中，里面代码很长，这里就不再深究了（留在下一篇文章从一个例子分析），addWindow主要做的事情是先进行窗口的权限检查，因为系统窗口需要声明权限，然后根据相关的Display信息以及窗口信息对窗口进行校对，再然后获取对应的WindowToken，再根据不同的窗口类型检查窗口的有效性，如果上面一系列步骤都通过了，就会为该窗口创建一个WindowState对象，以维护窗口的状态和根据适当的时机调整窗口状态，最后就会通过WindowState的attach方法与SurfaceFlinger通信。因此SurfaceFlinger能使用这些Window信息来合成surfaces,并渲染输出到显示设备。</p>
+<h3 id="2、输入事件的中转站"><a href="#2、输入事件的中转站" class="headerlink" title="2、输入事件的中转站"></a>2、输入事件的中转站</h3><p>当我们的触摸屏幕时就会产生输入事件，在Android中负责管理事件的输入是<strong>InputManagerService</strong>，在启动IMS的时候会在native层创建NativeInputManager，在NativeInputManager的构造中会创建<strong>InputManager和Eventhub（监听/dev/input/设备节点中所有事件的输入）</strong>，在InputManager构造中会依此创建<strong>InputDispatcher、InputReader、InputReaderThread、InputDispatcherThread</strong>。</p>
+<p>InputReader运行在InputReaderThread中，它会不断循环从EventHub中读取原始输入事件，InputReader将这些原始输入事件加工后就交给运行在InputDispatcherThread中的InputDispatcher，而InputDispatcher它会寻找一个最合适的窗口来处理输入事件，WMS是窗口的管理者，WMS会把所有窗口的信息更新到InputDispatcher中，这样InputDispatcher就可以将输入事件派发给合适的Window，Window就会把这个输入事件传给顶级View，然后就会涉及我们熟悉的事件分发机制。</p>
+<p>我们来再来看在ViewRootImp的setView中调用mWindowSession.addToDisplay方法时传入的参数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setView</span><span class="params">(View view, WindowManager.LayoutParams attrs, View panelParentView)</span> </span>&#123;</span><br><span class="line">  	<span class="comment">//...	</span></span><br><span class="line">   	mInputChannel = <span class="keyword">new</span> InputChannel();</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//通过session与WMS建立通信,同时通过InputChannel接收输入事件回调</span></span><br><span class="line">     res = mWindowSession.addToDisplay(mWindow, mSeq, mWindowAttributes,</span><br><span class="line">                                getHostVisibility(), mDisplay.getDisplayId(),</span><br><span class="line">                                mAttachInfo.mContentInsets, mAttachInfo.mStableInsets,</span><br><span class="line">                                mAttachInfo.mOutsets, mInputChannel);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">     <span class="keyword">if</span> (mInputChannel != <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="comment">//...</span></span><br><span class="line">         <span class="comment">//处理输入事件回调</span></span><br><span class="line">         mInputEventReceiver = <span class="keyword">new</span> WindowInputEventReceiver(mInputChannel, Looper.myLooper());</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意这个传入的mInputChannel参数，它是InputChannel类型，它实现了Parcelable接口，用于接受WMS返回来的输入事件，在WMS中会创建两个InputChannel实例，一个会通过mInputChannel参数传回来，一个会放在WMS的WindowState中，WindowState中的InputChannel会交给InputDispatcher，这样应用端和InputDispatcher端就可以通过这两个InputChannel来进行事件的接收和发送。</p>
+<p>它们之间的类图关系如下：</p>
+<img src="/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/window1.jpg" class="" title="Window,WindowManager, WMS之间的关系">
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过上面简单的介绍，我们知道Window是View的载体，我们想要对Window进行删除，添加，更新View就得通过WindowManager，WindowManager与WMS通过Session进行通信，具体的实现就交给了WMS处理，WMS会为每一个Window创建一个WindowState并管理它们，具体的渲染工作WMS就交给SurfaceFinger处理。本文所讨论的WMS系统相关结构如下：</p>
+<img src="/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/window2.jpg" class="" title="WMS系统结构">
+
+<p>参考资料：</p>
+<p>《Anddroid开发艺术探索》</p>
+<p>《Android源码设计模式》</p>
+<p><a href="http://liuwangshu.cn/tags/WindowManager/" target="_blank" rel="noopener">Android解析WindowManager</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.838Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WMS/" rel="tag">WMS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/window/" rel="tag">window</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windowManager/" rel="tag">windowManager</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/&title=《Window,WindowManager和WindowManagerService之间的关系》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/&title=《Window,WindowManager和WindowManagerService之间的关系》 — jianyu的博客&source=前言上面3个名词在开发中经常听到，在Android开发中，Window是所有视图的载体，如Activity，Dialog和Toast的视图，我们想要对Wi..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Window,WindowManager和WindowManagerService之间的关系》 — jianyu的博客&url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Android8.0的Activity启动流程(1)</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/03/09/RecyclerView%E4%B9%8B%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">RecyclerView之观察者模式</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/&title=《Window,WindowManager和WindowManagerService之间的关系》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/&title=《Window,WindowManager和WindowManagerService之间的关系》 — jianyu的博客&source=前言上面3个名词在开发中经常听到，在Android开发中，Window是所有视图的载体，如Activity，Dialog和Toast的视图，我们想要对Wi..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Window,WindowManager和WindowManagerService之间的关系》 — jianyu的博客&url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEiUlEQVR42u3aS24jORAFQN//0j3bBnpUfi+TBkQ5aiXIElWMMpAf5tdXfP356/r7nefX/3731fXqu7M72f/K8MKECRMmTG/JlC/9/M6r1fb3k2xv88nnvWPChAkTps9gyn/4FU3712Rjm888P8h8TUyYMGHC9NuYTpXQecjP05E8/GPChAkTJkz7Ruoe+rkcTUrWzYPBhAkTJkyfxJQvtyHL15mlAm3r+Ud64ZgwYcKE6c2Y8sD8ea8PX5gwYcKE6c2Y/pRX3jzNC9fkk8n29mOyL3eNCRMmTJiuZcoD5KagbQ8g2+3N7rz9FiZMmDBhupEpCbGb8Jy3U08lJbPxo28eMyZMmDBhupZpNihz6p02VM9SgeT9OmnAhAkTJkwXMrVjNLNBn1l7d1Ykt6V4dA+YMGHChOlCpk2gzVOHPABvWDefHD4HTJgwYcJ0CVPe5E1Kx1nAPkXZhvzo3jBhwoQJ0+VMecjct2XzsjkpuWfF/Kr0xYQJEyZMFzJthl3akngWpNtfnKG8xMKECRMmTJczJYF2ljq0q7WjNm2K0KYgmDBhwoTpM5g2QT1fJ4ebJQQzxLoXjgkTJkyYLmFqC8JZ2N6M1LQJQX4UWvwTYMKECROmy5nyAZrZzyft11kjeHZ4WfNhwoQJE6YPYso30G4jTyxayudtH0gpMGHChAnT5UztYeHsVvbN2Ryr5f7mQWLChAkTpsuZ2qDeQrepQL5Om158zS5MmDBhwnQt06z4zBu77eb3jypPYjZJBiZMmDBhupGpLVCTtGCTmsyK801KET1mTJgwYcJ0FdNmvCZ/Au1ozuZIcrOvl/SYMGHChOlaplkztD2AzPlOhfNZY7covzFhwoQJ0yVMLUrewE0+3wbytsk7SyMwYcKECdNvY5qVu5uDz9lWZ2lHlFJgwoQJE6ZrmfKFkqC+aRNvithkEKdNJuq0ABMmTJgwvT3TbLk88OfF7TN3W3Ln60RHmJgwYcKE6UKm/MfyMZckMJ8qoZMxnTYVwIQJEyZMn8GUl4vtJk+xnkoL8vBfFL2YMGHChOntmWZhcvM6L49Pjfskx5z5w8OECRMmTHcxnR15aZmSIrwtj3+iNYwJEyZMmO5laodXZhBJQtCO+OSHqe3B6jBXwoQJEyZMb880C9WntneqeI7ObGd7x4QJEyZM1zLlzdB9yzW/uXydTVO4fTyYMGHChOkuprr8OxRo822fTT7ydKc++cSECRMmTG/PlNzu/qAxbyLnZfampRv9i2DChAkTpmuZZgF1M3azbyjPaPIkBhMmTJgwfRLTrNTMh2ZmiG2qkSc3yX3+z18xYcKECdO1TD+RU2zau5um8OagtD3ExYQJEyZMdzHN2q9tU/j5JmbJx9mQ/82dY8KECROmy5nywNmG82Rjbat3doRZj+zkZ7+YMGHChOmDmNoUoQ3Ss3vI11wdamLChAkTpl/A1G5+UyrnZXNCs2kfY8KECROm25mSW88buPk46WaMZtbqzb81PM7EhAkTJkxvxpQXhPnQTF5S1seKAX2SuCQrYMKECROmy5n+A2ZiYoNe8R99AAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

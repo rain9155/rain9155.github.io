@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>java学习总结之基础 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="java">
+    <meta name="description" content="前言万事开头难，准备从零把java相关知识点捡起来，把自己所学的Java知识点归纳，下面是关于java的一些基本知识点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java学习总结之基础">
+<meta property="og:url" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言万事开头难，准备从零把java相关知识点捡起来，把自己所学的Java知识点归纳，下面是关于java的一些基本知识点。">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java2.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java3.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java4.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java5.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java6.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java7.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/error1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/error2.png">
+<meta property="article:published_time" content="2019-07-19T04:24:58.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.855Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/java1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">java学习总结之基础</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">java学习总结之基础</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-19T04:24:58.000Z" itemprop="datePublished" class="page-time">
+  2019-07-19
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#java代码的运行过程"><span class="post-toc-text">java代码的运行过程</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#数据类型"><span class="post-toc-text">数据类型</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#成员变量和局部变量"><span class="post-toc-text">成员变量和局部变量</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#字符串"><span class="post-toc-text">字符串</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、String类型"><span class="post-toc-text">1、String类型</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、StringBuffer和StringBuilder"><span class="post-toc-text">2、StringBuffer和StringBuilder</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、字符串的拼接"><span class="post-toc-text">3、字符串的拼接</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#包装类"><span class="post-toc-text">包装类</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#关键字"><span class="post-toc-text">关键字</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、final"><span class="post-toc-text">1、final</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、static"><span class="post-toc-text">2、static</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#关于-、equal-和hashCode"><span class="post-toc-text">关于&#x3D;&#x3D;、equal()和hashCode()</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、"><span class="post-toc-text">1、&#x3D;&#x3D;</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、equal"><span class="post-toc-text">2、equal()</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、hashCode"><span class="post-toc-text">3、hashCode()</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#异常"><span class="post-toc-text">异常</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、常见的异常类型"><span class="post-toc-text">1、常见的异常类型</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、java中的异常处理机制"><span class="post-toc-text">2、java中的异常处理机制</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#泛型"><span class="post-toc-text">泛型</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、为什么使用泛型"><span class="post-toc-text">1、为什么使用泛型</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、泛型类"><span class="post-toc-text">2、泛型类</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、泛型方法"><span class="post-toc-text">3、泛型方法</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、类型通配符、上限和下限"><span class="post-toc-text">4、类型通配符、上限和下限</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、泛型擦除"><span class="post-toc-text">5、泛型擦除</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-java基础"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">java学习总结之基础</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-19 12:24:58" datetime="2019-07-19T04:24:58.000Z"  itemprop="datePublished">2019-07-19</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>万事开头难，准备从零把java相关知识点捡起来，把自己所学的Java知识点归纳，下面是关于java的一些基本知识点。</p>
+<a id="more"></a>
+
+<h2 id="java代码的运行过程"><a href="#java代码的运行过程" class="headerlink" title="java代码的运行过程"></a>java代码的运行过程</h2><img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/java1.png" class="" title="java1">
+
+<ul>
+<li>创建java源程序，扩展名为.java</li>
+<li>使用javac命令编译源程序为字节码文件，扩展名为.class</li>
+<li>使用java命令运行字节码文件，在不同平台执行</li>
+</ul>
+<h2 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h2><p>下面用一张表概括：</p>
+<table>
+<thead>
+<tr>
+<th align="center">数据类型</th>
+<th align="center">类型说明符</th>
+<th align="center">位数</th>
+<th align="center">字节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">整形</td>
+<td align="center">int</td>
+<td align="center">32</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">短整型</td>
+<td align="center">short</td>
+<td align="center">16</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="center">长整形</td>
+<td align="center">long</td>
+<td align="center">64</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="center">字节型</td>
+<td align="center">byte</td>
+<td align="center">8</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">单精度浮点型</td>
+<td align="center">float</td>
+<td align="center">32</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">双精度浮点型</td>
+<td align="center">double</td>
+<td align="center">64</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="center">字符类型</td>
+<td align="center">char</td>
+<td align="center">16</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="center">布尔类型</td>
+<td align="center">boolean</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">字符串类型</td>
+<td align="center">String</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">自定义类型</td>
+<td align="center">public class …</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">其中java的数据类型又分为：</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">* 基本类型/原始类型（primitive type）：用来保存简单的单个数据，如：int、short、long、byte、float、double、boolean、char共8种。</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<ul>
+<li>类类型/引用类型（class type or reference types）：用来保存复杂的组合数据，如String和自定义类型。</li>
+</ul>
+<p>在java中，char类型实际是一个16位的无符号整数（&lt;=65535），可以保存中文和转义字符(<code>\b</code>,<code>\t</code>,<code>\n</code>等)。</p>
+<p>而在java中并没有明确的表示boolean类型应该占多少位，其大小与JVM实现相关，JVM的建议如下：</p>
+<p>1、boolean 类型应该被编译成 int 类型来使用，占 4 个字节；</p>
+<p>2、boolean 数组应该被编译成 byte 数组类型，每个 boolean 数组成员占 1 个 字节.</p>
+<p>可以肯定的是，boolean 类型不会只占 1 个位，boolean 类型的大小与JVM实现相关。</p>
+<h2 id="成员变量和局部变量"><a href="#成员变量和局部变量" class="headerlink" title="成员变量和局部变量"></a>成员变量和局部变量</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> 类名</span>&#123;</span><br><span class="line"></span><br><span class="line">    数据类型 变量<span class="number">1</span>；<span class="comment">//成员变量</span></span><br><span class="line">    </span><br><span class="line">    返回值类型 方法名()&#123;</span><br><span class="line">    </span><br><span class="line">        数据类型 变量<span class="number">2</span>；<span class="comment">//局部变量</span></span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>1、成员变量的作用域在整个类都是可见的。<br>2、局部变量的作用域仅在定义它们的方法中可见。<br>3、成员变量有默认的初始值（数字为0，对象为null）。<br>4、局部变量没有默认的初始值，需要赋初值再使用。<br>5、成员变量和局部变量重名时，局部变量的优先级更高。</p>
+<h2 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h2><h3 id="1、String类型"><a href="#1、String类型" class="headerlink" title="1、String类型"></a>1、String类型</h3><p>在java中String是引用类型，它的构造器如下：</p>
+<img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/java2.png" class="" title="java2">
+
+<p>除了用以上new的方法创建一个字符串，还可以用以下方式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String name1 = <span class="string">"rain"</span>;</span><br><span class="line">String name2 = <span class="string">"rain"</span>;</span><br></pre></td></tr></table></figure>
+<p>那么用<code>new</code>和用<code>=</code>有什么不同的呢? new出来字符串是一个String对象，它被放在堆中，地址不一样。用=赋值的字符串是从字符串池（String Pool，保存着所有字符串字面量，这些字面量在编译时期就确定）中拿的，如果这个字符串在池中没有，就会先放进池，所以上面两个name1和name2是同一个字符串。</p>
+<p><strong>String中常用的方法：</strong></p>
+<img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/java3.png" class="" title="java3">
+
+<p><strong>String的比较：</strong></p>
+<img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/java4.png" class="" title="java4">
+
+<p><strong>获取String的字串的方法：</strong></p>
+<img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/java5.png" class="" title="java5">
+
+<p>在 Java 8 中，String 内部使用 char 数组存储数据，在 Java 9 之后，String 类的实现改用 byte 数组存储字符串，这些数组在都用final修饰，所以才保证String是<strong>不可变</strong>的，不可变就是每次意图修改String，都会产生一个新的String对象。</p>
+<blockquote>
+<p>1、在字符串的比较中<code>==</code>是用来比较地址的，String的equals方法才是用来比较两个字符串是否相等 ；<br>2、在 Java 7 之前，String Pool 被放在运行时常量池中，它属于永久代，而在 Java 7，String Pool 被移到堆中。这是因为永久代的空间有限，在大量使用字符串的场景下会导致 OutOfMemoryError 错误。</p>
+</blockquote>
+<h3 id="2、StringBuffer和StringBuilder"><a href="#2、StringBuffer和StringBuilder" class="headerlink" title="2、StringBuffer和StringBuilder"></a>2、StringBuffer和StringBuilder</h3><p>与String类不同的是，StringBuffer和StringBuilder是<strong>可变</strong>的，它们的对象可以被多次修改，因为它里面的数组并没有使用final修饰，所以每次意图修改StringBuffer或StringBuilder对象时，都会在原始对象上进行修改，不会产生新的对象，StringBuilder是在JDK5中被提出来的，它和StringBuffer之间最大的不同是StringBuilder的方法都不是线程安全的，而StringBuffer的方法都是线程安全的。</p>
+<p><strong>StringBuffer的构造方法（StringBuilder类似）：</strong></p>
+<img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/java6.png" class="" title="java6">
+
+<p><strong>StringBuffer的常用方法：</strong></p>
+<img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/java7.png" class="" title="java7">
+
+<h3 id="3、字符串的拼接"><a href="#3、字符串的拼接" class="headerlink" title="3、字符串的拼接"></a>3、字符串的拼接</h3><p>在java中，可以通过<strong>+</strong>、String的<strong>concat方法</strong>、StringBuilder的<strong>append</strong>方法和StringBuffer的<strong>append</strong>方法来拼接字符串，如下：</p>
+<p><strong>使用+拼接：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    String str1 = <span class="string">"Hello"</span>;</span><br><span class="line">    String str2 = <span class="string">"World!"</span>;</span><br><span class="line">    String str = str1 + <span class="string">" "</span> + str2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>反编译后，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    String str1 = <span class="string">"Hello"</span>;</span><br><span class="line">    String str2 = <span class="string">"World!"</span>;</span><br><span class="line">    String str = (<span class="keyword">new</span> StringBuilder()).append(str1).append(<span class="string">" "</span>).append(str2).toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到使用<strong>+</strong>拼接字符串时，底层会new一个StringBuilder对象，调用StringBuilder的append方法来拼接。</p>
+<p><strong>使用String的concat方法拼接：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    String str1 = <span class="string">"Hello"</span>;</span><br><span class="line">    String str2 = <span class="string">"World!"</span>;</span><br><span class="line">    String str = str1.concat(<span class="string">" "</span>).concat(str2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查看String的concat方法的源码，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">concat</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> olen = str.length();</span><br><span class="line">    <span class="keyword">if</span> (olen == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">//...</span></span><br><span class="line">    <span class="keyword">int</span> len = length();</span><br><span class="line">    <span class="comment">//创建一个新的长度的字节数组，新长度 = 原始字符串长度len + 要拼接字符串长度olen</span></span><br><span class="line">    <span class="keyword">byte</span>[] buf = StringUTF16.newBytesFor(len + olen);</span><br><span class="line">    <span class="comment">//把原始字符串的字节数组复制到buf中</span></span><br><span class="line">    getBytes(buf, <span class="number">0</span>, UTF16);</span><br><span class="line">    <span class="comment">//把要拼接的字符串的字节数组复制到buf中</span></span><br><span class="line">    str.getBytes(buf, len, UTF16);</span><br><span class="line">    <span class="comment">//通过buf创建一个String返回</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> String(buf, UTF16);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到concat方法底层是新创建一个字节数组，长度为原始字符串长度和要拼接字符串长度之和，然后把原始字符串和要拼接字符串的字节数组复制到新的字节数组中，最后通过新的字节数组创建一个新的String对象返回，所以String的concat方法最终会返回一个新的String对象，这也说明了String的<strong>不可变性</strong>，不会修改原始字符串的字节数组到达拼接字符串的目的。</p>
+<p><strong>使用StringBuilder和StringBuffer的append方法拼接：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//以StringBuilder举例，StringBuffer类似</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    String str1 = <span class="string">"Hello"</span>;</span><br><span class="line">    String str2 = <span class="string">"World!"</span>;</span><br><span class="line">    StringBuilder str = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    str.append(str1).append(<span class="string">" "</span>).append(str2).toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查看StringBuilder的append方法的源码，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> StringBuilder <span class="title">append</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.append(str);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//StringBuilder的父类AbstractStringBuilder中的append方法</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> AbstractStringBuilder <span class="title">append</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (str == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> appendNull();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> len = str.length();</span><br><span class="line">    <span class="comment">//扩容内部的字节数组，扩容后长度 = 原始字符串长度count + 要拼接的字符串长度len</span></span><br><span class="line">    ensureCapacityInternal(count + len);</span><br><span class="line">    <span class="comment">//把要拼接的字符串追加到内部的字节数组</span></span><br><span class="line">    putStringAt(count, str);</span><br><span class="line">    count += len;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，StringBuilder的append方法会直接拷贝待拼接的字符串字节数组到<strong>内部的字节数组</strong>中，如果内部的字节数组长度不够，就会先扩容后再拷贝，所以append方法并不会产生新的StringBuilder对象，对于StringBuffer的append方法，它和StringBuilder的append方法的逻辑一样，只是多了一个synchronized关键字。</p>
+<p><strong>效率比较：</strong></p>
+<p>分别使用+、concat方法、StringBuffer和StringBuilder的append方法来拼接字符串，各自的效率怎么样？在单线程环境下的一个for循环中拼接大量字符串，经过测试，它们的效率高低如下：</p>
+<p><strong>StringBuilder &gt; StringBuffer &gt; concat &gt; +</strong></p>
+<p>+效率最低，这是因为每次拼接字符串时，都会new一个StringBuilder对象来拼接，频繁的新建对象是很耗时的，而StringBuffer每次append都需要进行同步，所以它的效率比StringBuilder低。</p>
+<blockquote>
+<p>阿里巴巴Java开发手册建议：在循环体内，使用 <code>StringBuilder</code> 的 <code>append</code> 方法进行字符串的拼接，而不要使用<code>+</code>，因为<code>+</code>会频繁的创建新的<code>StringBuilder</code>对象导致耗费更多的时间和造成内存资源的浪费。</p>
+</blockquote>
+<h2 id="包装类"><a href="#包装类" class="headerlink" title="包装类"></a>包装类</h2><p>包装类就是将java的基本数据类型打包成对象处理，包装类都在java.lang包中，下面用一个表显示：</p>
+<table>
+<thead>
+<tr>
+<th align="center">基本数据类型</th>
+<th align="center">包装类</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">int</td>
+<td align="center">Interger</td>
+</tr>
+<tr>
+<td align="center">short</td>
+<td align="center">Short</td>
+</tr>
+<tr>
+<td align="center">long</td>
+<td align="center">Long</td>
+</tr>
+<tr>
+<td align="center">char</td>
+<td align="center">Character</td>
+</tr>
+<tr>
+<td align="center">byte</td>
+<td align="center">Byte</td>
+</tr>
+<tr>
+<td align="center">float</td>
+<td align="center">Float</td>
+</tr>
+<tr>
+<td align="center">double</td>
+<td align="center">Double</td>
+</tr>
+<tr>
+<td align="center">boolean</td>
+<td align="center">Boolean</td>
+</tr>
+<tr>
+<td align="center">它涉及到以下两种操作：</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">### 1、装箱(boxing)</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">以double装箱为例：</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> num = <span class="number">3.14</span>；</span><br><span class="line">Double dnum1 = <span class="keyword">new</span> Double(num);<span class="comment">//1</span></span><br><span class="line">Double dnum2 = Double.valueOf(num);<span class="comment">//2</span></span><br><span class="line">Double dnum3 = num;<span class="comment">//3</span></span><br></pre></td></tr></table></figure></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">注释1、2都是手动装箱，注释3是自动装箱。</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">### 2、拆箱(unboxing)</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">同样上述double拆箱为例：</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">num = dnum1;<span class="comment">//1</span></span><br><span class="line">num = dnum2.doubleValue();<span class="comment">//2</span></span><br></pre></td></tr></table></figure></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">注释1是自动拆箱，注释2是手动拆箱。</td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<p>除了Double和Float，每个包装类都会有一个默认大小的缓存池，例如Integer，缓存池默认大小是-128-127，缓存池中都是缓存了一些经常使用的值，而对于Double和Float，都是浮点型，它们没有经常使用的值，编译器会在自动装箱过程中会调用 valueOf() 方法，因此多个值相同，且值在缓存池范围内的包装类实例使用自动装箱来创建，那么就会引用相同的对象。</p>
+<blockquote>
+<p>ps:<br>1、包装类没有无参构造，所有包装类的实例都是不可变的，一旦创建对象后，它们的内部值就不能再改变。<br>2、每个基本类型包装类都有常量MAX_VALUE和MIN_VALUE。</p>
+</blockquote>
+<h2 id="关键字"><a href="#关键字" class="headerlink" title="关键字"></a>关键字</h2><h3 id="1、final"><a href="#1、final" class="headerlink" title="1、final"></a>1、final</h3><p>防止扩展和重写。</p>
+<ul>
+<li>修饰成员变量：常量（可以是编译时常量，也可以是在运行时被初始化后不能被改变的常量），不可更改（对于基本数据类型，final使数值不能改变，对于引用类型，final使引用不能改变，即不能引用其他对象，但引用本身可以更改）</li>
+<li>修饰方法：不可被重写</li>
+<li>修饰类：不可被继承</li>
+</ul>
+<h3 id="2、static"><a href="#2、static" class="headerlink" title="2、static"></a>2、static</h3><p>可以通过类名直接访问它修饰的属性，静态属性和方法都是优先于类的实例存在。</p>
+<ul>
+<li>修饰变量：称为静态变量（区别于实例变量）、类变量，类的所有实例都共享静态变量，静态变量在内存中只存在一份</li>
+<li>修饰方法：称为静态方法，静态方法必须有实现，它不依赖于任何实例，静态方法中只能调用类的静态属性和静态方法，方法中不能有 this 和 super 关键字</li>
+<li>修饰语句块：称为静态语句块，在类初始化时运行一次</li>
+<li>修饰内部类：称为静态内部类，非静态内部类依赖于外部类的实例，而静态内部类不需要</li>
+</ul>
+<p>存在继承的情况下，初始化顺序为：</p>
+<p>父类(静态变量、静态语句块) -&gt; 子类（静态变量、静态语句块） -&gt; 父类（实例变量、普通语句块）-&gt; 父类（构造函数）-&gt; 子类（实例变量、普通语句块） -&gt; 子类（构造函数）</p>
+<h2 id="关于-、equal-和hashCode"><a href="#关于-、equal-和hashCode" class="headerlink" title="关于==、equal()和hashCode()"></a>关于==、equal()和hashCode()</h2><h3 id="1、"><a href="#1、" class="headerlink" title="1、=="></a>1、==</h3><p>==是一个关系操作符，所以：</p>
+<ul>
+<li>如果左右两边的操作数是基本数据类型，那么X==Y，就是判断左右两边的操作数的值是否相等.</li>
+<li>如果左右两边的操作数是引用数据类型，那么X==Y，就是判断左右两边的操作数的内存地址是否相等.</li>
+</ul>
+<h3 id="2、equal"><a href="#2、equal" class="headerlink" title="2、equal()"></a>2、equal()</h3><p>equal()是用来判断两个对象是否等价，即两个对象是否相等，所以如果要重写一个equal方法，需要做到以下3步：</p>
+<ul>
+<li>先使用<strong>==</strong>判断两个对象的引用是否相等.（地址相同）</li>
+<li>然后使用*<em>instanceof *</em>判断两个对象是否是同一个类型.（类型相同）</li>
+<li>最后比较两个对象的内容是否一致.(内容相同)</li>
+</ul>
+<p>按照上面3步重写的equal方法，满足自反性、对称性、传递性，如下：</p>
+<ul>
+<li>自反性：对于非null的x，x.equal(x)返回true；</li>
+<li>对称性：对于非null的x，y，x.equal(y)返回true当且仅当y.equal(x)返回true；</li>
+<li>传递性：对于非null的x，y，z，如果x.equal(y)返回true，并且y.equal(z)返回true，那么x.equal(z)返回true。</li>
+</ul>
+<h3 id="3、hashCode"><a href="#3、hashCode" class="headerlink" title="3、hashCode()"></a>3、hashCode()</h3><p>hashCode()用来返回一个对象的hash值，它是一个native方法，它主要使用于哈希表中的hash算法，用于定位一个元素的位置，所以当你的对象要作为哈希表中的元素时，你要保证以下几个原则：</p>
+<ul>
+<li>要比较两个对象是否相等，必须使用equal方法，如果相等，那么调用两个对象的 hashCode 方法必须返回相同的结果，即相等的两个对象返回的hashCode必须是相等的.</li>
+<li>如果两个对象根据 equals方法比较是不相等的，则 hashCode 方法不一定得返回不同的整数.</li>
+<li>对同一个对象调用多次hashcode方法必须返回相同的hash值.</li>
+<li>两个不同对象的hashcode可能相等.</li>
+<li>两个不同hashcode的对象一定不相等.</li>
+</ul>
+<p>在使用hashXX集合添加对象时，集合先调用该对象的hashCode方法，根据哈希函数得到对象在哈希表中的位置，如果该位置没有元素，就直接把它存储在该位置上；如果该位置已经有元素了，就调用对象的equal方法与该位置的每个元素逐个比较，如果相等，就更新该元素，如果都不相等，就把该对象的映射添加到这个位置对应的链表中。</p>
+<p>因此在覆盖 equals() 方法时应当总是覆盖 hashCode() 方法，保证等价的两个对象hash值也相等，不然会导致集合中出现重复的元素，一个好的习惯是equals方法中用到的成员变量也必定会在hashcode方法中用到，这样就能保证<strong>两个相等的对象hash值也相等</strong>。</p>
+<blockquote>
+<p>当你没有重写hashCode方法时，它可能返回以下的值：<br>1、随机生成数字；<br>2、对象的内存地址，强制转换为int；<br>3、根据对象的内存地址生成；<br>4、1硬编码（用于敏感性测试）；<br>5、一个序列；<br>6、使用线程状态结合xorshift算法生成。<br>具体返回什么需要看不同JDK版本的实现。</p>
+</blockquote>
+<h2 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h2><p>异常就是一种对象(Exception), 表示阻止程序正常执行的错误。异常类的层次结构如下：</p>
+<img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/error1.png" class="" title="error1">
+
+<ul>
+<li>1、RuntimeException和Error以及它们的子类都称为免检异常, 这种异常一般是由程序逻辑错误引起的，对于这种异常，可以选择捕获处理，也可以不处理；</li>
+<li>2、除了免检异常，其他异常都称为必检异常，这种异常跟程序运行的上下文环境有关，即使程序设计无误，仍然可能因使用的问题而引发，所以Java强制要求我们必须对这些异常进行处理.</li>
+</ul>
+<p>由于免检异常可能在程序的任何一个地方出现，为了避免过多的使用try-catch块，java语言不强制要求编写代码捕获免检异常，也不要求在方法头显示声明免检异常。</p>
+<h3 id="1、常见的异常类型"><a href="#1、常见的异常类型" class="headerlink" title="1、常见的异常类型"></a>1、常见的异常类型</h3><img src="/2019/07/19/java%E5%9F%BA%E7%A1%80/error2.png" class="" title="error2">
+
+<h3 id="2、java中的异常处理机制"><a href="#2、java中的异常处理机制" class="headerlink" title="2、java中的异常处理机制"></a>2、java中的异常处理机制</h3><p>异常处理机制就是可以使程序处理非预期的情景，并继续正常执行，异常处理机制的主要组成如下：</p>
+<ul>
+<li>try：监控有可能产生异常的语句块</li>
+<li>catch：以合理的方式捕获异常</li>
+<li>finally：不管有没有异常，一定会执行的语句块（一般用来释放资源），除了遇到System.exit(0)语句</li>
+<li>throw：手动引发异常</li>
+<li>throws: 指定由方法引发的异常</li>
+</ul>
+<p>所以一个异常捕获处理语句可以如下形式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>&#123;</span><br><span class="line">    <span class="comment">//监控可能产生异常的语句块</span></span><br><span class="line">&#125;<span class="keyword">catch</span>(Exception1 e)&#123;</span><br><span class="line">    <span class="comment">//捕获异常，处理异常，如打印异常信息，日志纪录</span></span><br><span class="line">&#125;<span class="keyword">catch</span>(Exception2 e)&#123;</span><br><span class="line">    <span class="comment">//JDK7后简化写法catch(Exception1|Exception2|Exception3|... e)</span></span><br><span class="line">&#125;<span class="keyword">finally</span>&#123;</span><br><span class="line">    <span class="comment">//不管有无异常，一定会执行的语句，用来释放资源</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>try块中的代码可能会引发多种类型的异常，当引发异常时，会按照catch的顺序进行匹配异常类型，并执行第一个匹配的catch语句。</p>
+<h2 id="泛型"><a href="#泛型" class="headerlink" title="泛型"></a>泛型</h2><h3 id="1、为什么使用泛型"><a href="#1、为什么使用泛型" class="headerlink" title="1、为什么使用泛型"></a>1、为什么使用泛型</h3><p>在java5之前，任何类型的元素都可以“丢进“集合中，元素一旦进入集合中，元素的类型就会被集合忘记，导致从集合中取出的元素都是<strong>Object</strong>类型，需要进行<strong>强制类型转换</strong>后才能变成我们”丢进“集合前的元素类型，这样就导致了以下两个缺点：</p>
+<ul>
+<li>1、编程的复杂度增加：任何从集合中取出的元素都要进行强制类型转换，增加编程的工作量；</li>
+<li>2、运行时容易引发ClassCastException：由于任何类型的元素都可以放进集合中，导致集合中的元素的类型不一致，在取出元素强制类型转换时，就有可能人为地转换错误，引发ClassCastException异常，导致程序崩溃.</li>
+</ul>
+<p>所以为了解决集合编译时不检查类型的问题，就出现了<strong>泛型</strong>，泛型(GenericType)是从java5开始支持的新语法，它又被称为参数化类型<strong>ParameterizedType</strong>，ParameterizedType是java5新增的Type，泛型它表示广泛通用的类型，可以在代码编译期就进行<strong>类型检查</strong>，在创建集合的时候可以动态地指明元素的类型是什么，从而约束所有放进集合的元素<strong>类型一致</strong>，这样从集合中取出元素时就<strong>不需要进行强制类型转换</strong>，从而避免了在运行时出现<strong>ClassCastException</strong>异常，如果把错误类型元素放入集合，编译器就会提出<strong>错误</strong>，所以在java中使用泛型时它<strong>保证只要程序在编译期没有提示“UnChecked”未经检查警告，那么运行时就不会产生ClassCastException</strong>。</p>
+<p>所以从java5之后，集合框架中的全部类和接口都增加了泛型支持，从而在创建集合时可以动态地指明元素的类型是什么，如：<strong>List&lt;String&gt; list = new ArrayList&lt;String&gt;()</strong>，其中List&lt;String&gt;、ArrayList&lt;String&gt;就统称为泛型，而&lt;&gt;括号中的类型就称为<strong>类型形参</strong>。</p>
+<blockquote>
+<p>java7的时候出现了菱形语法简化了泛型的写法，java7开始允许使用泛型时构造器后面的&lt;&gt;括号内不带类型形参，只需要给出&lt;&gt;括号就行，如：List&lt;String&gt; list = new ArrayList&lt;&gt;()。</p>
+</blockquote>
+<p>泛型可以分为<strong>泛型类</strong>(包括类和接口)和<strong>泛型方法</strong>。</p>
+<h3 id="2、泛型类"><a href="#2、泛型类" class="headerlink" title="2、泛型类"></a>2、泛型类</h3><p>泛型类就是直接在类或接口上定义的泛型，上面所讲的集合也是属于泛型类，如下创建一个泛型类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Bean</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T t;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T t)</span> </span>&#123; </span><br><span class="line">        <span class="keyword">this</span>.t = t; </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> t; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果有多个类型形参，在&lt;&gt;括号中就用 <strong>,</strong> 隔开，在创建Bean实例的时候就可以动态的指明<strong>T</strong>(类型形参)的类型，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bean&lt;String&gt; bean = <span class="keyword">new</span> Bean&lt;String&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>泛型类中的<strong>T</strong>(类型形参)不存在继承的关系，如下是错误的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bean&lt;Object&gt; bean = <span class="keyword">new</span> Bean&lt;String&gt;();<span class="comment">//错误，Bean&lt;String&gt;并不是Bean&lt;Object&gt;的子类。</span></span><br></pre></td></tr></table></figure>
+
+<p>同时需要注意静态变量不能使用类型形参修饰，还有静态方法不能使用泛型类声明的类型形参，如下是错误的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Bean</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T t;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> T t2; <span class="comment">//错误，类型形参在编译后会被擦除</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doWork</span><span class="params">(Bean&lt;T&gt; bean)</span></span>&#123;&#125;<span class="comment">//错误，类型形参在编译后会被擦除，如果静态方法需要使用泛型，只能使用泛型方法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>还有instanceof运算符后面不能使用泛型类，如下是错误的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(XX <span class="keyword">instanceof</span> Bean&lt;String&gt;)&#123;<span class="comment">//错误，不存在Bean&lt;String&gt;对应的Class&lt;String&gt;对象</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上错误的原因都可以归结为泛型擦除，不管传入的类型形参是什么类型，在运行时它们总是具有相同的类(Class)。</p>
+<blockquote>
+<p>如果从泛型类派生子类时，必须为作为父类的泛型类的类型形参指明类型或者不写&lt;&gt;括号，不写&lt;&gt;括号时泛型类的类型形参默认为上限类型，如果没有上限，默认为Object类型。</p>
+</blockquote>
+<h3 id="3、泛型方法"><a href="#3、泛型方法" class="headerlink" title="3、泛型方法"></a>3、泛型方法</h3><p>泛型方法就是直接在方法上定义的泛型，如下创建一个泛型方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">doWork</span><span class="params">(Bean&lt;T&gt; bean)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> bean.get();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果有多个类型形参，在&lt;&gt;括号中就用 <strong>,</strong> 隔开，在调用doWork方法时，java会自动推断方法形参的类型，从而推断出类型形参的类型，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Bean&lt;String&gt; bean = <span class="keyword">new</span> Bean&lt;String&gt;();</span><br><span class="line">doWork(bean);</span><br></pre></td></tr></table></figure>
+
+<p>上面doWork方法传入形参为bean实例，它的类型形参为String类型，从而推断出doWork方法的类型形参T为String类型。</p>
+<blockquote>
+<p>泛型方法允许类型形参被用来表示方法的一个或多个参数之间的类型依赖关系，或者返回值与参数之间的类型依赖关系，如果没有这样的类型依赖关系，就不应该使用泛型方法，可以考虑使用类型通配符。</p>
+</blockquote>
+<h3 id="4、类型通配符、上限和下限"><a href="#4、类型通配符、上限和下限" class="headerlink" title="4、类型通配符、上限和下限"></a>4、类型通配符、上限和下限</h3><p>类型通配符使用<strong>?</strong>表示，它表示未知的元素类型，当不知道使用什么类型接收时，此时可以使用<strong>?</strong>，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//此时可以往doWork传入List&lt;String&gt;、List&lt;Integer&gt;等实例</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doWork</span><span class="params">(List&lt;?&gt; list)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(Object o : list)&#123;</span><br><span class="line">        System.out.println(o);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不管往doWork方法中传入任何类型的List&lt;XX&gt;实例，当用<strong>?</strong>接收后，此时List集合中的所有元素类型都是Object，不能往元素类型是<strong>?</strong>的集合中增加、修改元素，只能查询、删除。</p>
+<p>类型通配符<strong>?</strong>一般代表所有类型的父类，即Object，可以为<strong>?</strong>添加上限或下限，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//上限：此时的类型形参必须为Number或Number的子类</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doWork</span><span class="params">(List&lt;? extends Number&gt; list)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(Number o : list)&#123;</span><br><span class="line">        System.out.println(o);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//下限：此时的类型形参必须为Number或Number的父类</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doWork</span><span class="params">(List&lt;? <span class="keyword">super</span> Number&gt; list)</span></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(Object o : list)&#123;</span><br><span class="line">        System.out.println(o);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在&lt;&gt;中加入extends，就是 <strong>&lt;=</strong> 的关系，在&lt;&gt;中加入super，就是 <strong>&gt;=</strong> 的关系。</p>
+<blockquote>
+<p>extends和super也可以用于限制泛型的类型形参的上限和下限。</p>
+</blockquote>
+<h3 id="5、泛型擦除"><a href="#5、泛型擦除" class="headerlink" title="5、泛型擦除"></a>5、泛型擦除</h3><p>泛型其实是一个语法糖，系统并不会为每个泛型生成一个Class对象，它们在运行时始终具有相同的Class对象，例如List&lt;String&gt;、List&lt;Integer&gt;等泛型类在编译之后，&lt;&gt;括号内的类型信息都会被擦除，在运行时都是使用List的Class对象，并且在反编译后，还是使用强制类型来获取元素，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">    <span class="comment">//类型形参为Integer的泛型</span></span><br><span class="line">    List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    list.add(<span class="number">1</span>);</span><br><span class="line">    Integer num = list.get(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">     <span class="comment">//类型形参为String的泛型</span></span><br><span class="line">    List&lt;String&gt; list2 = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    list2.add(<span class="string">"1"</span>);</span><br><span class="line">    String str = list2.get(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//反编译后</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</span><br><span class="line">    <span class="comment">//Integer类型被擦除</span></span><br><span class="line">    List list = <span class="keyword">new</span> ArrayList();</span><br><span class="line">    list.add(Integer.valueOf(<span class="number">1</span>));</span><br><span class="line">    Integer num = (Integer)list.get(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//String类型被擦除</span></span><br><span class="line">    List list2 = <span class="keyword">new</span> ArrayList();</span><br><span class="line">    list2.add(<span class="string">"1"</span>);</span><br><span class="line">    String str = (String)list2.get(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>还有当把一个具有泛型信息的变量赋值给另一个没有泛型信息的变量时，所有&lt;&gt;括号之间的类型信息都会被擦除，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//类型形参为Integer的泛型</span></span><br><span class="line">List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">list.add(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//把具有Integer类型信息的泛型list赋值给没有泛型信息的list2</span></span><br><span class="line">List list2 = list;</span><br><span class="line"><span class="comment">//此时list的所有类型信息被擦除，变成了Object类型，这是可以往里面添加任何类型的元素</span></span><br><span class="line"><span class="comment">//添加元素时会提示"UnChecked"警告，所以在访问list2中的元素时，如果访问不当就会在运行时引发ClassCastException</span></span><br><span class="line">list2.add(<span class="string">"123"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//这里尝试把"123"转化为Integer，将会引发ClassCastException</span></span><br><span class="line">Integer num = (Integer) list2.get(<span class="number">1</span>);</span><br><span class="line"><span class="comment">//这里访问正确</span></span><br><span class="line">Object o = list2.get(<span class="number">1</span>);<span class="comment">//或者String num = (String)list2.get(1)</span></span><br></pre></td></tr></table></figure>
+
+<p>同时系统支持把没有泛型信息的变量赋值给具有泛型信息的变量，而不会提示任何警告或错误，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//类型形参为Integer的泛型</span></span><br><span class="line">List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">list.add(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//list的Integer类型信息被擦除</span></span><br><span class="line">List list2 = list;</span><br><span class="line"></span><br><span class="line"><span class="comment">//把擦除后的list赋值给类型形参为String的泛型list3</span></span><br><span class="line">List&lt;String&gt; list3 = list2;</span><br><span class="line"></span><br><span class="line"><span class="comment">//下面的访问将会引起ClassCastException</span></span><br><span class="line"><span class="comment">//等价于String num = 1；</span></span><br><span class="line">String num = list3.get(<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>上述代码将会引发ClassCastException，因为list3的类型信息是String，编译器会把list3中的元素类型当作是String，而此时list3实际引用的变量泛型擦除后的list，泛型擦除后的list中的元素类型在编译时是Object，但在运行时却是Integer，所以在运行时，从list3中取出的元素是Integer类型，Integer是不可以强转成String的，从而引起ClassCastException。</p>
+<p>所以总的来说，泛型擦除主要在以下两个方面：</p>
+<ul>
+<li>1、编译之后，泛型会被擦除；(自动擦除)</li>
+<li>2、把泛型变量赋值给原始变量时，泛型会被擦除。(手动擦除)</li>
+</ul>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文简单整理了一下java语言的基本知识点，希望大家有所收获！</p>
+<p>参考资料：</p>
+<p><a href="https://blog.csdn.net/justloveyou_/article/details/52464440" target="_blank" rel="noopener">java 中的 ==, equals 与 hashCode 的区别与联系</a></p>
+<p><a href="https://www.jianshu.com/p/0ce2279c5691" target="_blank" rel="noopener">Java 自动装箱与拆箱的实现原理</a></p>
+<p><a href="https://mp.weixin.qq.com/s/Mvi-qq3-9Y_mi1eFKahEYw" target="_blank" rel="noopener">为什么阿里不建议在for循环中使用”+”进行字符串拼接</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.855Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/" rel="tag">java</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/&title=《java学习总结之基础》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/&title=《java学习总结之基础》 — jianyu的博客&source=前言万事开头难，准备从零把java相关知识点捡起来，把自己所学的Java知识点归纳，下面是关于java的一些基本知识点。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《java学习总结之基础》 — jianyu的博客&url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/19/java%E7%BA%BF%E7%A8%8B/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">java学习总结之线程</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">搞定两种场景下的Fragment懒加载</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/&title=《java学习总结之基础》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/&title=《java学习总结之基础》 — jianyu的博客&source=前言万事开头难，准备从零把java相关知识点捡起来，把自己所学的Java知识点归纳，下面是关于java的一些基本知识点。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《java学习总结之基础》 — jianyu的博客&url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/19/java%E5%9F%BA%E7%A1%80/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACN0lEQVR42u3aS3KDMBAFQN//0mSbKmwxb4RTQWpWrgQHNYvJ/F6v8nWcrvNvx/f/vud8//lbr29cGBgYj2Ucw2vmWOffjl9E/blvnoiBgbEBo/L4T0ep3zkO0OPPF2fGwMDACD9Xgm89QGNgYGCkjPQQ9fCKgYGBMWbUy9SZRPBf1OIYGBgPZPTC6N98/sp8AwMD41GMI7x6TbRKq64eZN+cCgMDY2lG2gKrH+KuIF45DwYGxtqMZmNrWJrOl8EXb/22SQIGBsYzGCkmXVStH6gXyj/+38DAwFiOkbbg08Fkr5Vf+RYGBsY+jF5C1myKtQrjyrcwMDDWZlQwafCt/OU0cYxnrRgYGEsw6uldpbAcN+DS5l3lVb4ZDGBgYCzKqDf008FAKZkLh6YfR5gYGBiLMuqJ4MxqV1r61lPVoLbGwMB4LCM97kygTBPKoAzGwMDYgFHvWc2scM3ALk6IgYGxNCMNf/Wh4/ykIh4VYGBgLMpID5oOJutPSZfPMDAw9mHMP74+jOytlAUBHQMDYxvGOHVLC927Gm1BgoiBgbE0Iy1le0VvGsSDFRAMDIwNGDPN/friV3CscLSAgYGxKuMIr15K10s364EeAwNjbUZv2Wtm/aIeWONlCwwMjKUZvSCbjht7axbBK8DAwNiA0Qt8vVHB/LoYBgYGRq9orBer9YWMOHvFwMDACJcq0p/0WnIYGBj7MNIV0vHR0zFnWrJiYGDsxkjzrl5xOz+evG2+gYGB8STGD41IA/Hk/lUhAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

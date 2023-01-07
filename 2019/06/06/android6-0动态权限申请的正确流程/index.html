@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>android6.0动态权限申请的正确流程 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="android">
+    <meta name="description" content="前言从 Android 6.0（API 级别 23）开始，用户开始在应用运行时向其授予权限，而不是在应用安装时授予。所以如果你的应用使用到了一些危险权限，就必须在AndroidManifest.xml 中静态地声明需要用到的权限，并在使用到该功能时要动态的申请，否则在调用到相应权限功能时候，会抛出 SecurityException异常。所以本文探讨一下动态权限的申请的正确流程，并把它封装成一个库">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android6.0动态权限申请的正确流程">
+<meta property="og:url" content="http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言从 Android 6.0（API 级别 23）开始，用户开始在应用运行时向其授予权限，而不是在应用安装时授予。所以如果你的应用使用到了一些危险权限，就必须在AndroidManifest.xml 中静态地声明需要用到的权限，并在使用到该功能时要动态的申请，否则在调用到相应权限功能时候，会抛出 SecurityException异常。所以本文探讨一下动态权限的申请的正确流程，并把它封装成一个库">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/p1.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/p2.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/p3.png">
+<meta property="article:published_time" content="2019-06-06T10:13:59.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.845Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/p1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">android6.0动态权限申请的正确流程</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">android6.0动态权限申请的正确流程</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-06-06T10:13:59.000Z" itemprop="datePublished" class="page-time">
+  2019-06-06
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#权限的分类"><span class="post-toc-text">权限的分类</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、普通权限"><span class="post-toc-text">1、普通权限</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、签名权限"><span class="post-toc-text">2、签名权限</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、危险权限"><span class="post-toc-text">3、危险权限</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、特殊权限"><span class="post-toc-text">4、特殊权限</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#动态权限申请流程"><span class="post-toc-text">动态权限申请流程</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、单个权限申请流程"><span class="post-toc-text">1、单个权限申请流程</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、多个权限申请流程"><span class="post-toc-text">2、多个权限申请流程</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、自定义提示权限组的提示框"><span class="post-toc-text">3、自定义提示权限组的提示框</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#其他注意点"><span class="post-toc-text">其他注意点</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-android6-0动态权限申请的正确流程"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">android6.0动态权限申请的正确流程</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-06-06 18:13:59" datetime="2019-06-06T10:13:59.000Z"  itemprop="datePublished">2019-06-06</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从 Android 6.0（API 级别 23）开始，用户开始在应用运行时向其授予权限，而不是在应用安装时授予。所以如果你的应用使用到了一些危险权限，就必须在AndroidManifest.xml 中静态地声明需要用到的权限，并在使用到该功能时要动态的申请，否则在调用到相应权限功能时候，会抛出 SecurityException异常。所以本文探讨一下动态权限的申请的正确流程，并把它封装成一个库，简化了申请过程。</p>
+<ul>
+<li><a href="https://github.com/rain9155/PermissionHelper" target="_blank" rel="noopener">PermissionHelper</a></li>
+</ul>
+<h2 id="权限的分类"><a href="#权限的分类" class="headerlink" title="权限的分类"></a>权限的分类</h2><p>在讲解之前，先看一下android权限的分类，android权限分为四类，如下：</p>
+<h3 id="1、普通权限"><a href="#1、普通权限" class="headerlink" title="1、普通权限"></a>1、普通权限</h3><p>普通权限也叫正常权限，它不需要动态申请，你只需要在用到它的时候在AndroidManifest.xml 中静态地声明，然后系统在app运行时就会自动的授予该app相应的权限。这类权限主要在你的app想要接触app沙盒外的数据或资源的时用到，它不会涉及到系统的操作，也不会泄漏或篡改用户的隐私数据。如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">ACCESS_LOCATION_EXTRA_COMMANDS </span><br><span class="line">ACCESS_NETWORK_STATE </span><br><span class="line">ACCESS_NOTIFICATION_POLICY </span><br><span class="line">ACCESS_WIFI_STATE </span><br><span class="line">BLUETOOTH </span><br><span class="line">BLUETOOTH_ADMIN </span><br><span class="line">BROADCAST_STICKY </span><br><span class="line">CHANGE_NETWORK_STATE </span><br><span class="line">CHANGE_WIFI_MULTICAST_STATE </span><br><span class="line">CHANGE_WIFI_STATE </span><br><span class="line">DISABLE_KEYGUARD </span><br><span class="line">EXPAND_STATUS_BAR </span><br><span class="line">FOREGROUND_SERVICE </span><br><span class="line">GET_PACKAGE_SIZE </span><br><span class="line">INSTALL_SHORTCUT </span><br><span class="line">INTERNET </span><br><span class="line">KILL_BACKGROUND_PROCESSES </span><br><span class="line">MANAGE_OWN_CALLS </span><br><span class="line">MODIFY_AUDIO_SETTINGS </span><br><span class="line">NFC </span><br><span class="line">READ_SYNC_SETTINGS </span><br><span class="line">READ_SYNC_STATS </span><br><span class="line">RECEIVE_BOOT_COMPLETED </span><br><span class="line">REORDER_TASKS </span><br><span class="line">REQUEST_COMPANION_RUN_IN_BACKGROUND </span><br><span class="line">REQUEST_COMPANION_USE_DATA_IN_BACKGROUND </span><br><span class="line">REQUEST_DELETE_PACKAGES </span><br><span class="line">REQUEST_IGNORE_BATTERY_OPTIMIZATIONS </span><br><span class="line">SET_ALARM </span><br><span class="line">SET_WALLPAPER </span><br><span class="line">SET_WALLPAPER_HINTS </span><br><span class="line">TRANSMIT_IR </span><br><span class="line">USE_FINGERPRINT </span><br><span class="line">VIBRATE </span><br><span class="line">WAKE_LOCK </span><br><span class="line">WRITE_SYNC_SETTINGS</span><br></pre></td></tr></table></figure>
+
+<h3 id="2、签名权限"><a href="#2、签名权限" class="headerlink" title="2、签名权限"></a>2、签名权限</h3><p>该类权限只对拥有相同签名的应用开放。例如某个应用自定义了一个permission 且在权限标签中加入 android:protectionLevel=”signature”，其他应用想要访问该应用中的某些数据时，必须要在AndroidManifest.xml中声明该权限，而且还要与该应用具有相同的签名，系统会在app运行时自动授予该权限。这类我们用的比较少。</p>
+<h3 id="3、危险权限"><a href="#3、危险权限" class="headerlink" title="3、危险权限"></a>3、危险权限</h3><p>也叫敏感权限，运行时权限，跟普通权限相反，一旦某个应该获取了该类权限，用户的隐私数据就面临被泄露篡改的风险。所以你想使用该权限就必须在AndroidManifest.xml 中静态地声明需要用到的权限，并在使用到该功能时要动态的申请，除非用户同意该权限，否则你不能使用该权限对应的功能。如下：</p>
+<img src="/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/p1.png" class="" title="p1">
+
+<p>可以看到android把危险权限分为10组，所以申请危险权限的时候都是按组申请，我们只要申请组内的任意一个危险权限就行，当用户一旦同意授权该危险权限，那么该权限所对应的权限组中的所有其他权限也会同时被授权。</p>
+<h3 id="4、特殊权限"><a href="#4、特殊权限" class="headerlink" title="4、特殊权限"></a>4、特殊权限</h3><p>特殊权限我了解的有三个，如下：</p>
+<ul>
+<li>SYSTEM_ALERT_WINDOW：设置悬浮窗</li>
+<li>WRITE_SETTINGS：修改系统设置</li>
+<li>REQUEST_INSTALL_PACKAGES： 允许应用安装未知来源应用</li>
+</ul>
+<p>它也是要要申请的，但是它不同于危险权限的申请，危险权限的申请会弹出一个对话框询问你是否同意，而特殊权限的申请需要跳转到指定的界面，让你手动确认同意。</p>
+<h2 id="动态权限申请流程"><a href="#动态权限申请流程" class="headerlink" title="动态权限申请流程"></a>动态权限申请流程</h2><p>所以动态权限的申请就是申请<strong>危险权限或特殊权限</strong>，权限的申请在不同的Android版本有不同的行为，如下：</p>
+<ul>
+<li>如果设备运行的是 Android 5.1 或更低版本，或者应用的 targetSdkVersion 为 22 或更低：如果您在 Manifest 中列出了危险权限，则用户必须在安装应用时系统会要求用户授予此权限，如果他们不授予此权限，系统根本不会安装应用，用户一旦全部同意授予，他们撤销权限的唯一方式是卸载应用。</li>
+<li>如果设备运行的是 Android 6.0 或更高版本，并且应用的 targetSdkVersion为23 或更高：应用必须在 Manifest 中列出权限，并且它必须在运行时请求其需要的每项危险权限。用户可以授予或拒绝每项权限，且即使用户拒绝权限请求，应用仍可以继续运行有限的功能。用户可以随时进入应用的“Settings”中调整应用的动态权限授权。所以你每次使用到该权限的功能时，都要动态申请，因为用户有可能在“Settings”界面中把它再次关闭掉。</li>
+</ul>
+<p>我这里讨论的是6.0后的动态申请，所以从 Android 6.0开始，无论您的应用面向哪个 API 级别，您都应对应用进行测试，以验证它在缺少需要的权限时行为是否正常，我把权限申请的流程分为单个和多个权限申请，分别画了个图。</p>
+<h3 id="1、单个权限申请流程"><a href="#1、单个权限申请流程" class="headerlink" title="1、单个权限申请流程"></a>1、单个权限申请流程</h3><img src="/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/p2.png" class="" title="p2">
+
+<h3 id="2、多个权限申请流程"><a href="#2、多个权限申请流程" class="headerlink" title="2、多个权限申请流程"></a>2、多个权限申请流程</h3><img src="/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/p3.png" class="" title="p3">
+
+<h3 id="3、自定义提示权限组的提示框"><a href="#3、自定义提示权限组的提示框" class="headerlink" title="3、自定义提示权限组的提示框"></a>3、自定义提示权限组的提示框</h3><p>上面两个图有有提到自定义提示权限组，那么它主要包含以下内容：</p>
+<ul>
+<li>1、包含需要授权的权限列表或单个权限提示</li>
+<li>2、包含跳转到应用设置授权界面中的跳转按钮</li>
+<li>3、包含放弃授权的取消按钮，即取消这个提示框</li>
+</ul>
+<blockquote>
+<p>注意：如果用户不授权，则不能使用该功能或应用无法运行，可以考虑取消第3步的取消按钮，即无法取消这个提示框，一定要用户去“Settings”授权。</p>
+</blockquote>
+<h2 id="其他注意点"><a href="#其他注意点" class="headerlink" title="其他注意点"></a>其他注意点</h2><p>除了特殊权限外，还有一个location权限也比较特殊，需要通过 <strong>LocationManager的isProviderEnabled(LocationManager.GPS_PROVIDER)</strong>判断是否打开定位开关后再进行权限申请，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">	lm = (LocationManager) <span class="keyword">this</span>.getSystemService(<span class="keyword">this</span>.LOCATION_SERVICE);</span><br><span class="line">    <span class="keyword">if</span> (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) &#123;<span class="comment">//开了定位服务</span></span><br><span class="line">        <span class="comment">//请求定位功能</span></span><br><span class="line">       PermissionHelper.getInstance().with(<span class="keyword">this</span>).requestPermission(</span><br><span class="line">                Manifest.permission.ACCESS_FINE_LOCATION,</span><br><span class="line">                <span class="keyword">new</span> IPermissionCallback() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAccepted</span><span class="params">(Permission permission)</span> </span>&#123;</span><br><span class="line">                        <span class="comment">//...</span></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDenied</span><span class="params">(Permission permission)</span> </span>&#123;</span><br><span class="line">						<span class="comment">//...</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">        );</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//跳转到开启定位的地方</span></span><br><span class="line">        Toast.makeText(<span class="keyword">this</span>, <span class="string">"系统检测到未开启GPS定位服务,请开启"</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">        Intent intent = <span class="keyword">new</span> Intent();</span><br><span class="line">        intent.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);</span><br><span class="line">        startActivityForResult(intent, PRIVATE_CODE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文主要让让大家对权限的申请流程有进一步的认识，然后可以通过对动态权限的封装，将检测动态权限，请求动态权限，权限设置跳转，监听权限设置结果等处理和业务功能隔离开来，业务以后可以非常快速的接入动态权限支持，提高开发效率，更多细节查看<a href="https://github.com/rain9155/PermissionHelper" target="_blank" rel="noopener">PermissionHelper</a>。</p>
+<p>参考资料：</p>
+<p><a href="https://developer.android.google.cn/guide/topics/permissions/overview" target="_blank" rel="noopener">Permissions</a></p>
+<p><a href="https://mp.weixin.qq.com/s/w82temt7NjQb2eATONuEsA" target="_blank" rel="noopener">安卓系统权限，你真的了解吗？</a></p>
+<p><a href="https://www.jianshu.com/p/6a4dff744031" target="_blank" rel="noopener">Android 6.0运行权限解析（高级篇</a>)</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.845Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/" rel="tag">android</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/&title=《android6.0动态权限申请的正确流程》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/&title=《android6.0动态权限申请的正确流程》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《android6.0动态权限申请的正确流程》 — jianyu的博客&url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">发布开源库到jitpack</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">发布开源库到jcenter</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/&title=《android6.0动态权限申请的正确流程》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/&title=《android6.0动态权限申请的正确流程》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《android6.0动态权限申请的正确流程》 — jianyu的博客&url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEl0lEQVR42u3ay3LaQBAF0Pz/TzvbpGzDvd0i0ZijFYVBGs64qh/Tv37F18cfV/vO59ftEz/f+fMnv3v9eFUXX5gwYcKE6ZZMHw+vzVI+L+jxEnP0x095/KzH6//2npgwYcKE6XCm9nZtutDyteizrSqIMWHChAnTWzLNIPLkI0lH8oI5L4MxYcKECdN7MiXJQftjks7qpjnbbgkmTJgwYfqpTG0obVu3+WfaBKU9fH15LxwTJkyYMN2MKQ+rP+/1xRcmTJgwYboZ08foygvLvEGcJwRtW3l/YcKECROmc5naIDorHTeFZVtstwV2cdiJCRMmTJgOZEpC76wN2o7XtGNDsxGi2X0wYcKECdO5TPmxYvv+483IaWZ/3ScTT7AwYcKECdNRTLPFJUXjDHfWLG6TmxYXEyZMmDCdyDQ7vEySifz9NnjP0NutxYQJEyZMP5Upv93smHMD1Dam2wPaJyM7mDBhwoTpQKZNiZhfs+/uS98ZRN0Fx4QJEyZMN2ZqG7WbgZi2HG2Ths06n6wNEyZMmDAdy5QP3yQHh5shm/YANf9ui1L3CTBhwoQJ0+2ZZgG1bchugndbAP+jJi8mTJgwYbo9U/6zowGXMnXIB32SoH7V+0+KXkyYMGHCdBTTflAmLyOToL75Me3r9kAXEyZMmDCdyJQ3bTdHj8NavBz6yROLfLPr3jYmTJgwYboZU1sobgZuZstth4TyLVmVvpgwYcKE6RCmNjznUTIvbmfPytOaC56CCRMmTJiOZUrauFeN1MwK6XY7rz0c/eJ/ChMmTJgwHcV0bbGafyt/bt5u3n8XEyZMmDC9A1OUQcTl5T5baTcyv0ORKGDChAkTpmOZZi3R/HDxqnGc2cDQbDipGN/BhAkTJkwHMiVpwWyJSSowC9j5nVvQAgsTJkyYMN2SaRbOZyE8b8i2n5ltdlHuYsKECROmY5natunj4FpPDI0OKTdt3NnnMWHChAnT6Uxt07MtMvf07cbkicXFFyZMmDBhuiXTLPTmBe0mtM82Y4b4ZAsxYcKECdOBTG25uAm3bfGc/8jNUWX0qzFhwoQJ07FMbcBOwufsag8y83Ceb/mTgSRMmDBhwnQgU1KIvi5d2Dd59wNASZGMCRMmTJhOZ8pvMWvgto3j9ugxHwZq27t/JQSYMGHChOlAptnj82UlqUCbauyHh2bpBSZMmDBhOpGpPThsG7Kz+ySN4M2AUXt/TJgwYcJ0OtO+xH1dAnHV8eqqKYwJEyZMmH4E06bWy1uobdKw38g8Bfn2KZgwYcKE6VimHChvoc6CegvXJiL5JhVHmJgwYcKE6fZMH+WVLzcpUGfbM1vV7JOYMGHChOl0pnaIJw/Gs0Zt3lNt398cxGLChAkTptOZhuMs6wL4qm3IB3o2qQkmTJgwYTqdKW+SbgjygZ7ZoenrUh9MmDBhwvQOTJshnvx8NRmymbWe84Tgi+9iwoQJE6Y3YNoMwTz+Vn4AORvraX/LS/ImTJgwYcL0X5lm4fYVB4rtO5uRoOIfAhMmTJgwHcuUtz7zNm4CvSmkN+V6XvoOO8SYMGHChOkuTL8B27jx8yWuUUwAAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

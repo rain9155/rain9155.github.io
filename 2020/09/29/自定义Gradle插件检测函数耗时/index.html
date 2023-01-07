@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>自定义Gradle插件检测函数耗时 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="gradle,asm,aop">
+    <meta name="description" content="前言 上一篇文章：Gradle的快速入门学习  上一篇文章讲解了Gralde的入门知识，其中讲到了如何自定义Gralde插件，本文就通过Asm和Transfrom来自定义一个简单的Gradle插件，这个Gradle插件它可以统计方法的耗时，并当方法的耗时超过阀值时，通过Log打印在控制台上，然后我们通过Log可以定位到耗时方法的位置，帮助我们找出耗时方法，一个很简单的功能，原理也很简单，这其中需要">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自定义Gradle插件检测函数耗时">
+<meta property="og:url" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言 上一篇文章：Gradle的快速入门学习  上一篇文章讲解了Gralde的入门知识，其中讲到了如何自定义Gralde插件，本文就通过Asm和Transfrom来自定义一个简单的Gradle插件，这个Gradle插件它可以统计方法的耗时，并当方法的耗时超过阀值时，通过Log打印在控制台上，然后我们通过Log可以定位到耗时方法的位置，帮助我们找出耗时方法，一个很简单的功能，原理也很简单，这其中需要">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin1.png">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin2.png">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin3.png">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin4.png">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin5.png">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin6.png">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin7.png">
+<meta property="og:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin8.png">
+<meta property="article:published_time" content="2020-09-29T08:35:11.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:49.212Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="gradle">
+<meta property="article:tag" content="asm">
+<meta property="article:tag" content="aop">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">自定义Gradle插件检测函数耗时</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">自定义Gradle插件检测函数耗时</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-09-29T08:35:11.000Z" itemprop="datePublished" class="page-time">
+  2020-09-29
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/gradle/">gradle</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#运行效果"><span class="post-toc-text">运行效果</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Asm"><span class="post-toc-text">Asm</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、读取、访问一个类"><span class="post-toc-text">1、读取、访问一个类</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、生成一个类"><span class="post-toc-text">2、生成一个类</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、转换一个类"><span class="post-toc-text">3、转换一个类</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Transform"><span class="post-toc-text">Transform</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、getName方法"><span class="post-toc-text">1、getName方法</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、getInputTypes和getScopes方法"><span class="post-toc-text">2、getInputTypes和getScopes方法</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、isIncremental方法"><span class="post-toc-text">3、isIncremental方法</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、transform方法"><span class="post-toc-text">4、transform方法</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#插件实现"><span class="post-toc-text">插件实现</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、自定义Plugin"><span class="post-toc-text">1、自定义Plugin</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、自定义Transform"><span class="post-toc-text">2、自定义Transform</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、asm处理class文件"><span class="post-toc-text">3、asm处理class文件</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-自定义Gradle插件检测函数耗时"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">自定义Gradle插件检测函数耗时</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-09-29 16:35:11" datetime="2020-09-29T08:35:11.000Z"  itemprop="datePublished">2020-09-29</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/gradle/">gradle</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
+<li>上一篇文章：<a href="https://rain9155.github.io/2020/06/26/Gradle的快速入门学习/" target="_blank" rel="noopener">Gradle的快速入门学习</a></li>
+</ul>
+<p>上一篇文章讲解了Gralde的入门知识，其中讲到了如何自定义Gralde插件，本文就通过<strong>Asm</strong>和<strong>Transfrom</strong>来自定义一个简单的Gradle插件，这个Gradle插件它可以统计方法的耗时，并当方法的耗时超过阀值时，通过Log打印在控制台上，然后我们通过Log可以定位到耗时方法的位置，帮助我们找出耗时方法，一个很简单的功能，原理也很简单，这其中需要使用到Asm知识和Transfrom知识，所以本文首先会介绍Asm和Transfrom相关知识点，最后再介绍如何使用Asm和Transform来实现这个Gradle插件，如果你对Asm和Transfrom已经很熟悉了，可以跳过这两节。</p>
+<blockquote>
+<p>源码位置在文末</p>
+</blockquote>
+<h2 id="运行效果"><a href="#运行效果" class="headerlink" title="运行效果"></a>运行效果</h2><p>由于这个是本地插件，所以直接在app/build.gradle中apply就行，然后可以通过time扩展配置它(可选)：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: com.example.plugin.TimeCostPlugin</span><br><span class="line"><span class="comment">//函数耗时阀值为200ms，只对应用内的函数做插桩(排除第三方库)</span></span><br><span class="line">time&#123;</span><br><span class="line">    threshold = <span class="number">200</span></span><br><span class="line">    appPackage = <span class="string">'com.example.plugindemo'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后特意定义几个耗时函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span>  </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            method1();</span><br><span class="line">            method2();</span><br><span class="line">            method3();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">method1</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread.sleep(<span class="number">500</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">method2</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread.sleep(<span class="number">300</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">method3</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后编译运行一下，就会在在控制台打印耗时函数的信息出来：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin1.png" class="" title="plugin">
+
+<p>点击方法行号就可以直接定位到耗时函数处。</p>
+<h2 id="Asm"><a href="#Asm" class="headerlink" title="Asm"></a>Asm</h2><p>官方地址：<a href="https://asm.ow2.io/" target="_blank" rel="noopener">ASM</a></p>
+<p>官方教程：<a href="https://asm.ow2.io/asm4-guide.pdf" target="_blank" rel="noopener">ASM4-guide(英文版)</a>、<a href="https://github.com/rain9155/PluginDemo/blob/master/doc/ASM4-guide(中文版).pdf" target="_blank" rel="noopener">ASM4-guide(中文版)</a></p>
+<p>Asm是一个通用的Java字节码操作和分析框架, 它提供了一些简单易用的字节码操作方法，可以直接以二进制的形式修改现有类或动态生成类，简单地来说，Asm就是一个<strong>字节码操作框架</strong>，通过Asm，我们可以凭空生成一个类，或者修改现有的类，Asm相比其他的字节码操作框架如Javasist、AspectJ等的优点就是体积小、性能好、效率高，但它的缺点就是学习成本高，不过现在已经有IntelliJ插件<a href="https://plugins.jetbrains.com/auth#access_token=1597742367104.6ee795af-5472-40b9-b586-e882ffbff43d.7334cf3f-10b4-47a4-9e77-07e382775999.0-0-0-0-0%3B1.MC0CFQCMwSIpa4MbttWs1X4KLFJ%2BhHK7IAIUDDKsMI4XaK2gN2DfsT21DYjWgGc%3D&token_type=Bearer&expires_in=3600&scope=0-0-0-0-0&state=f0b84383-ffef-42c2-81a4-d201d8cdf52f" target="_blank" rel="noopener">ASM Bytecode Outline</a>可以替我们自动的生成Asm代码，所以对于想要入门Asm的人来说，它还是很简单的，我们只需要简单的学习一下Asm的相关api的含义，在此之前希望你已经对JVM的基础知识：类型描述符、方法描述符、Class文件结构有一定的了解。</p>
+<p>Asm中有两类api，一种是基于树模型的tree api，一种是基于访问者模式的visitor api，其中visitor api是Asm最核心和基本的api，所以对于入门者，我们需要知道visitor api的使用，在visitor api中有三个主要的类用于<strong>读取、访问和生成</strong>class字节码：</p>
+<ul>
+<li><p><strong>ClassVisitor</strong>： 它是用于<strong>访问</strong>calss字节码，它里面有很多visitXX方法，每调用一个visitXX方法，就表示你在<strong>访问</strong>class文件的某个结构，如Method、Field、Annotation等，我们通常会扩展ClassVisitor，利用<a href="https://juejin.im/post/6844903978342301709" target="_blank" rel="noopener">代理模式</a>，把扩展的ClassVisitor的每一个visitXX方法的调用委托给另外一个ClassVisitor，在委托的前后我们可以添加自己的逻辑从而达到<strong>转换</strong>、<strong>修改</strong>这个类的class字节码的目的；</p>
+</li>
+<li><p><strong>ClassReader</strong>：它用于<strong>读取</strong>以字节数组形式给出的class字节码，它有一个<strong>accept</strong>方法，用于接收一个ClassVisitor实例，<strong>accept</strong>方法内部会调用ClassVisitor的visitXX方法来访问已<strong>读取</strong>的class文件；</p>
+</li>
+<li><p><strong>ClassWriter</strong>：它继承自ClassVisitor，可以以二进制形式<strong>生成</strong>class字节码，它有一个<strong>toByteArray</strong>方法，可以把已<strong>生成</strong>的二进制形式的class字节码转换成字节数组形式返回.</p>
+<p>ClassVisitor、ClassReader、ClassWriter这三个之间一般都是需要组合使用的，下面通过一些实际的例子快速掌握，首先我们需要在build.gradle中引入Asm，如下：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    <span class="comment">//核心api，提供visitor api</span></span><br><span class="line">    implementation <span class="string">'org.ow2.asm:asm:7.0'</span></span><br><span class="line">    <span class="comment">//可选，提供了一些基于核心api的预定义类转换器</span></span><br><span class="line">    implementation <span class="string">'org.ow2.asm:asm-commons:7.0'</span></span><br><span class="line">    <span class="comment">//可选，提供了一些基于核心api的工具类</span></span><br><span class="line">    implementation <span class="string">'org.ow2.asm:asm-util:7.0'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="1、读取、访问一个类"><a href="#1、读取、访问一个类" class="headerlink" title="1、读取、访问一个类"></a>1、读取、访问一个类</h3><p>读取类之前，首先介绍一下ClassVisitor中的visitXX方法，ClassVisitor的主要结构如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassVisitor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//ASM的版本, 版本数值定义在Opcodes接口中，最低为ASM4，目前最新为ASM7</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">int</span> api;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//委托的ClassVisitor，可传空</span></span><br><span class="line">    <span class="keyword">protected</span> ClassVisitor cv;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ClassVisitor</span><span class="params">(<span class="keyword">final</span> <span class="keyword">int</span> api)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(api, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ClassVisitor</span><span class="params">(<span class="keyword">final</span> <span class="keyword">int</span> api, <span class="keyword">final</span> ClassVisitor cv)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">this</span>.api = api;</span><br><span class="line">        <span class="keyword">this</span>.cv = cv;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示开始访问这个类</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visit</span><span class="params">(<span class="keyword">int</span> version, <span class="keyword">int</span> access, String name, String signature, String superName, String[] interfaces)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cv.visit(version, access, name, signature, superName, interfaces);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示访问这个类的源文件名(如果有的话)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitSource</span><span class="params">(String source, String debug)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cv.visitSource(source, debug);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示访问这个类的外部类(如果有的话)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitOuterClass</span><span class="params">(String owner, String name, String desc)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cv.visitOuterClass(owner, name, desc);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示访问这个类的注解(如果有的话)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AnnotationVisitor <span class="title">visitAnnotation</span><span class="params">(String desc, <span class="keyword">boolean</span> visible)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> cv.visitAnnotation(desc, visible);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示访问这个类的内部类(如果有的话)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitInnerClass</span><span class="params">(String name, String outerName,</span></span></span><br><span class="line"><span class="function"><span class="params">            String innerName, <span class="keyword">int</span> access)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cv.visitInnerClass(name, outerName, innerName, access);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示访问这个类的字段(如果有的话)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> FieldVisitor <span class="title">visitField</span><span class="params">(<span class="keyword">int</span> access, String name, String desc,</span></span></span><br><span class="line"><span class="function"><span class="params">            String signature, Object value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> cv.visitField(access, name, desc, signature, value);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示访问这个类的方法(如果有的话)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MethodVisitor <span class="title">visitMethod</span><span class="params">(<span class="keyword">int</span> access, String name, String desc,</span></span></span><br><span class="line"><span class="function"><span class="params">            String signature, String[] exceptions)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> cv.visitMethod(access, name, desc, signature, exceptions);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示结束对这个类的访问</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitEnd</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cv != <span class="keyword">null</span>) &#123;</span><br><span class="line">            cv.visitEnd();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">//...省略了一些其他visitXX方法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，ClassVisitor的所有visitXX方法都把逻辑委托给另外一个ClassVisitor的visitorXX方法，我们知道，当一个类被加载进JVM中时，它的class的大概结构如下：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin2.png" class="" title="plugin">
+
+<p>所以把class文件结构和ClassVisitor中的方法做对比，可以发现，ClassVisitor中除了visitEnd方法，其他visitXX方法的访问都对应class文件的某个结构，如字段、方法、属性等，每个visitXX方法的参数都表示字段、方法、属性等的相关信息，例如：access表示修饰符、signature表示泛型、desc表示描述符、name表示名字或全权限定名，我们还注意到有些visitXX方法会返回一个XXVisitor类实例，这些XXVisitor类里面又会有类似的visitXX方法，这表示外部可以继续调用返回的XXVisitor实例的visitXX方法，从而继续访问相应结构中的子结构，这个后面再解释。</p>
+<p>知道了ClassVisitor中方法的作用后，我们自定义一个类，使用<strong>ClassReader</strong>和<strong>ClassVisitor</strong>把这个类的信息读取、打印出来，首先自定义一个名为OuterClass的类，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Deprecated</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OuterClass</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mData = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">OuterClass</span><span class="params">(<span class="keyword">int</span> data)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.mData = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getData</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mData;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span></span>&#123; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>OuterClass类有注解、字段、方法、内部类，然后再自定义一个名为PrintClassVisitor的类扩展自ClassVisitor，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrintClassVisitor</span> <span class="keyword">extends</span> <span class="title">ClassVisitor</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ClassPrinter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(ASM7);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visit</span><span class="params">(<span class="keyword">int</span> version, <span class="keyword">int</span> access, String name, String signature, String superName, String[] interfaces)</span> </span>&#123;</span><br><span class="line">        System.out.println(name + <span class="string">" extends "</span> + superName + <span class="string">"&#123;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitSource</span><span class="params">(String source, String debug)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">" source name = "</span> + source);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitOuterClass</span><span class="params">(String owner, String name, String descriptor)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">" outer class = "</span> + name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AnnotationVisitor <span class="title">visitAnnotation</span><span class="params">(String descriptor, <span class="keyword">boolean</span> visible)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">" annotation = "</span> + descriptor);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitInnerClass</span><span class="params">(String name, String outerName, String innerName, <span class="keyword">int</span> access)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">" inner class = "</span> + name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> FieldVisitor <span class="title">visitField</span><span class="params">(<span class="keyword">int</span> access, String name, String descriptor, String signature, Object value)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">" field = "</span>  + name);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MethodVisitor <span class="title">visitMethod</span><span class="params">(<span class="keyword">int</span> access, String name, String descriptor, String signature, String[] exceptions)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">" method = "</span> + name);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitEnd</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"&#125;"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中Opcodes接口中定义了很多常量，ASM7就是来自Opcodes，在每个visitXX方法把类的相关信息打印出来，最后使用ClassReader读取OuterClass的class字节码，在accept方法中传入ClassVisitor实例，完成对OuterClass的访问，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">//创建ClassVisitor实例</span></span><br><span class="line">  ClassPrinter printClassVisitor = <span class="keyword">new</span> ClassPrinter();</span><br><span class="line">  <span class="comment">//从构造传入OuterClass的全权限定名，ClassReader会读取OuterClass字节码为字节数组</span></span><br><span class="line">  ClassReader classReader = <span class="keyword">new</span> ClassReader(OuterClass<span class="class">.<span class="keyword">class</span>.<span class="title">getName</span>())</span>;</span><br><span class="line">  <span class="comment">//在ClassReader的accept传入ClassVisitor实例，开启访问，第二个参数表示访问模式，先不用管，传入0</span></span><br><span class="line">  classReader.accept(printClassVisitor, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">运行输出：</span><br><span class="line">com/example/plugindemo/OuterClass extends java/lang/Object&#123;</span><br><span class="line"> source name = OuterClass.java</span><br><span class="line"> annotation = Ljava/lang/Deprecated;</span><br><span class="line"> inner <span class="class"><span class="keyword">class</span> </span>= com/example/plugindemo/OuterClass$InnerClass</span><br><span class="line"> field = mData</span><br><span class="line"> method = &lt;init&gt;</span><br><span class="line"> method = getData</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ClassReader的构造除了可以接受类的全限定名，还可以接受class文件的输入流，最终都是把class字节码读取到内存中，变成字节数组，ClassReader的accept方法会利用内存偏移量解析构造中读取到的class字节码的字节数组，把class字节码的结构信息从字节数组中解析出来，然后调用传入的ClassVisitor实例的visitorXX方法来访问解析出来的结构信息，而且从运行输出的结果可以看出，accept方法中对于ClassVisitor的visitorXX方法的调用会有一定的顺序，以visit方法开头，以visitEnd方法结束，中间穿插调用其他的visitXX方法，其大概顺序如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">visit </span><br><span class="line">[visitSource] </span><br><span class="line">[visitOuterClass] </span><br><span class="line">[visitAnnotation]</span><br><span class="line">[visitInnerClass | visitField | visitMethod]</span><br><span class="line">visitEnd</span><br><span class="line"></span><br><span class="line"><span class="comment">//其中[]表示可选，｜表示平级</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2、生成一个类"><a href="#2、生成一个类" class="headerlink" title="2、生成一个类"></a>2、生成一个类</h3><p>前面知道了ClassReader可以用来读取一个类，ClassVisitor可以用来访问一个类，而ClassWirter它可以凭空生成一个类，接下来我们来生成一个名为Person的接口，该接口结构如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    String NAME = <span class="string">"rain9155"</span>;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getAge</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用ClassWriter生成Person接口的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.objectweb.asm.Opcodes.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">    <span class="comment">//创建一个ClassWriter，构造传入修改类的行为模式，传0就行</span></span><br><span class="line">    ClassWriter classWriter = <span class="keyword">new</span> ClassWriter(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//生成类的头部</span></span><br><span class="line">    classWriter.visit(V1_7, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE, <span class="string">"com/example/plugindemo/Person"</span>, <span class="keyword">null</span>, <span class="string">"java/lang/Object"</span>, <span class="keyword">null</span>);</span><br><span class="line">    <span class="comment">//生成文件名</span></span><br><span class="line">    classWriter.visitSource(<span class="string">"Person.java"</span>, <span class="keyword">null</span>);</span><br><span class="line">    <span class="comment">//生成名为NAME，值为rain9155的字段</span></span><br><span class="line">    FieldVisitor fileVisitor = classWriter.visitField(ACC_PUBLIC + ACC_FINAL + ACC_STATIC, <span class="string">"NAME"</span>, <span class="string">"Ljava/lang/String;"</span>, <span class="keyword">null</span>, <span class="string">"rain9155"</span>);</span><br><span class="line">    fileVisitor.visitEnd();</span><br><span class="line">		<span class="comment">//生成名为getAge，返回值为int的方法</span></span><br><span class="line">    MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PUBLIC + ACC_ABSTRACT, <span class="string">"getAge"</span>, <span class="string">"()I"</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">    methodVisitor.visitEnd();</span><br><span class="line">		<span class="comment">//生成类完毕</span></span><br><span class="line">    classWriter.visitEnd();</span><br><span class="line">    <span class="comment">//生成的类可以通过toByteArray方法以字节数组形式返回</span></span><br><span class="line">    <span class="keyword">byte</span>[] bytes = classWriter.toByteArray();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>ClassWirter继承自ClassVisitor，它扩展了ClassVisitor的visitorXX方法，使得它具有<strong>生成class字节码</strong>的能力，最终toByteArray方法返回的字节数组可以通过ClassLoader动态加载为一个Class对象，由于我这里生成的是一个接口，所以getAge方法没有方法体，所以visitMethod方法返回的MethodVisitor只是简单的调用了visitEnd就完成了getAge方法头的生成，如果需要生成getAge方法的内部逻辑，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getAge</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么在调用MethodVisitor的visitEnd方法之前，还需要调用MethodVisitor的其他visitXX方法来生成方法的内部逻辑，MethodVisitor的visitXX方法就是在模拟的JVM的字节码指令，例如入栈、出栈等，对于visitField方法返回的FieldVisitor和visitAnnotation方法返回的AnnotationVisitor的含义和MethodVisitor类似。</p>
+<p>可以看到使用ClassWirter生成一个简单的接口的代码量就如此繁琐，如果这是一个类，并且类中的方法有方法体，代码会更加的复杂，所幸的是我们可以通过<a href="https://plugins.jetbrains.com/auth#access_token=1597742367104.6ee795af-5472-40b9-b586-e882ffbff43d.7334cf3f-10b4-47a4-9e77-07e382775999.0-0-0-0-0%3B1.MC0CFQCMwSIpa4MbttWs1X4KLFJ%2BhHK7IAIUDDKsMI4XaK2gN2DfsT21DYjWgGc%3D&token_type=Bearer&expires_in=3600&scope=0-0-0-0-0&state=f0b84383-ffef-42c2-81a4-d201d8cdf52f" target="_blank" rel="noopener">ASM Bytecode Outline</a>插件来完成这繁琐的过程，首先你要在你的AS或IntelliJ IDE中安装这个插件，然后在你想要查看的Asm代码的类<strong>右键 -&gt; Show Bytecode outline</strong>，就会在侧边窗口中显示这个类的字节码(Bytecode)和Asm代码(ASMified)，点击ASMified栏目就会显示这个类的Asm码，例如下图就是Person接口的通过插件生成的Asm代码：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin3.png" class="" title="plugin">
+
+<p>可以看到，使用ClassWriter来生成Person接口。</p>
+<h3 id="3、转换一个类"><a href="#3、转换一个类" class="headerlink" title="3、转换一个类"></a>3、转换一个类</h3><p>ClassReader可以用来读取一个类，ClassVisitor可以用来访问一个类，ClassWirter可以生成一个类，所以当把它们三个组合在一起时，我们可以把<strong>class字节码通过ClassReader读取，把读取到的class字节码通过扩展的ClassVisitor转换，转换后，再通过ClassWirter重新生成这个类</strong>，就可以达到转换一个类的目的，下面我们把前面的OuterClass类的注解通过转换移除掉，首先自定义一个ClassVisitor，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RemoveAnnotationClassVisitor</span> <span class="keyword">extends</span> <span class="title">ClassVisitor</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RemoveAnnotationClassVisitor</span><span class="params">(ClassVisitor classVisitor)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(ASM7, classVisitor);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AnnotationVisitor <span class="title">visitAnnotation</span><span class="params">(String descriptor, <span class="keyword">boolean</span> visible)</span> </span>&#123;</span><br><span class="line">      <span class="comment">//返回null</span></span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我只重写了ClassVisitor的visitAnnotation方法，在visitAnnotation方法中返回null，这样调用者就无法使用返回的AnnotationVisitor生成类的注解，然后使用这个RemoveAnnotationClassVisitor，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  	<span class="comment">//读取OuterClass类的字节码到ClassReader</span></span><br><span class="line">		ClassReader classReader = <span class="keyword">new</span> ClassReader(OuterClass<span class="class">.<span class="keyword">class</span>.<span class="title">getName</span>())</span>;</span><br><span class="line">  	<span class="comment">//定义用于生成类的ClassWriter</span></span><br><span class="line">  	ClassWriter classWriter = <span class="keyword">new</span> ClassWriter(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//把ClassWriter传进RemoveAnnotationClassVisitor的构造中</span></span><br><span class="line">  	RemoveAnnotationClassVisitor removeAnnotationClassVisitor = <span class="keyword">new</span> RemoveAnnotationClassVisitor(classWriter);</span><br><span class="line">    <span class="comment">//在ClassReader的accept方法中传入RemoveAnnotationClassVisitor实例，开启访问</span></span><br><span class="line"> 	  classReader.accept(removeAnnotationClassVisitor, <span class="number">0</span>);</span><br><span class="line">    <span class="comment">//最终使用ClassWriter的toByteArray方法返回转换后的OuterClass类的字节数组</span></span><br><span class="line">  	<span class="keyword">byte</span>[] bytes = classWriter.toByteArray();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面这段代码只是把前面所讲的读取、访问、生成一个类的知识结合在一起，ClassVisitor的构造可以传进一个ClassVisitor，从而代理传进的ClassVisitor，而ClassWriter是继承自ClassVisitor的，所以RemoveAnnotationClassVisitor代理了ClassWriter，RemoveAnnotationClassVisitor把OuterClass转换完后就交给了ClassWriter，最终我们可以通过ClassWriter的toByteArray方法返回转换后的OuterClass类的字节数组。</p>
+<p>上面是只有简单的一个ClassVisitor进行转换的代码，如果我们把它扩展，我们还可以定义RemoveMethodClassVisitor、AddFieldClassVisitor等多个具有不同功能的ClassVisitor，然后把所有的ClassVisitor串成一条<strong>转换链</strong>，把ClassReader想象成头，ClassWriter想象成尾，中间是一系列的ClassVisitor，ClassReader把读取到的class字节码经过一系列的ClassVisitor转换后到达ClassWriter，最终被ClassWriter生成新的class，这个过程如图：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin4.png" class="" title="plugin">
+
+<p>Asm的入门知识就讲解到这里，如果想要了解更多关于Asm的知识请查阅开头给出的官方教程，下面我们来学习Transform相关知识。</p>
+<h2 id="Transform"><a href="#Transform" class="headerlink" title="Transform"></a>Transform</h2><p>官网：<a href="https://developer.android.com/reference/tools/gradle-api/com/android/build/api/transform/Transform" target="_blank" rel="noopener">Transform</a></p>
+<p>Transform是android gradle api中的一部分，它可以在android项目的.class文件编译为.dex文件之前，得到所有的.class文件，然后我们可以在Transform中对所有的.class文件进行处理，所以Transform提供了一种可以让我们得到android项目的字节码的能力，如图红色标志的位置为Transform的作用点：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin5.png" class="" title="plugin">
+
+<p>上图就是android打包流程的一部分，而android的打包流程是交给android gradle plugin完成的，所以如果我们想要自定义Transform，必须要注入到android gradle plugin中才能产生效果，而plugin的执行单元是Task，但Transform并不是Task，那么Transform是怎么被执行的呢？android gradle plugin会为每一个Transform创建对应的TransformTask，由相应的TransformTask执行相应的Transform。</p>
+<p>接下来我们来介绍Transform，首先我们需要在build.gradle中引入Transform，如下：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">   	<span class="comment">//引用android gradle api, 里面包含transform api</span></span><br><span class="line">    implementation <span class="string">'com.android.tools.build:gradle:4.0.0'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为transform api是android gradle api的一部分，所以我们引入android gradle api就行，自定义一个名为MyTransform的Transform，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyTransform</span> <span class="keyword">extends</span> <span class="title">Transform</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//用来生成TransformTask的名称</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"MyTransform"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Set&lt;QualifiedContent.ContentType&gt; getInputTypes() &#123;</span><br><span class="line">        <span class="comment">//输入类型</span></span><br><span class="line">        <span class="keyword">return</span> TransformManager.CONTENT_CLASS;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Set&lt;? <span class="keyword">super</span> QualifiedContent.Scope&gt; getScopes() &#123;</span><br><span class="line">        <span class="comment">//输入的作用域</span></span><br><span class="line">        <span class="keyword">return</span> TransformManager.SCOPE_FULL_PROJECT;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isIncremental</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//是否开启增量编译</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(TransformInvocation transformInvocation)</span></span>&#123;</span><br><span class="line">        <span class="comment">//在这里处理class文件</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Transform是一个抽象类，所以它会强制要求我们实现几个方法，还要重写transform方法，下面分别讲解这几个方法的含义：</p>
+<h3 id="1、getName方法"><a href="#1、getName方法" class="headerlink" title="1、getName方法"></a>1、getName方法</h3><p>前面讲过android gradle plugin会为每一个Transform创建一个对应的TransformTask，而创建的TransformTask的名称一般的格式为transform<strong>XX1</strong>With<strong>XX2</strong>For<strong>XX3</strong>，其中XX1是inputType类型，XX2的值就是getName方法的返回值，而XX3的值就是当前构建环境的Build Variants，例如Debug、Release等，所以如果你自定义的的Transform名为MyTransform，Build Variants为Debug，inputType为Class文件，那么该Transform对应的Task名为transformClassesWithMyTransformForDebug。</p>
+<h3 id="2、getInputTypes和getScopes方法"><a href="#2、getInputTypes和getScopes方法" class="headerlink" title="2、getInputTypes和getScopes方法"></a>2、getInputTypes和getScopes方法</h3><p>getInputTypes方法和getScopes方法都返回一个Set集合，其中集合的元素类型分别为ContentType接口和Scope枚举，在Transform中，<strong>ContentType</strong>表示Transform输入的<strong>类型</strong>，<strong>Scope</strong>表示Transform输入的<strong>作用域</strong>，Transform从ContentType和Scope这两个维度来<strong>过滤</strong>Transform的输入，某个输入只有同时满足了getInputTypes方法返回的ContentType集合和getScopes方法返回的Scope集合，才会被Transform消费。</p>
+<p>在Transform中，主要有两种类型的输入，它们分别为CLASSES和RESOURCES，以实现了ContentType接口的枚举<a href="https://developer.android.com/reference/tools/gradle-api/com/android/build/api/transform/QualifiedContent.DefaultContentType" target="_blank" rel="noopener">DefaultContentType</a>表示，各枚举含义如下：</p>
+<table>
+<thead>
+<tr>
+<th>DefaultContentType</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CLASSES</td>
+<td>表示在jar或文件夹中的.class文件</td>
+</tr>
+<tr>
+<td>RESOURCES</td>
+<td>表示标准的java源文件</td>
+</tr>
+</tbody></table>
+<p>同理，在Transform中，输入的作用域也以枚举<a href="https://developer.android.com/reference/tools/gradle-api/com/android/build/api/transform/QualifiedContent.Scope" target="_blank" rel="noopener">Scope</a>表示，主要有PROJECT、SUB_PROJECTS、EXTERNAL_LIBRARIES、TESTED_CODE、PROVIDED_ONLY这五种作用域，各枚举含义如下：</p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PROJECT</td>
+<td>只处理当前项目</td>
+</tr>
+<tr>
+<td>SUB_PROJECTS</td>
+<td>只处理当前项目的子项目</td>
+</tr>
+<tr>
+<td>EXTERNAL_LIBRARIES</td>
+<td>只处理当前项目的外部依赖库</td>
+</tr>
+<tr>
+<td>TESTED_CODE</td>
+<td>只处理当前项目构建环境的测试代码</td>
+</tr>
+<tr>
+<td>PROVIDED_ONLY</td>
+<td>只处理当前项目使用provided-only依赖的库</td>
+</tr>
+</tbody></table>
+<p>ContentType和Scope都可以分别进行组合，已Set集合的形式返回，在<strong>TransformManager</strong>类中定义了一些我们常用的组合，我们可以直接使用，如MyTransform的ContentType为<strong>CONTENT_CLASS</strong>， Scope为<strong>SCOPE_FULL_PROJECT</strong>，定义如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TransformManager</span> <span class="keyword">extends</span> <span class="title">FilterableStreamCollection</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">      <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Set&lt;ContentType&gt; CONTENT_CLASS = ImmutableSet.of(CLASSES);</span><br><span class="line">  		</span><br><span class="line">      <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Set&lt;ScopeType&gt; SCOPE_FULL_PROJECT = ImmutableSet.of(Scope.PROJECT, Scope.SUB_PROJECTS, Scope.EXTERNAL_LIBRARIES);</span><br><span class="line">  </span><br><span class="line">  	 <span class="comment">//...还有其他很多组合</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到CONTENT_CLASS由CLASSES组成，SCOPE_FULL_PROJECT由PROJECT、SUB_PROJECTS、EXTERNAL_LIBRARIES组成，所以MyTransform只会处理来自当前项目(包括子项目)和外部依赖库的.class文件输入。</p>
+<h3 id="3、isIncremental方法"><a href="#3、isIncremental方法" class="headerlink" title="3、isIncremental方法"></a>3、isIncremental方法</h3><p>isIncremental方法的返回值表示当前Transform是否支持<strong>增量编译</strong>，返回true表示支持，其实在Gradle中只有Task才有增量编译这一说，Transform最终会被TransformTask执行，所以Transform是依赖Task来实现增量编译的，Gradle Task通过检测它的输入与输出来实现增量编译：当检测到输入有文件changed时，Gradle判定本次编译为<strong>增量编译</strong>，Task内部根据changed文件做增量输出，即只对changed文件产生输出；当检测到输入与上一次输入没有发生任何changed时，Gradle判定本次编译<strong>UP-TO-DATA</strong>，可以跳过执行；当检测到输出被deleted时，Gradle判定本次编译为<strong>全量编译</strong>，会触发该Task的全量输出，即对所有输入文件产生输出。</p>
+<p>当Transform被判定为增量编译后，在transform方法中就可以根据输入文件的<strong><a href="https://developer.android.com/reference/tools/gradle-api/com/android/build/api/transform/Status" target="_blank" rel="noopener">Status</a></strong>来处理每个输入的文件产生增量输出，Status也是一个枚举，各枚举含义如下：</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NOTCHANGED</td>
+<td>该文件自上次构建以来没有发生变化</td>
+</tr>
+<tr>
+<td>ADDED</td>
+<td>该文件为新增文件</td>
+</tr>
+<tr>
+<td>CHANGED</td>
+<td>该文件自上次构建以来发生变化(被修改)</td>
+</tr>
+<tr>
+<td>REMOVED</td>
+<td>该文件已被删除</td>
+</tr>
+</tbody></table>
+<p>开启增量编译可以大大的提高Gradle的构建速度。</p>
+<blockquote>
+<p> 注意：如果你的isIncremental方法返回true，那么自定义的Transform的transform方法中必须提供对增量编译的支持，即根据Status来对输入的文件作出处理，否则增量编译是不生效的，这在后面的插件实现中可以看到如何提供对增量编译的支持。</p>
+</blockquote>
+<h3 id="4、transform方法"><a href="#4、transform方法" class="headerlink" title="4、transform方法"></a>4、transform方法</h3><p>transform方法就是Transform中处理输入的地方，TransformTask执行时就是执行Transform的transform方法，transform方法的参数是<strong>TransfromInvocation</strong>，它包含的当前Transform的输入和输出信息，可以使用TransfromInvocation的<strong>getInputs</strong>方法来获取Transform的输入，使用TransformInvocation的<strong>getOutputProvider</strong>方法来生成Transform的输出，还可以通过TransfromInvocation的<strong>isIncremental</strong>方法的返回值判断本次transform是否是增量编译。</p>
+<p>TransfromInvocation的getInputs方法返回一个元素类型为<strong>TransformInput</strong>的集合，其中TransformInput可以获取两种类型的输入，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TransformInput</span> </span>&#123;</span><br><span class="line">  	<span class="comment">//getJarInputs方法返回JarInput集合</span></span><br><span class="line">    <span class="function">Collection&lt;JarInput&gt; <span class="title">getJarInputs</span><span class="params">()</span></span>;</span><br><span class="line">  </span><br><span class="line">  	<span class="comment">//getDirectoryInputs方法返回DirectoryInput集合</span></span><br><span class="line">    <span class="function">Collection&lt;DirectoryInput&gt; <span class="title">getDirectoryInputs</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>两种类型的输入又抽象为<strong>JarInput</strong>和<strong>DirectoryInput</strong>，JarInput代表输入为.Jar文件，DirectoryInput代表输入为文件夹类型，JarInput有一个<strong>getStatus</strong>方法来获取该jar文件的Status，而DirectoryInput<strong>getChangedFiles</strong>方法来获取一个Map&lt;File, Status&gt;集合，所以可以遍历这个Map集合，然后根据File对应的Status来对File进行增量处理。</p>
+<p>TransfromInvocation的getOutputProvider方法返回一个<strong>TransformOutputProvider</strong>，它可以用来创建Transform的输出位置，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TransformOutputProvider</span> </span>&#123;</span><br><span class="line">    <span class="comment">//删除所有输出</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">deleteAll</span><span class="params">()</span> <span class="keyword">throws</span> IOException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//根据参数给的name、ContentType、Scope、Format来创建输出位置</span></span><br><span class="line">    <span class="function">File <span class="title">getContentLocation</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull String name,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull Set&lt;QualifiedContent.ContentType&gt; types,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull Set&lt;? <span class="keyword">super</span> QualifiedContent.Scope&gt; scopes,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull Format format)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调用getContentLocation方法就可以创建一个输出位置并返回该位置代表的File实例，如果存在就直接返回，通过getContentLocation方法创建的输出位置一般位于<strong>/app/build/intermediates/transforms/build variants/transform名称/</strong>目录下，其中<strong>build variants</strong>就是当前的构建环境如debug、release等，<strong>Transform名称</strong>就是getName方法的返回值，例如在debug构建下MyTransform的输出位置就是/app/build/intermediates/transforms/debug/MyTransform/目录下，该目录下都是Transform输出的jar文件或文件夹，名称是以0、1、2、…递增的命名形式命名，调用deleteAll方法就可以把getContentLocation方法创建的输出位置下的所有文件删除掉。</p>
+<p>所以如果不支持增量编译的话，transform方法里面一般会这样写：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(TransformInvocation transformInvocation)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">       <span class="comment">//通过TransformInvocation的getInputs方法获取所有输入，是一个集合，TransformInput代表一个输入</span></span><br><span class="line">       Collection&lt;TransformInput&gt; transformInputs = transformInvocation.getInputs();</span><br><span class="line"></span><br><span class="line">       <span class="comment">//通过TransformInvocation的getOutputProvider方法获取输出的提供者，通过TransformOutputProvider可以创建Transform的输出</span></span><br><span class="line">       TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();</span><br><span class="line"></span><br><span class="line">       <span class="comment">//遍历所有的输入，每一个输入里面包含jar和directory两种输入类型的文件集合</span></span><br><span class="line">       <span class="keyword">for</span>(TransformInput transformInput : transformInputs)&#123;</span><br><span class="line">           Collection&lt;JarInput&gt; jarInputs = transformInput.getJarInputs();</span><br><span class="line">           <span class="comment">//遍历，处理jar文件</span></span><br><span class="line">           <span class="keyword">for</span>(JarInput jarInput : jarInputs)&#123;</span><br><span class="line">               File dest = outputProvider.getContentLocation(</span><br><span class="line">                       jarInput.getName(),</span><br><span class="line">                       jarInput.getContentTypes(),</span><br><span class="line">                       jarInput.getScopes(),</span><br><span class="line">                       Format.JAR</span><br><span class="line">               );</span><br><span class="line">               <span class="comment">//这里只是简单的把jar文件复制到输出位置</span></span><br><span class="line">               FileUtils.copyFile(jarInput.getFile(), dest);</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           Collection&lt;DirectoryInput&gt; directoryInputs = transformInput.getDirectoryInputs();</span><br><span class="line">           <span class="comment">//遍历，处理文件夹</span></span><br><span class="line">           <span class="keyword">for</span>(DirectoryInput directoryInput : directoryInputs)&#123;</span><br><span class="line">               File dest = outputProvider.getContentLocation(</span><br><span class="line">                       directoryInput.getName(),</span><br><span class="line">                       directoryInput.getContentTypes(),</span><br><span class="line">                       directoryInput.getScopes(),</span><br><span class="line">                       Format.DIRECTORY</span><br><span class="line">               );</span><br><span class="line">               <span class="comment">//这里只是简单的把文件夹中的所有文件递归地复制到输出位置</span></span><br><span class="line">               FileUtils.copyDirectory(directoryInput.getFile(), dest);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>就是获取到输入，遍历输入中的所有JarInput和DirectoryInput，然后把相应的输入简单地重定向到输出位置中，在这过程中，我们还可以获取jar文件和文件夹中的class文件，对class文件进行修改后再进行重定向到输出，这就达到了在编译期间修改字节码的目的，这也是后面插件实现的核心。</p>
+<p>每一个Transform的输出会作为下一个Transform的输入，这些Transform会被串行执行，如下：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin6.png" class="" title="plugin">
+
+<p>现在对于Asm和Transform都有了一个大概的了解，就可以动手实现函数耗时检测插件。</p>
+<h2 id="插件实现"><a href="#插件实现" class="headerlink" title="插件实现"></a>插件实现</h2><p>检测函数耗时很简单，只需要在每个方法的开头和结尾增加耗时检测的代码逻辑即可，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">long</span> startTime = System.currentTimeMillis();<span class="comment">//start</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">long</span> endTime = System.currentTimeMillis();<span class="comment">//end</span></span><br><span class="line">  <span class="keyword">long</span> costTime = endTime - startTime;</span><br><span class="line">  <span class="keyword">if</span>(costTime &gt; <span class="number">100</span>)&#123;</span><br><span class="line">    StackTraceElement thisMethodStack = (<span class="keyword">new</span> Exception()).getStackTrace()[<span class="number">0</span>];<span class="comment">//获得当前方法的StackTraceElement</span></span><br><span class="line">    Log.e(<span class="string">"TimeCost"</span>, String.format(</span><br><span class="line">      <span class="string">"===&gt; %s.%s(%s:%s)方法耗时 %d ms"</span>,</span><br><span class="line">      thisMethodStack.getClassName(), <span class="comment">//类的全限定名称</span></span><br><span class="line">      thisMethodStack.getMethodName(),<span class="comment">//方法名</span></span><br><span class="line">      thisMethodStack.getFileName(),  <span class="comment">//类文件名称</span></span><br><span class="line">      thisMethodStack.getLineNumber(),<span class="comment">//行号</span></span><br><span class="line">      costTime                        <span class="comment">//方法耗时</span></span><br><span class="line">    	)</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们不可能手动的替应用内的每个方法的开头结尾加上上述代码，应用内的方法太多了，所以我们需要Gradle插件替我们完成这重复的过程，在项目编译的过程中，通过Transform拿到项目中每个类的字节码，然后使用Asm对每个类的的每个方法的开头结尾增加上述函数耗时检测的字节码，如果你不知道自定义一个Gradle插件的步骤，请移步上一篇文章，我把Gradle插件的实现代码放在<strong>buildSrc</strong>目录下，整个项目的目录结构如下：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin7.png" class="" title="plugin">
+
+<p>有关Plugin和Transform实现的代码放在com.example.plugin下，有关Asm实现的代码放在com.example.asm下。</p>
+<h3 id="1、自定义Plugin"><a href="#1、自定义Plugin" class="headerlink" title="1、自定义Plugin"></a>1、自定义Plugin</h3><p>自定义Plugin对应代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TimeCostPlugin</span> <span class="keyword">implements</span> <span class="title">Plugin</span>&lt;<span class="title">Project</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//当函数运行时间大于threshold阀值时判定为耗时函数，单位ms</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> sThreshold = <span class="number">100L</span>;</span><br><span class="line">    <span class="comment">//当package有值时，只打印package包内的耗时函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String sPackage = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">apply</span><span class="params">(Project project)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//通过project实例注册一个名为time的扩展</span></span><br><span class="line">            Time time = project.getExtensions().create(<span class="string">"time"</span>, Time<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">            <span class="comment">//在project构建完成后获取time扩展中的赋值情况</span></span><br><span class="line">            project.afterEvaluate(project1 -&gt; &#123;</span><br><span class="line">                <span class="keyword">if</span>(time.getThreshold() &gt;= <span class="number">0</span>)&#123;</span><br><span class="line">                    sThreshold = time.getThreshold();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span>(time.getAppPackage().length() &gt; <span class="number">0</span>)&#123;</span><br><span class="line">                    sPackage = time.getAppPackage();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="comment">//通过project实例获取android gradle plugin中的名为android的扩展实例</span></span><br><span class="line">            AppExtension appExtension = (AppExtension) project.getExtensions().getByName(<span class="string">"android"</span>);</span><br><span class="line">            <span class="comment">//调用android的扩展实例即appExtension的registerTransform方法往android gradle plugin中注册我们自定义的Transform</span></span><br><span class="line">            appExtension.registerTransform(<span class="keyword">new</span> TimeCostTransform());</span><br><span class="line">        &#125;<span class="keyword">catch</span> (UnknownDomainObjectException e)&#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 扩展对应的bean类</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Time</span></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">long</span> mThreshold = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">private</span> String mPackage = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Time</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getThreshold</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> mThreshold;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setThreshold</span><span class="params">(<span class="keyword">long</span> threshold)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.mThreshold = threshold;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">getAppPackage</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> mPackage;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAppPackage</span><span class="params">(String p)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.mPackage = p;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>TimeCostPlugin做了两件事：</p>
+<p>1、定义了一个名为time的扩展，扩展对应的bean类为Time类，通过这个扩展我们可以在build.gradle中配置我们的插件，在这里我定义了函数耗时阀值threshold和通过package过滤打印的函数，然后我们在app/build.gradle中就可以这样使用：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">apply <span class="string">plugin:</span> com.example.plugin.TimeCostPlugin</span><br><span class="line"><span class="comment">//函数耗时阀值为200ms，只对应用内的函数做插桩(排除第三方库)</span></span><br><span class="line">time&#123;</span><br><span class="line">    threshold = <span class="number">200</span></span><br><span class="line">    filter = <span class="string">'com.example.plugindemo'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>扩展属性的赋值情况要在project构建完毕后才能获取，所以注册了project的afterEvaluate回调，在里面获取time扩展属性的赋值情况。</p>
+<p>2、把我们自定义的Transform注入到android gradle plugin中去，android gradle plugin的名为android的扩展对应的bean类为AppExtension类，AppExtension中有一个元素类型为Transform的List集合，我们调用registerTransform方法就是把TimeCostTransform放入到这个集合中，这个Transform集合会在android gradle plugin中被使用，android gradle plugin也注册了project的afterEvaluate回调，在回调中它会为每个Transform生成TransformTask.</p>
+<h3 id="2、自定义Transform"><a href="#2、自定义Transform" class="headerlink" title="2、自定义Transform"></a>2、自定义Transform</h3><p>自定义Transform对应部分代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TimeCostTransform</span> <span class="keyword">extends</span> <span class="title">Transform</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = TimeCostTransform<span class="class">.<span class="keyword">class</span>.<span class="title">getSimpleName</span>()</span>;<span class="comment">//类名</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> TAG;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Set&lt;QualifiedContent.ContentType&gt; getInputTypes() &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.CONTENT_CLASS;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Set&lt;? <span class="keyword">super</span> QualifiedContent.Scope&gt; getScopes() &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.SCOPE_FULL_PROJECT;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isIncremental</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(TransformInvocation transformInvocation)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"transform(), ---------------------------start------------------------------"</span>);</span><br><span class="line"></span><br><span class="line">        Collection&lt;TransformInput&gt; transformInputs = transformInvocation.getInputs();</span><br><span class="line">        TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();</span><br><span class="line">      </span><br><span class="line">        <span class="comment">//通过TransformInvocation的isIncremental方法判断本次Transform任务是否是增量，如果Transform的isIncremental方法返回false，TransformInvocation的isIncremental方法永远返回false</span></span><br><span class="line">        <span class="keyword">boolean</span> isIncremental = transformInvocation.isIncremental();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"transform(), isIncremental = "</span> + isIncremental);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//如果不是增量，就删除之前所有产生的输出，重头来过</span></span><br><span class="line">        <span class="keyword">if</span>(!isIncremental)&#123;</span><br><span class="line">            outputProvider.deleteAll();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//遍历所有的输入，每一个输入里面包含jar和directory两种输入类型的文件集合</span></span><br><span class="line">        <span class="keyword">for</span>(TransformInput transformInput : transformInputs)&#123;</span><br><span class="line">            Collection&lt;JarInput&gt; jarInputs = transformInput.getJarInputs();</span><br><span class="line">            <span class="comment">//遍历所有的jar文件输入</span></span><br><span class="line">            <span class="keyword">for</span>(JarInput jarInput : jarInputs)&#123;</span><br><span class="line">                <span class="comment">//判断本次Transform任务是否增量</span></span><br><span class="line">                <span class="keyword">if</span>(isIncremental)&#123;</span><br><span class="line">                    <span class="comment">//增量处理Jar文件</span></span><br><span class="line">                    handleJarIncremental(jarInput, outputProvider);</span><br><span class="line">                &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">//非增量处理Jar文件</span></span><br><span class="line">                    handleJar(jarInput, outputProvider);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Collection&lt;DirectoryInput&gt; directoryInputs = transformInput.getDirectoryInputs();</span><br><span class="line">            <span class="comment">//遍历所有的directory文件输入</span></span><br><span class="line">            <span class="keyword">for</span>(DirectoryInput directoryInput : directoryInputs)&#123;</span><br><span class="line">                <span class="comment">//判断本次Transform任务是否增量</span></span><br><span class="line">                <span class="keyword">if</span>(isIncremental)&#123;</span><br><span class="line">                    <span class="comment">//增量处理目录文件</span></span><br><span class="line">                    handleDirectoryIncremental(directoryInput, outputProvider);</span><br><span class="line">                &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">//非增量处理目录文件</span></span><br><span class="line">                    handleDirectory(directoryInput, outputProvider);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"transform(), ---------------------------end------------------------------"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//... </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据前面Transform的讲解，TimeCostTransform中每个方法的含义应该是比较好理解的了，其中最重要的就是transform方法，由于我在isIncremental方法返回了true表示TimeCostTransform支持增量编译，所以就需要在transform方法中需要根据是否是增量编译分别做出全量处理和增量处理，由于jar文件的处理和directory文件的处理雷同，下面就以jar文件的处理为例讲解，对于directory文件的处理可以查看文末源码链接：</p>
+<p>1、handleJar方法，全量处理jar文件输入，产生新的输出：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleJar</span><span class="params">(JarInput jarInput, TransformOutputProvider outputProvider)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">//获取输入的jar文件</span></span><br><span class="line">  File srcJar = jarInput.getFile();</span><br><span class="line">  <span class="comment">//使用TransformOutputProvider的getContentLocation方法根据输入构造输出位置</span></span><br><span class="line">  File destJar = outputProvider.getContentLocation(</span><br><span class="line">    jarInput.getName(),</span><br><span class="line">    jarInput.getContentTypes(),</span><br><span class="line">    jarInput.getScopes(),</span><br><span class="line">    Format.JAR</span><br><span class="line">  );</span><br><span class="line">  <span class="comment">//遍历srcJar的所有内容, 在遍历的过程中把srcJar中的内容一条一条地复制到destJar</span></span><br><span class="line">  <span class="comment">//如果发现这个内容条目是class文件，就把它通过asm修改后再复制到destJar中</span></span><br><span class="line">  foreachJarWithTransform(srcJar, destJar);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>handleJar方法中确定输入输出然后调用foreachJarWithTransform方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">foreachJarWithTransform</span><span class="params">(File srcJar, File destJar)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">try</span>(</span><br><span class="line">    JarFile srcJarFile = <span class="keyword">new</span> JarFile(srcJar);</span><br><span class="line">    JarOutputStream destJarFileOs = <span class="keyword">new</span> JarOutputStream(<span class="keyword">new</span> FileOutputStream(destJar))</span><br><span class="line">  )&#123;</span><br><span class="line">    Enumeration&lt;JarEntry&gt; enumeration = srcJarFile.entries();</span><br><span class="line">    <span class="comment">//遍历srcJar中的每一条条目</span></span><br><span class="line">    <span class="keyword">while</span> (enumeration.hasMoreElements())&#123;</span><br><span class="line">      JarEntry entry = enumeration.nextElement();</span><br><span class="line">      <span class="keyword">try</span>(</span><br><span class="line">        <span class="comment">//获取每一条条目的输入流</span></span><br><span class="line">        InputStream entryIs = srcJarFile.getInputStream(entry)</span><br><span class="line">      )&#123;</span><br><span class="line">        destJarFileOs.putNextEntry(<span class="keyword">new</span> JarEntry(entry.getName()));</span><br><span class="line">        <span class="keyword">if</span>(entry.getName().endsWith(<span class="string">".class"</span>))&#123;<span class="comment">//如果是class文件</span></span><br><span class="line">          <span class="comment">//通过asm修改源class文件</span></span><br><span class="line">          ClassReader classReader = <span class="keyword">new</span> ClassReader(entryIs);</span><br><span class="line">          ClassWriter classWriter = <span class="keyword">new</span> ClassWriter(<span class="number">0</span>);</span><br><span class="line">          TimeCostClassVisitor timeCostClassVisitor = <span class="keyword">new</span> TimeCostClassVisitor(classWriter);</span><br><span class="line">          classReader.accept(timeCostClassVisitor, ClassReader.EXPAND_FRAMES);</span><br><span class="line">          <span class="comment">//然后把修改后的class文件复制到destJar中</span></span><br><span class="line">          destJarFileOs.write(classWriter.toByteArray());</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;<span class="comment">//如果不是class文件</span></span><br><span class="line">          <span class="comment">//原封不动地复制到destJar中</span></span><br><span class="line">          destJarFileOs.write(IOUtils.toByteArray(entryIs));</span><br><span class="line">        &#125;</span><br><span class="line">        destJarFileOs.closeEntry();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于该输入是jar文件，而jar文件本质是一个zip文件，所以foreachJarWithTransform中就像在解压这个jar文件，然后遍历解压后的jar文件中的所有文件，通过后缀名判断该文件是否是.class文件，如果是.class文件就通过asm处理后输出，如果不是就是原封不动地复制到输出中去，逻辑还是很简单的，关于asm的处理在后面再讲。</p>
+<p>2、handleJarIncremental方法, 增量处理jar文件输入, 可能产生新的输出：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleJarIncremental</span><span class="params">(JarInput jarInput, TransformOutputProvider outputProvider)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">//获取输入文件的状态</span></span><br><span class="line">  Status status = jarInput.getStatus();</span><br><span class="line">  <span class="comment">//根据文件的Status做出不同的操作</span></span><br><span class="line">  <span class="keyword">switch</span> (status)&#123;</span><br><span class="line">    <span class="keyword">case</span> ADDED:</span><br><span class="line">    <span class="keyword">case</span> CHANGED:</span><br><span class="line">      handleJar(jarInput, outputProvider);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> REMOVED:</span><br><span class="line">      <span class="comment">//删除所有输出</span></span><br><span class="line">      outputProvider.deleteAll();</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> NOTCHANGED:</span><br><span class="line">      <span class="comment">//do nothing</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>理解了前面handleJar方法的全量处理，那么handleJarIncremental方法中的增量处理就很好理解了，其实就是根据输入的jar文件的Status来做出不同处理，对于ADDED和CHANGED都判定为changed文件，只对changed文件做处理，所以直接调用handleJar方法处理就行，对于REMOVED表示输入被删除了，那么就删除对应的输出，对于NOTCHANGED表示输入没有变化，不做处理，跳过。</p>
+<h3 id="3、asm处理class文件"><a href="#3、asm处理class文件" class="headerlink" title="3、asm处理class文件"></a>3、asm处理class文件</h3><p>前面transform方法中当判定为某个文件为class文件后就使用asm处理class文件，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(entry.getName().endsWith(<span class="string">".class"</span>))&#123;<span class="comment">//如果是class文件</span></span><br><span class="line">  <span class="comment">//通过asm修改源class文件</span></span><br><span class="line">  ClassReader classReader = <span class="keyword">new</span> ClassReader(entryIs);</span><br><span class="line">  ClassWriter classWriter = <span class="keyword">new</span> ClassWriter(<span class="number">0</span>);</span><br><span class="line">  TimeCostClassVisitor timeCostClassVisitor = <span class="keyword">new</span> TimeCostClassVisitor(classWriter);</span><br><span class="line">  classReader.accept(timeCostClassVisitor, ClassReader.EXPAND_FRAMES);</span><br><span class="line">  <span class="comment">//然后把修改后的class文件复制到destJar中</span></span><br><span class="line">  destJarFileOs.write(classWriter.toByteArray());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据前面asm的讲解，这是使用asm转换一个类的步骤，首先使用ClassReader读取这个class文件，然后调用ClassReader的accept方法使用TimeCostClassVisitor开启对class文件的访问，最终通过ClassWriter的toByteArray方法获取转换后的class字节流，所以对class文件修改的逻辑都在TimeCostClassVisitor中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TimeCostClassVisitor</span> <span class="keyword">extends</span> <span class="title">ClassVisitor</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String mPackage;<span class="comment">//包名</span></span><br><span class="line">    <span class="keyword">private</span> String mCurClassName;<span class="comment">//当前访问的类的全限定名</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> isExcludeOtherPackage;<span class="comment">//是否排除不属于package的类</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TimeCostClassVisitor</span><span class="params">(ClassVisitor classVisitor)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(ASM7, classVisitor);</span><br><span class="line">        mPackage = TimeCostPlugin.sPackage;</span><br><span class="line">        <span class="keyword">if</span>(mPackage.length() &gt; <span class="number">0</span>)&#123;</span><br><span class="line">            mPackage = mPackage.replace(<span class="string">"."</span>, <span class="string">"/"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        isExcludeOtherPackage = mPackage.length() &gt; <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visit</span><span class="params">(<span class="keyword">int</span> version, <span class="keyword">int</span> access, String name, String signature, String superName, String[] interfaces)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.visit(version, access, name, signature, superName, interfaces);</span><br><span class="line">        mCurClassName = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MethodVisitor <span class="title">visitMethod</span><span class="params">(<span class="keyword">int</span> access, String name, String descriptor, String signature, String[] exceptions)</span> </span>&#123;</span><br><span class="line">        MethodVisitor methodVisitor = <span class="keyword">super</span>.visitMethod(access, name, descriptor, signature, exceptions);</span><br><span class="line">        <span class="keyword">if</span>(isExcludeOtherPackage)&#123;</span><br><span class="line">           <span class="comment">//如果该方法对应的类在package中就处理</span></span><br><span class="line">            <span class="keyword">if</span>(mCurClassName.startsWith(mPackage) &amp;&amp; !<span class="string">"&lt;init&gt;"</span>.equals(name))&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> TimeCostMethodVisitor(methodVisitor, access, descriptor);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(!<span class="string">"&lt;init&gt;"</span>.equals(name))&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> TimeCostMethodVisitor(methodVisitor, access, descriptor);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> methodVisitor;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>TimeCostClassVisitor继承自ClassVisitor，因为我们只需要修改class文件中的方法，所以只重写了ClassVisitor的visit方法和visitMethod方法，其中visit方法中获取了当前访问的类的全限定名，它在visitMethod方法中与TimeCostPlugin扩展获取的package包名结合判定这个类的方法是否需要被过滤掉，如果这个类不属于package中的类，那么就不对这个类的class文件的方法做修改，跳过，如果这个类属于package中的类，就返回TimeCostMethodVisitor，在TimeCostMethodVisitor中修改class文件的方法，所以对于class文件中方法的修改的逻辑都在TimeCostMethodVisitor中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimeCostMethodVisitor</span> <span class="keyword">extends</span> <span class="title">LocalVariablesSorter</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//局部变量</span></span><br><span class="line">  <span class="keyword">int</span> startTime, endTime, costTime, thisMethodStack;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">TimeCostMethodVisitor</span><span class="params">(MethodVisitor methodVisitor, <span class="keyword">int</span> access, String desc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(ASM7, access, desc, methodVisitor);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.visitCode();</span><br><span class="line">    <span class="comment">//...方法开头</span></span><br><span class="line">    <span class="comment">//long startTime = System.currentTimeMillis();</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitInsn</span><span class="params">(<span class="keyword">int</span> opcode)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(opcode == RETURN)&#123;</span><br><span class="line">      <span class="comment">//...方法结尾</span></span><br><span class="line">      <span class="comment">//long endTime = System.currentTimeMillis();</span></span><br><span class="line">      <span class="comment">//long costTime = endTime - startTime;</span></span><br><span class="line">      <span class="comment">//if(costTime &gt; 100)&#123;</span></span><br><span class="line">      <span class="comment">//  StackTraceElement thisMethodStack = (new Exception()).getStackTrace()[0];//获得当前方法的StackTraceElement</span></span><br><span class="line">     <span class="comment">//   Log.e("TimeCost", String.format(</span></span><br><span class="line">     <span class="comment">//     "===&gt; %s.%s(%s:%s)方法耗时 %d ms",</span></span><br><span class="line">     <span class="comment">//     thisMethodStack.getClassName(), //类的全限定名称</span></span><br><span class="line">     <span class="comment">//     thisMethodStack.getMethodName(),//方法名</span></span><br><span class="line">     <span class="comment">//     thisMethodStack.getFileName(),  //类文件名称</span></span><br><span class="line">     <span class="comment">//     thisMethodStack.getLineNumber(),//行号</span></span><br><span class="line">     <span class="comment">//     costTime                        //方法耗时</span></span><br><span class="line">     <span class="comment">//   )</span></span><br><span class="line">     <span class="comment">//       );</span></span><br><span class="line">     <span class="comment">//&#125;</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">super</span>.visitInsn(opcode);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们需要做的就是在方法前后插入函数耗时检测逻辑的代码，而visitCode方法是开始生成方法字节码的时候调用，即方法开始时调用，而visitInsn方法在访问RETURN指令时就是表示访问到方法的return语句，即方法正常结束时调用，所以我们只需要在上述地方加入函数耗时检测逻辑的asm代码即可，asm会自动的替我们把asm代码转换为字节码，这样最终生成的方法字节码就会包含我们的函数耗时检测逻辑的字节码，TimeCostMethodVisitor继承自LocalVariablesSorter，而LocalVariablesSorter继承自MethodVisitor，LocalVariablesSorter扩展了MethodVisitor，使得我们很方便的在MethodVisitor的visitXX方法中通过asm代码使用局部变量，如：startTime、 endTime、 costTime、thisMethodStack。</p>
+<p>那么我们可以通过前面介绍的ASM插件生成函数耗时检测的asm代码，如下：</p>
+<img src="/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/plugin8.png" class="" title="plugin">
+
+<p>由于生成的asm代码篇幅太长截图不完全，去除onCreate方法头、结尾和super.onCreate(savedInstanceState)这句代码的asm代码，剩下的就属于函数耗时检测逻辑的asm代码，我做了一些精简，把一些无用的visitLabel、visitLineNumber去掉，然后把它复制到TimeCostMethodVisitor中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimeCostMethodVisitor</span> <span class="keyword">extends</span> <span class="title">LocalVariablesSorter</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//局部变量</span></span><br><span class="line">    <span class="keyword">int</span> startTime, endTime, costTime, thisMethodStack;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TimeCostMethodVisitor</span><span class="params">(MethodVisitor methodVisitor, <span class="keyword">int</span> access, String desc)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(ASM7, access, desc, methodVisitor);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.visitCode();</span><br><span class="line">        <span class="comment">//long startTime = System.currentTimeMillis();</span></span><br><span class="line">        mv.visitMethodInsn(INVOKESTATIC, <span class="string">"java/lang/System"</span>, <span class="string">"currentTimeMillis"</span>, <span class="string">"()J"</span>, <span class="keyword">false</span>);</span><br><span class="line">        startTime = newLocal(Type.LONG_TYPE);</span><br><span class="line">        mv.visitVarInsn(LSTORE, startTime);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitInsn</span><span class="params">(<span class="keyword">int</span> opcode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(opcode == RETURN)&#123;</span><br><span class="line">            <span class="comment">//long endTime = System.currentTimeMillis();</span></span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">"java/lang/System"</span>, <span class="string">"currentTimeMillis"</span>, <span class="string">"()J"</span>, <span class="keyword">false</span>);</span><br><span class="line">            endTime = newLocal(Type.LONG_TYPE);</span><br><span class="line">            mv.visitVarInsn(LSTORE, endTime);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//long costTime = endTime - startTime;</span></span><br><span class="line">            mv.visitVarInsn(LLOAD, endTime);</span><br><span class="line">            mv.visitVarInsn(LLOAD, startTime);</span><br><span class="line">            mv.visitInsn(LSUB);</span><br><span class="line">            costTime = newLocal(Type.LONG_TYPE);</span><br><span class="line">            mv.visitVarInsn(LSTORE, costTime);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//判断costTime是否大于sThreshold</span></span><br><span class="line">            mv.visitVarInsn(LLOAD, costTime);</span><br><span class="line">            mv.visitLdcInsn(<span class="keyword">new</span> Long(TimeCostPlugin.sThreshold));<span class="comment">//阀值由TimeCostPlugin的扩展属性threshold控制</span></span><br><span class="line">            mv.visitInsn(LCMP);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//if costTime &lt;= sThreshold,就跳到end标记处，否则继续往下执行</span></span><br><span class="line">            Label end = <span class="keyword">new</span> Label();</span><br><span class="line">            mv.visitJumpInsn(IFLE, end);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//StackTraceElement thisMethodStack = (new Exception()).getStackTrace()[0]</span></span><br><span class="line">            mv.visitTypeInsn(NEW, <span class="string">"java/lang/Exception"</span>);</span><br><span class="line">            mv.visitInsn(DUP);</span><br><span class="line">            mv.visitMethodInsn(INVOKESPECIAL, <span class="string">"java/lang/Exception"</span>, <span class="string">"&lt;init&gt;"</span>, <span class="string">"()V"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">"java/lang/Exception"</span>, <span class="string">"getStackTrace"</span>, <span class="string">"()[Ljava/lang/StackTraceElement;"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitInsn(ICONST_0);</span><br><span class="line">            mv.visitInsn(AALOAD);</span><br><span class="line">            thisMethodStack = newLocal(Type.getType(StackTraceElement<span class="class">.<span class="keyword">class</span>))</span>;</span><br><span class="line">            mv.visitVarInsn(ASTORE, thisMethodStack);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//Log.e("rain", String.format（"===&gt; %s.%s(%s:%s)方法耗时 %d ms", thisMethodStack.getClassName(), thisMethodStack.getMethodName(),thisMethodStack.getFileName(),thisMethodStack.getLineNumber(),costTime));</span></span><br><span class="line">            mv.visitLdcInsn(<span class="string">"TimeCost"</span>);</span><br><span class="line">            mv.visitLdcInsn(<span class="string">"===&gt; %s.%s(%s:%s)\u65b9\u6cd5\u8017\u65f6 %d ms"</span>);</span><br><span class="line">            mv.visitInsn(ICONST_5);</span><br><span class="line">            mv.visitTypeInsn(ANEWARRAY, <span class="string">"java/lang/Object"</span>);</span><br><span class="line">            mv.visitInsn(DUP);</span><br><span class="line">            mv.visitInsn(ICONST_0);</span><br><span class="line">            mv.visitVarInsn(ALOAD, thisMethodStack);</span><br><span class="line">            mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">"java/lang/StackTraceElement"</span>, <span class="string">"getClassName"</span>, <span class="string">"()Ljava/lang/String;"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitInsn(AASTORE);</span><br><span class="line">            mv.visitInsn(DUP);</span><br><span class="line">            mv.visitInsn(ICONST_1);</span><br><span class="line">            mv.visitVarInsn(ALOAD, thisMethodStack);</span><br><span class="line">            mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">"java/lang/StackTraceElement"</span>, <span class="string">"getMethodName"</span>, <span class="string">"()Ljava/lang/String;"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitInsn(AASTORE);</span><br><span class="line">            mv.visitInsn(DUP);</span><br><span class="line">            mv.visitInsn(ICONST_2);</span><br><span class="line">            mv.visitVarInsn(ALOAD, thisMethodStack);</span><br><span class="line">            mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">"java/lang/StackTraceElement"</span>, <span class="string">"getFileName"</span>, <span class="string">"()Ljava/lang/String;"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitInsn(AASTORE);</span><br><span class="line">            mv.visitInsn(DUP);</span><br><span class="line">            mv.visitInsn(ICONST_3);</span><br><span class="line">            mv.visitVarInsn(ALOAD, thisMethodStack);</span><br><span class="line">            mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">"java/lang/StackTraceElement"</span>, <span class="string">"getLineNumber"</span>, <span class="string">"()I"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">"java/lang/Integer"</span>, <span class="string">"valueOf"</span>, <span class="string">"(I)Ljava/lang/Integer;"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitInsn(AASTORE);</span><br><span class="line">            mv.visitInsn(DUP);</span><br><span class="line">            mv.visitInsn(ICONST_4);</span><br><span class="line">            mv.visitVarInsn(LLOAD, costTime);</span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">"java/lang/Long"</span>, <span class="string">"valueOf"</span>, <span class="string">"(J)Ljava/lang/Long;"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitInsn(AASTORE);</span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">"java/lang/String"</span>, <span class="string">"format"</span>, <span class="string">"(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitMethodInsn(INVOKESTATIC, <span class="string">"android/util/Log"</span>, <span class="string">"e"</span>, <span class="string">"(Ljava/lang/String;Ljava/lang/String;)I"</span>, <span class="keyword">false</span>);</span><br><span class="line">            mv.visitInsn(POP);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//end标记处，即方法的末尾</span></span><br><span class="line">            mv.visitLabel(end);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">super</span>.visitInsn(opcode);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面每一句注释都表示了注释下面asm代码的含义，对于局部变量使用了LocalVariablesSorter的newLocal方法生成，其实如果你仔细观察生成的asm代码，它们还是很有规律的，使用MethodVisitor的visitXX方法生成方法字节码时它们的调用顺序如下（忽略注解注释）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[visitCode]</span><br><span class="line">[visitLabel | visitLineNumber | visitFrame | visitXXInsn | visitLocalVariable | visitTryCatchBlock]</span><br><span class="line">[visitMax]</span><br><span class="line">visitEnd</span><br><span class="line"></span><br><span class="line"><span class="comment">//其中[]表示可选，｜表示平级</span></span><br></pre></td></tr></table></figure>
+
+<p>与ClassVisitor类似，但以visitCode开头，表示开始生成方法体字节码，中间调用visitLabel、visitXXInsn等生成方法体字节码，然后以一个visitMax结尾，最终一定要调用一个visitEnd结束，如果这个方法没有方法体，那么调用一个visitEnd就行。</p>
+<p>到这里这个函数耗时检测插件就完成了，使用方法就和平时使用gradle插件一样。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>这个gradle插件还是很简陋，还可以继续扩展它，例如耗时阀值支持ns、发现耗时函数时把函数的调用栈打印出来等，不过本文的目的还是主要学习自定义个gradle插件的过程，还有asm和transform知识， 其实android gradle api从3.6开始很多apk打包时用到的内置transform基本都变成了直接使用Task来实现，如DesugarTransform -&gt; DesugarTask, MergeClassesTransform -&gt; MergeClassesTask等，可能是为了提高构建效率，这也说明了transform本质是依赖task来完成的，它只是android gradle api提供给外部，方便外部操作字节码的工具，同时android gradle api中也有很多apk构建时用的的插件，如<a href="https://android.googlesource.com/platform/tools/base/+/refs/tags/gradle_3.4.0/build-system/gradle-core/src/main/java/com/android/build/gradle/AppPlugin.java" target="_blank" rel="noopener">AppPlugin</a>、<a href="https://android.googlesource.com/platform/tools/base/+/refs/tags/gradle_3.4.0/build-system/gradle-core/src/main/java/com/android/build/gradle/LibraryPlugin.java" target="_blank" rel="noopener">LibrayPlugin</a>等，我们编写gradle插件时也可以选择一个作为参考。</p>
+<p>以上就是本文的全部内容！</p>
+<p><a href="https://github.com/rain9155/PluginDemo" target="_blank" rel="noopener">本文源码地址</a></p>
+<p>参考资料：</p>
+<p><a href="https://www.jianshu.com/p/811b0d0975ef" target="_blank" rel="noopener">Android Gradle Plugin打包Apk过程中的Transform API</a></p>
+<p><a href="http://quinnchen.cn/2018/09/13/2018-09-13-asm-transform/#timing-plugin" target="_blank" rel="noopener">一起玩转Android项目中的字节码</a></p>
+<p><a href="https://juejin.im/post/6844903728525361165#heading-2" target="_blank" rel="noopener">一文读懂 AOP</a></p>
+<p><a href="https://juejin.im/post/6844903844749508622#heading-9" target="_blank" rel="noopener">Android Gradle Plugin 主要流程分析</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:49.212Z" itemprop="dateUpdated">2023-01-07 18:44:49</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/aop/" rel="tag">aop</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/asm/" rel="tag">asm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gradle/" rel="tag">gradle</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/&title=《自定义Gradle插件检测函数耗时》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/&title=《自定义Gradle插件检测函数耗时》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《自定义Gradle插件检测函数耗时》 — jianyu的博客&url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2021/01/21/%E6%8F%AD%E7%A7%98kotlin%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84CoroutineContext/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">揭秘kotlin协程中的CoroutineContext</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/06/26/Gradle%E7%9A%84%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Gradle的快速入门学习</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/&title=《自定义Gradle插件检测函数耗时》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/&title=《自定义Gradle插件检测函数耗时》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《自定义Gradle插件检测函数耗时》 — jianyu的博客&url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2020/09/29/%E8%87%AA%E5%AE%9A%E4%B9%89Gradle%E6%8F%92%E4%BB%B6%E6%A3%80%E6%B5%8B%E5%87%BD%E6%95%B0%E8%80%97%E6%97%B6/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEkUlEQVR42u3a0Y7USAwFUP7/pwdpn5CYNPfaaW1X5uQJQSdxnSCVy/avX/H19d/155//vP7+5dVvrp4ziyF57+sYbr4wYcKECdNHMrWPvnpNEnq7pM0nnH3yyydgwoQJE6bDmWZJwH5hM9DX+3XyrvaTY8KECROmn8D0Oqx244+Ci9+Vo2DChAkTJkz5C9oFv6O8+/o3s4IvJkyYMGF6HlPyuH3xdNYibXuLSWryxlo4JkyYMGH6MKbNlnz6n2++MGHChAnThzF9lVdyb16ibduZsyZrOzD0zb2YMGHChOlYpqQF2O6MSaCzjbkt3c6O9JdRYcKECROmA5n2Izuz0ZzZJp0j5k3ZKLnBhAkTJkyPYErSgjzLaBeWNDtn9di2XXpZIcCECRMmTMcyzYq5beizLTk5rG6GgRIyTJgwYcL0DKZZsfXe0Z+7jt+zgvXlZ8CECRMmTA9iyjfUWcE0L++223wbLSZMmDBh+slMbaCzRbbNzuT37YhPlJRgwoQJE6ZjmfJA8xDbIm+eWMyarPtUAxMmTJgwnc6UhN6izNqTe6y8SVmvERMmTJgwHcjUthITrNlRc7bx52T5B/jmmZgwYcKE6RFMsw11tunmoG0zso0nYsWECRMmTI9g2mz/dzUv84/UDgnlo0Lf/D0mTJgwYTqWKQkrL6QmZeLNGNC+Z5snBEWdABMmTJgwfTBTHm5exm3D3ZPto/1HbJgwYcKE6VimzZUvID8252Xld7ylfTImTJgwYfp8puSw2m75bRIwSxHuGhKKRpQwYcKECdOxTDdUiGOau8rH+bF2n0zcV0jHhAkTJkyfwrQpns5GZO59VzswlLdgMWHChAnTuUx3lVzzYuusxpynHZvnY8KECROmJzHlm2J7DG5LwEmZdZZ8tMNAl/+DMGHChAnTgUybpmM7IjM7+m6wZoXs18/BhAkTJkwnMrU3ty3P4aBMkHDM0oi2AI0JEyZMmM5laouheeNz03SctSffMRiECRMmTJhOZ2oLr5ujcp46JPSzQnO7liItwIQJEyZMhzC1xdZZk/KulmoyypPUtoveLyZMmDBhOoqpXcDmrlUduiwrtwfmf0SCCRMmTJgOZ8qLnu0hMy+tzpjy8aBNGRoTJkyYMJ3ONGtbboZ12s+wOX63rN/ciwkTJkyYjmWa3bwf+mkh6i18NIGTf05MmDBhwnQK0yzE/ShP26TMN/72vVFpGBMmTJgwPY6pbW22gzKbEZ/X703urdeLCRMmTJgewZQsfnaMnD15c6ieNVYv48GECRMmTMcytQfIJAnYFHzzRKE9HufF32hFmDBhwoTpEKav8rq36TgrKOdk7b9evhcTJkyYMB3LdFf5tX10HuKmvbpvjmLChAkTpmcw5UnArME5a0+29dWWvk1rMGHChAnT6UxtaTU/KM448tJtQrZPUzBhwoQJ009gurcZeW+T8oZxnNerw4QJEyZMP4ZpVS1+Q7owGzCq0whMmDBhwnQ4U/6IJLicZrbsFn12sC+mnDBhwoQJ0wczbbbtvIX5Nbpm5d1NE/Qt2Q0mTJgwYfp/mH4Dc7S/UG41nx0AAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

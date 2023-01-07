@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>搞定两种场景下的Fragment懒加载 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="fragment">
+    <meta name="description" content="前言我对懒加载的定义是：数据的加载要等到页面对用户可见时才加载，否则的话会浪费用户流量。网上实现懒加载的方案非常多，但大多数都是解决了我下面说到的场景一的懒加载，本文还解决场景二的懒加载方式。 如果不想看下面的分析，直接这个类导入你的项目中，需要懒加载的Fragment继承这个类，并重写相应的方法就行：传送门。 场景一： Viewpager + Tablayout + Fragment什么？不会用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搞定两种场景下的Fragment懒加载">
+<meta property="og:url" content="http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言我对懒加载的定义是：数据的加载要等到页面对用户可见时才加载，否则的话会浪费用户流量。网上实现懒加载的方案非常多，但大多数都是解决了我下面说到的场景一的懒加载，本文还解决场景二的懒加载方式。 如果不想看下面的分析，直接这个类导入你的项目中，需要懒加载的Fragment继承这个类，并重写相应的方法就行：传送门。 场景一： Viewpager + Tablayout + Fragment什么？不会用">
+<meta property="og:image" content="http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/fragment1.gif">
+<meta property="og:image" content="http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/fragment2.gif">
+<meta property="article:published_time" content="2019-07-14T10:33:57.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:49.159Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="fragment">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/fragment1.gif">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">搞定两种场景下的Fragment懒加载</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">搞定两种场景下的Fragment懒加载</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-14T10:33:57.000Z" itemprop="datePublished" class="page-time">
+  2019-07-14
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#场景一：-Viewpager-Tablayout-Fragment"><span class="post-toc-text">场景一： Viewpager + Tablayout + Fragment</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#懒加载原理"><span class="post-toc-text">懒加载原理</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#实现思路"><span class="post-toc-text">实现思路</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#应用示例"><span class="post-toc-text">应用示例</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#场景二：FragmentManager-FragmentTransaction-Fragment"><span class="post-toc-text">场景二：FragmentManager + FragmentTransaction+ Fragment</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#懒加载原理-1"><span class="post-toc-text">懒加载原理</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#实现思路-1"><span class="post-toc-text">实现思路</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#应用示例-1"><span class="post-toc-text">应用示例</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-搞定两种场景下的Fragment懒加载"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">搞定两种场景下的Fragment懒加载</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-14 18:33:57" datetime="2019-07-14T10:33:57.000Z"  itemprop="datePublished">2019-07-14</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>我对懒加载的定义是：数据的加载要等到页面对用户可见时才加载，否则的话会浪费用户流量。网上实现懒加载的方案非常多，但大多数都是解决了我下面说到的场景一的懒加载，本文还解决场景二的懒加载方式。</p>
+<p>如果不想看下面的分析，直接这个类导入你的项目中，需要懒加载的Fragment继承这个类，并重写相应的方法就行：<a href="https://github.com/rain9155/lazyLoagingFragment/tree/master/app/src/main/java/com/example/lazyloading/fragment" target="_blank" rel="noopener">传送门</a>。</p>
+<h2 id="场景一：-Viewpager-Tablayout-Fragment"><a href="#场景一：-Viewpager-Tablayout-Fragment" class="headerlink" title="场景一： Viewpager + Tablayout + Fragment"></a>场景一： Viewpager + Tablayout + Fragment</h2><p>什么？不会用Viewpager，可以看一下这个入门系列：<a href="https://blog.csdn.net/harvic880925/article/details/38453725" target="_blank" rel="noopener">ViewPager 详解（一）—基本入门</a>。</p>
+<p>场景一应该是很多人都遇到过的情况，界面整体使用Viewpager + Tablayout + Fragment组合，左右滑动界面以展示数据给用户，当你滑动到下一页的时候，Fragment已经有数据了，因为Viewpager默认会预加载好相邻的Fragment页面，这个预加载数量可以通过如下设置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">viewPager.setOffscreenPageLimit(<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>那么上面这句代码不是把预加载数量设置为0了吗？这样Fragment就不会预先加载了，这样想你就太天真，通过看setOffscreenPageLimit的源码得知，如果你传入的数值小于1，那么ViewPager就会把预加载数量设置成默认值，而默认值就是1，所以说就算你传入了0，ViewPager还是会预先加载好当前页面的左右两个Fragment页面。</p>
+<h3 id="懒加载原理"><a href="#懒加载原理" class="headerlink" title="懒加载原理"></a>懒加载原理</h3><p>那么怎么解决呢？这时要认识Fragment中的一个函数：<strong>setUserVisibleHint(boolean isVisibleToUser)</strong>：</p>
+<p>setUserVisibleHint方法是Fragment中的一个回调函数。当前Fragment可见对用户可见时，setUserVisibleHint()回调，其中参数isVisibleToUser=true，当前Fragment由可见到不可见或实例化时，setUserVisibleHint()回调，其中参数isVisibleToUser=false。</p>
+<p>下面看一下这个方法在Fragment生命周期中的调用时机：</p>
+<ul>
+<li>1、当Fragment被实例化时，即Fragment被装载进ViewPager适配器中，并：setUserVisibleHint() -&gt;onAttach()  -&gt; onCreate() -&gt; onCreateView() -&gt; onViewCreated() -&gt; onActivityCreate()  -&gt;  onStart()   -&gt; onResume()。此时setUserVisibleHint() 中的参数为false。</li>
+<li>2、在Fragmente可见时，即ViewPager滑动到当前页面时：setUserVisibleHint()。只会调用setUserVisibleHint方法，因为已经预加载过了，Fragment在之前生命周期已经走到onResume() 了。此时setUserVisibleHint() 中的参数为true。</li>
+<li>3、在Fragment由可见变为不可见，即ViewPager由当前页面滑动到另一个页面：setUserVisibleHint()。只会调用setUserVisibleHint方法，因为还要保持当前页面的预加载过程，此时setUserVisibleHint() 中的参数为false。</li>
+<li>4、点击由TabLayout直接跳转到一个未预加载的页面，此时生命周期的回调过程：setUserVisibleHint() -&gt; setUserVisibleHint() -&gt; onAttach()  -&gt; onCreate() -&gt; onCreateView() -&gt; onViewCreated() -&gt; onActivityCreate()  -&gt; onStart() -&gt; onResume()。回调了两次setUserVisibleHint() ，一次代表初始化时，传入参数是false，一次代表可见时，传入参数是true。</li>
+</ul>
+<p>可以看到此时setUserVisibleHint的调用时机总是在<strong>初始化时调用，可见时调用，由可见转换成不可见时调用。</strong></p>
+<h3 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h3><p>下面讲讲场景一的懒加载实现思路：我们一般在Fragment的onActivityCreated中加载数据，这个时候我们可以判断此时的Fragment是否对用户可见，调用fragment.getUserVisibleHint()可以获得isVisibleToUser的值，如果为true，表示可见，就加载数据，如果不可见，就不加载数据了，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onActivityCreated</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">super</span>.onActivityCreated(savedInstanceState);</span><br><span class="line">      <span class="keyword">if</span>(isFragmentVisible(<span class="keyword">this</span>) &amp;&amp; <span class="keyword">this</span>.isAdded())&#123;</span><br><span class="line">          <span class="keyword">if</span> (<span class="keyword">this</span>.getParentFragment() == <span class="keyword">null</span> || isFragmentVisible(<span class="keyword">this</span>.getParentFragment())) &#123;</span><br><span class="line">              onLazyLoadData();</span><br><span class="line">              isLoadData = <span class="keyword">true</span>;</span><br><span class="line">              <span class="comment">//...</span></span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>判读Fragment是否对用户可见封装在isFragmentVisible方法中， onLazyLoadData()是子类需要重写的方法，用来加载数据，加载完数据后把isLoadData设置为true，表示已经加载过数据。</p>
+<p>上面就控制了当Fragment不可见时就不加载数据，而且此时Fragment的生命周期也走到onResume了，那么当我滑到这个Fragment时，只会调用它的setUserVisibleHint方法，那么就要在setUserVisibleHint方法中加载数据，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUserVisibleHint</span><span class="params">(<span class="keyword">boolean</span> isVisibleToUser)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">super</span>.setUserVisibleHint(isVisibleToUser);</span><br><span class="line">     <span class="keyword">if</span>(isFragmentVisible(<span class="keyword">this</span>) &amp;&amp; !isLoadData &amp;&amp; isViewCreated &amp;&amp; <span class="keyword">this</span>.isAdded())&#123;</span><br><span class="line">         onLazyLoadData();</span><br><span class="line">         isLoadData = <span class="keyword">true</span>;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>isViewCreated字段表示布局是否被初始化，它在onViewCreated方法中被赋值为true，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onViewCreated</span><span class="params">(@NonNull View view, @Nullable Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">       isViewCreated = <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>onViewCreated方法的回调在onCreateView方法后，当调用onViewCreated方法时，Fragment的View布局一定创建好了。</p>
+<p>我们再回到setUserVisibleHint方法中，在if中它会依此判断当前Fragment可见、还没有加载数据、布局已经创建好等这些条件满足后才加载数据，并把isLoadData赋值为true。</p>
+<h3 id="应用示例"><a href="#应用示例" class="headerlink" title="应用示例"></a>应用示例</h3><p>下面是我在<a href="https://github.com/rain9155/WanAndroid" target="_blank" rel="noopener">项目</a>中使用的情况：</p>
+<img src="/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/fragment1.gif" class="" title="fragment1">
+
+<p>可以看到，当我滑倒这个Fragment时才加载数据。</p>
+<h2 id="场景二：FragmentManager-FragmentTransaction-Fragment"><a href="#场景二：FragmentManager-FragmentTransaction-Fragment" class="headerlink" title="场景二：FragmentManager + FragmentTransaction+ Fragment"></a>场景二：FragmentManager + FragmentTransaction+ Fragment</h2><p>这个场景就是你把几个Fragment通过FragmentTransaction的add方法add到FragmentManager 中，切换Fragment的时候通过FragmentTransaction的hide和show方法配合使用，类似于微信的主界面，底部有一个tab，然后点击tab，切换页面。</p>
+<p>当Fragment被add进manager中时，Fragment生命周期已经执行到onResume了，所以在后续的hide和show方法切换Fragment时，Fragment已经有数据了，在我的项目中，我想要的效果是，当我点到这个tab时，该tab对于的Fragment才加载数据，所以我对这种情况实现了懒加载。</p>
+<h3 id="懒加载原理-1"><a href="#懒加载原理-1" class="headerlink" title="懒加载原理"></a>懒加载原理</h3><p>那么要怎么实现呢？照搬场景2的实现方式？可惜了，不行，因为这种情况下setUserVisibleHint方法不会被调用。这个时候我们又重新认识一个方法<strong>onHiddenChanged（boolean hidden）</strong>：</p>
+<p>onHiddenChanged方法是当Fragment的隐藏状态变化示被调用，当Fragment没有被隐藏时即调用show方法，当前onHiddenChanged回调，其中参数hidde=false，当Fragment被隐藏时即调用hide了方法，onHiddenChanged()回调，其中参数hidde=true。还有一点注意的是使用hide和show时，fragment的所有生命周期方法都不会调用，除了onHiddenChanged（）。</p>
+<p>下面看一下这个方法在Fragment生命周期中的调用时机：</p>
+<ul>
+<li>1、当Fragment被add进manager时：onAttach()  -&gt; onCreate() -&gt; onCreateView() -&gt; onViewCreated() -&gt; onActivityCreate()  -&gt;  onHiddenChanged() -&gt; onStart()   -&gt; onResume()。此时onHiddenChanged() 中的参数为false。</li>
+<li>2、当用hide方法隐藏Fragment时：onHiddenChanged()，只会调用onHiddenChanged方法，此时setUserVisibleHint() 中的参数为true。</li>
+<li>3、当用show方法显示Fragment时：onHiddenChanged()，只会调用onHiddenChanged方法，此时setUserVisibleHint() 中的参数为false。</li>
+</ul>
+<p>可以看到此时onHiddenChanged的调用时机总是在<strong>初始化时调用，hide时调用，show时调用。</strong></p>
+<h3 id="实现思路-1"><a href="#实现思路-1" class="headerlink" title="实现思路"></a>实现思路</h3><p>场景二是在setUserVisibleHint方法中做文章，而这次是在onHiddenChanged方法中做文章，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onHiddenChanged</span><span class="params">(<span class="keyword">boolean</span> hidden)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">super</span>.onHiddenChanged(hidden);</span><br><span class="line">      <span class="comment">//1、onHiddenChanged调用在Resumed之前，所以此时可能fragment被add, 但还没resumed</span></span><br><span class="line">      <span class="keyword">if</span>(!hidden &amp;&amp; !<span class="keyword">this</span>.isResumed())</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">      <span class="comment">//2、使用hide和show时，fragment的所有生命周期方法都不会调用，除了onHiddenChanged（）</span></span><br><span class="line">      <span class="keyword">if</span>(!hidden &amp;&amp; isFirstVisible &amp;&amp; <span class="keyword">this</span>.isAdded())&#123;</span><br><span class="line">          onLazyLoadData();</span><br><span class="line">          isFirstVisible = <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先看注释1，因为当add的时候，onHiddenChanged调用在onResumed之前，此时还没有执行onResume方法，用户还看不见这个Fragment，如果此时加载数据就没有什么用，等于用户看到这个Fragmen时它就已经执行完数据了，如果这里要加一个判断，如果Fragment还没有Resume，就直接return，不做操作。</p>
+<p>接下来看注释2，执行到注释2表示此时Fragment已经可见了，就可以通过hidden字段控制懒加载，hidden为false表示调用了show方法，通过isFirstVisible控制只加载一次，为什么要用isFirstVisible呢，因为在onActivityCreate方法中就有可能已经加载过数据，如果加载过就不用再加载了，在onActivityCreate中会把这个字段赋值为true，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onActivityCreated</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">super</span>.onActivityCreated(savedInstanceState);</span><br><span class="line">      <span class="keyword">if</span>(isFragmentVisible(<span class="keyword">this</span>) &amp;&amp; <span class="keyword">this</span>.isAdded())&#123;</span><br><span class="line">          <span class="keyword">if</span> (<span class="keyword">this</span>.getParentFragment() == <span class="keyword">null</span> || isFragmentVisible(<span class="keyword">this</span>.getParentFragment())) &#123;</span><br><span class="line">              onLazyLoadData();</span><br><span class="line">              isLoadData = <span class="keyword">true</span>;</span><br><span class="line">              <span class="keyword">if</span>(isFirstVisible)</span><br><span class="line">                  isFirstVisible = <span class="keyword">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="应用示例-1"><a href="#应用示例-1" class="headerlink" title="应用示例"></a>应用示例</h3><p>下面是我在项目中使用的情况：</p>
+<img src="/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/fragment2.gif" class="" title="fragment2">
+
+<p>可以看到，当我点击到这个tab时，对应的Fragment才加载数据。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>以上就是我的懒加载历程，虽然现在也有一些Fragment库可以实现这个效果，但是它的原理也是这个，我们要知其所以然，该<a href="https://github.com/rain9155/lazyLoagingFragment/tree/master/app/src/main/java/com/example/lazyloading/fragment" target="_blank" rel="noopener">懒加载类</a>整合场景一和场景二，只有简单的几句代码，只要继承就能在两种场景下使用。</p>
+<p>参考文章：</p>
+<p><a href="https://www.jianshu.com/p/354fbb20ffe3" target="_blank" rel="noopener">Fragment 知识梳理(3)</a></p>
+<p><a href="https://blog.csdn.net/u013588712/article/details/52145217" target="_blank" rel="noopener">FragmentPagerAdapter与FragmentStatePagerAdapter区别</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:49.159Z" itemprop="dateUpdated">2023-01-07 18:44:49</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/fragment/" rel="tag">fragment</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/&title=《搞定两种场景下的Fragment懒加载》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/&title=《搞定两种场景下的Fragment懒加载》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《搞定两种场景下的Fragment懒加载》 — jianyu的博客&url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/19/java%E5%9F%BA%E7%A1%80/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">java学习总结之基础</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">如何获取Android应用和系统信息</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/&title=《搞定两种场景下的Fragment懒加载》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/&title=《搞定两种场景下的Fragment懒加载》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《搞定两种场景下的Fragment懒加载》 — jianyu的博客&url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEkklEQVR42u3a247aShAFUP7/pyfSeTtKwHtXGYlmlp8QQ9rt5Uhdt8cjvn7+u/7+5u/vn/3+2b96vXK+/uaOt12YMGHChOkjmX5eXgnKs+2+XiFfs105gcufHRMmTJgwfQdTvlwSFsy2kr+Ge/cWBTSYMGHChOkXMOVpZxJYzLabrNAGJZgwYcKECdOsmJsEB21lNQ8L8pQeEyZMmDD9BqZ8ubw1OCv45ol0/hry72+ohWPChAkTpg9j2rcSz/38xvkmTJgwYcL0AUw/5ZUUefNjdX9gv05c86DhYn1MmDBhwnQs06zFuG8Tzoq8dxWgZ3fEhAkTJkwnMuUjOJub5cHB/oCfhSkXq2HChAkTpi9iyodyZn+dBRCvX2GdxLaDQZgwYcKE6XCm18dkcvS2oUCy9Txhft8rwYQJEyZMpzNthnjyxudmgGZTDs5bsLN0HRMmTJgwfT7TrMibG+eJ67sDhaRl+3QFTJgwYcJ0LFN7uOZDn7PV8tHYdwzX1oEIJkyYMGE6hKkt2rahQPKW8kLwvhXajhNhwoQJE6ZvYsrTyFmy2sLNRnAe6+siIMCECRMmTEcxJWXQPBFtQ4p9WXmzw/w/BCZMmDBhOpEpX/Suv84ambMmZdvsfHovTJgwYcL0FUyzJTYNzvyAT/YzK+ZGLxsTJkyYMH0dU96k3JR390XkzQ4fm8fGhAkTJkyHMOUP3JZx20GcJEluf7nZw0U7ExMmTJgwHcI0Oz6T7eaf81N4dq/Zc10UeTFhwoQJ0yFMySbawdD8c1sUng0Atfd6aoIJEyZMmL6UKdnE64d5fc1AZ+nxKmTBhAkTJkzHMr3j9vkx3x7SszL0ZleYMGHChOk7mGYTLPsB1s1oURKOvGMsCRMmTJgwncXUbmVD1g7T7EH3QQYmTJgwYTqXKW8N5mlkO1S6CTs2ReoiNMGECRMmTMcyzdqTbYMwKea2SfLrldsUughEMGHChAnTsUy3VX/jsmkeTLRl3/Y37R4wYcKECdMpTPmiebm2LaTOCJKAYNNS/UcVHBMmTJgwHcu0eaQ8iZ2t1ibY+U4KdEyYMGHCdDhT2wjMb3BXKrvBTYKDizUxYcKECdOxTO1CeRrcpqNtwXef1s4CF0yYMGHCdBZTfty2pdu82Dobx5kFJbMnxYQJEyZMpzO1qeMsiZ01MtvW6awMfbEaJkyYMGE6lqktrd4VIrSrtWl53ljNd4sJEyZMmE5kyou2+VhMm3C2SW9edL6r9IwJEyZMmL6DKSmhzlLEZLVZuXYz3FO8EkyYMGHCdCzTvpjbNhFb9M0v29S32BsmTJgwYTqE6ae82oM2CTvyxHv/TZvk/y/1xYQJEyZMBzLdO6OSNyA3h3f7kLNUuW2CYsKECROmT2Z6dxF2X4rdDA9tjnxMmDBhwvRNTO2Dtc3LWSRSP8ziutgnJkyYMGH6BUyzsmybprYp611DRRerYcKECROmX8Z0b9AwS3TvamcWM02YMGHChOlYptmA6WbcZ9bI3Icjs8I0JkyYMGE6l6ktgN4bWORjOnlokjQyH++4MGHChAnTZzH9AbfoQjOQe821AAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

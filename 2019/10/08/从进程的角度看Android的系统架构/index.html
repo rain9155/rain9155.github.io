@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>从进程的角度看Android的系统架构 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="进程">
+    <meta name="description" content="前言 上一篇文章Android的系统架构概述  上一篇文章从5个层次简述了Android的系统架构，那么这5个层次是怎么联系起来的呢？本文从进程的角度看Android的系统架构，简述一下Android系统启动的过程中，各大进程的启动顺序是如何的，本文并不会涉及到任何源码，只是为了让读者对Android的进程有个大概的了解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从进程的角度看Android的系统架构">
+<meta property="og:url" content="http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言 上一篇文章Android的系统架构概述  上一篇文章从5个层次简述了Android的系统架构，那么这5个层次是怎么联系起来的呢？本文从进程的角度看Android的系统架构，简述一下Android系统启动的过程中，各大进程的启动顺序是如何的，本文并不会涉及到任何源码，只是为了让读者对Android的进程有个大概的了解。">
+<meta property="og:image" content="http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/android1.jpg">
+<meta property="og:image" content="http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/android2.png">
+<meta property="article:published_time" content="2019-10-08T08:32:55.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.962Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="进程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/android1.jpg">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">从进程的角度看Android的系统架构</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">从进程的角度看Android的系统架构</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-10-08T08:32:55.000Z" itemprop="datePublished" class="page-time">
+  2019-10-08
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1、系统启动（Loader）"><span class="post-toc-text">1、系统启动（Loader）</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-1-Boot-ROM"><span class="post-toc-text">1.1 Boot ROM</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-2-Boot-Loader"><span class="post-toc-text">1.2 Boot Loader</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2、Linux内核启动（Kernel）"><span class="post-toc-text">2、Linux内核启动（Kernel）</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1、swapper（pid-0）"><span class="post-toc-text">2.1、swapper（pid&#x3D;0）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2、kthreadd（pid-2）"><span class="post-toc-text">2.2、kthreadd（pid&#x3D;2）</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3、init进程启动（Native）"><span class="post-toc-text">3、init进程启动（Native）</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4、Zygote进程启动（Native-gt-java-Framework）"><span class="post-toc-text">4、Zygote进程启动（Native -&gt; java Framework）</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5、SystemServer进程启动（java-Framework）"><span class="post-toc-text">5、SystemServer进程启动（java Framework）</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6、Launcher进程启动（Application）"><span class="post-toc-text">6、Launcher进程启动（Application）</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#总结"><span class="post-toc-text">总结</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-从进程的角度看Android的系统架构"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">从进程的角度看Android的系统架构</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-10-08 16:32:55" datetime="2019-10-08T08:32:55.000Z"  itemprop="datePublished">2019-10-08</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
+<li>上一篇文章<a href="https://blog.csdn.net/Rain_9155/article/details/82889613" target="_blank" rel="noopener">Android的系统架构概述</a></li>
+</ul>
+<p>上一篇文章从5个层次简述了Android的系统架构，那么这5个层次是怎么联系起来的呢？本文从进程的角度看Android的系统架构，简述一下Android系统启动的过程中，各大进程的启动顺序是如何的，本文并不会涉及到任何源码，只是为了让读者对Android的进程有个大概的了解。</p>
+<a id="more"></a>
+
+<p>先看一张图：</p>
+<img src="/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/android1.jpg" class="" title="android">
+
+<p>从这张图中可以找到Android官方给出的5个层次（Application、Framework（java）、库和运行时（native）、HAL、Kernel）的影子，java层与native层之间通过<strong>JNI调用</strong>打通，native层与kernel层通过<strong>Syscall调用</strong>打通。这个图就是你启动Android手机时Android系统的启动过程，下面从下到上分别介绍：</p>
+<h2 id="1、系统启动（Loader）"><a href="#1、系统启动（Loader）" class="headerlink" title="1、系统启动（Loader）"></a>1、系统启动（Loader）</h2><p>长按电源键开机键：</p>
+<h3 id="1-1-Boot-ROM"><a href="#1-1-Boot-ROM" class="headerlink" title="1.1 Boot ROM"></a>1.1 Boot ROM</h3><p>引导芯片代码固化在<strong>ROM</strong>中，当你长按电源键开机时，会引导引导芯片代码从预定义的代码处开始执行，然后加载引导程序Boot Loader到<strong>RAM</strong>中。</p>
+<h3 id="1-2-Boot-Loader"><a href="#1-2-Boot-Loader" class="headerlink" title="1.2 Boot Loader"></a>1.2 Boot Loader</h3><p>Boot Loader是Android系统启动之前的引导程序，顾名思义，就是将系统拉起来并启动。</p>
+<h2 id="2、Linux内核启动（Kernel）"><a href="#2、Linux内核启动（Kernel）" class="headerlink" title="2、Linux内核启动（Kernel）"></a>2、Linux内核启动（Kernel）</h2><p>然后就到了Linux内核启动，内核启动时就会启动两个进程 — swapper（pid=0），kthreadd（pid=2）：</p>
+<h3 id="2-1、swapper（pid-0）"><a href="#2-1、swapper（pid-0）" class="headerlink" title="2.1、swapper（pid=0）"></a>2.1、swapper（pid=0）</h3><p>swapper进程又称idle进程， 是系统初始化过程Kernel由无到有开创的第一个进程, 用于初始化进程管理、内存管理，加载Display,Camera Driver，Binder Driver等相关工作。</p>
+<h3 id="2-2、kthreadd（pid-2）"><a href="#2-2、kthreadd（pid-2）" class="headerlink" title="2.2、kthreadd（pid=2）"></a>2.2、kthreadd（pid=2）</h3><p>kthreadd是Linux系统的内核进程，是所有内核进程的鼻祖，会创建内核工作线程kworkder，软中断线程ksoftirqd，thermal等内核守护进程。</p>
+<h2 id="3、init进程启动（Native）"><a href="#3、init进程启动（Native）" class="headerlink" title="3、init进程启动（Native）"></a>3、init进程启动（Native）</h2><p>init进程是Linux系统的用户进程，它的pid=1，是所有用户进程的鼻祖，它是由许多源码文件组成的，它对应的源码目录在/system/core/init中。init进程有许多重要的职责：</p>
+<ul>
+<li>孵化出许多用户空间的守护进程（ueventd、logd、healthd、installd、adbd、lmkd）</li>
+<li>启动ServiceManager(binder服务管家)、bootanim(开机动画)等重要服务</li>
+<li>孵化出Media Server进程，负责启动和管理整个C++ framework，包含AudioFlinger，Camera Service等服务。</li>
+<li>孵化出Zygote进程</li>
+</ul>
+<h2 id="4、Zygote进程启动（Native-gt-java-Framework）"><a href="#4、Zygote进程启动（Native-gt-java-Framework）" class="headerlink" title="4、Zygote进程启动（Native -&gt; java Framework）"></a>4、Zygote进程启动（Native -&gt; java Framework）</h2><p>Zygote进程是Android系统的第一个Java进程(即虚拟机进程)，Zygote是所有Java进程的父进程，它是由init进程通过解析init.rc文件后fork生成的，Zygote的启动脚本放在/system/core/rootdir目录中。Zygote进程的职责主要有：</p>
+<ul>
+<li>创建JVM虚拟机，并为JVM注册JNI方法</li>
+<li>响应AMS的请求去创建新的应用进程</li>
+<li>孵化出SystemServer进程</li>
+</ul>
+<h2 id="5、SystemServer进程启动（java-Framework）"><a href="#5、SystemServer进程启动（java-Framework）" class="headerlink" title="5、SystemServer进程启动（java Framework）"></a>5、SystemServer进程启动（java Framework）</h2><p>SystemServer进程是Zygote孵化的第一个进程，负责创建系统服务如ActivityManagerService，WindowManagerService，PackageManagerService，InputManagerService等服务，和管理整个Java framework。SystemServer进程的职责主要有：</p>
+<ul>
+<li>创建Binder线程池，这样就可以与其他进程进行跨进程通信</li>
+<li>启动SystemServiceManger，它用来对系统服务进行创建、管理和启动</li>
+<li>通过SystemServiceManger启动各种系统服务：引导服务（如AMS，PMS），核心服务，其他服务（如WMS，IMS）</li>
+</ul>
+<h2 id="6、Launcher进程启动（Application）"><a href="#6、Launcher进程启动（Application）" class="headerlink" title="6、Launcher进程启动（Application）"></a>6、Launcher进程启动（Application）</h2><p>SystemServer进程启动的过程中会启动PMS和AMS，PMS会把系统中的应用程序安装完成，然后AMS会请求Zygote将Launcher启动起来，这就是用户看到的app桌面，然后Launcher会将已经安装了的应用的应用图标显示出来。Launcher进程是Zygote进程孵化出来的第一个App进程。<br>至此Android系统已经启动完毕，用户就可以点进桌面上的应用图标进入app，对于普通的app进程,跟SystemServer进程的启动过来有些类似，不同的是app进程是先发消息给SystemServer进程，由SystemServer向Zygote发出创建进程的请求，而SystemServer是由Zygote直接fork出来，前面已经说过Zygote是所有Java进程的父进程，SystemServer和所有的app进程都是由Zygote进程的子进程。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Android系统底层基于Linux Kernel, 当Kernel启动过程会创建init进程, 该进程是所有用户空间的鼻祖,<br>init进程会启动ServiceManager(binder服务管家)、Zygote进程(Java进程的鼻祖)，Zygote进程会创建<br>system_server进程以及各种app进程，下图是这几个系统重量级进程之间的层级关系。</p>
+<img src="/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/android2.png" class="" title="android">
+
+<p>从下而上，其中binder和socket都是Android中进程间的通信方式，而ServiceManager是binder服务的大管家，系统服务的binder实体都会注册到它身上。本文并没有深入的了解各个进程的启动，只是简单的让大家对Android系统主要的进程有个大概的了解，这样以后去研究相应的进程的源码时就会有个大概的方向。</p>
+<p>参考资料：</p>
+<p><a href="http://gityuan.com/2016/02/01/android-booting/" target="_blank" rel="noopener">Android系统启动-综述</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.962Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%BF%9B%E7%A8%8B/" rel="tag">进程</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/&title=《从进程的角度看Android的系统架构》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/&title=《从进程的角度看Android的系统架构》 — jianyu的博客&source=前言
+上一篇文章Android的系统架构概述
+
+上一篇文章从5个层次简述了Android的系统架构，那么这5个层次是怎么联系起来的呢？本文从进程的角度看A..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《从进程的角度看Android的系统架构》 — jianyu的博客&url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/10/15/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">静态和动态代理模式</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/09/07/%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">工厂模式</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/&title=《从进程的角度看Android的系统架构》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/&title=《从进程的角度看Android的系统架构》 — jianyu的博客&source=前言
+上一篇文章Android的系统架构概述
+
+上一篇文章从5个层次简述了Android的系统架构，那么这5个层次是怎么联系起来的呢？本文从进程的角度看A..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《从进程的角度看Android的系统架构》 — jianyu的博客&url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/10/08/%E4%BB%8E%E8%BF%9B%E7%A8%8B%E7%9A%84%E8%A7%92%E5%BA%A6%E7%9C%8BAndroid%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEk0lEQVR42u3aS44bORAFwL7/pWVgVgZsqd/LZGNEOWolyNUlMsoA8/f1FV+P/67fP/9+Pfs+uefZ8//8/HpVr7/Jn7m6MGHChAnTWzK120uWmywxh06enKwneeVPn4wJEyZMmC5nSh6XLDS/c7Po5KUmQUMBjQkTJkyY/gGm9idzgg1H8k2bBmPChAkTJkz7Im9bXN6nspgwYcKE6V9mmj1uf3i/bnPOishJYPGDtXBMmDBhwvRmTLPBnc/4/OPzTZgwYcKE6X9leiyu/KCdreTUmvf7xYQJEyZM9zLNUtC2SDpLpM8GJW3C/E0tHBMmTJgwXcK0b1i+Htn5iSZou57Z57/ETZgwYcKE6VqmvB2YNyZnzc4NSp42t0EGJkyYMGG6l6nddls23Yz4JK/n9S42yfzTIi8mTJgwYbqKKXlEe7ie2vbsUG9XGO0REyZMmDBdy5QfqHlTsEVsw4u2GTkbQoomjDBhwoQJ09sztX8wS0Rnv7I55tvRn6I2gAkTJkyYrmKq68GHRkjz4CB5Ae2LaUeIMGHChAnTZzC1294M6+TNzlnb8lRhFxMmTJgwfQZTvtxHfCXpZRIunPq+/du8vYoJEyZMmN6ZKW9e7luJeXq8P/jz8CL6H4QJEyZMmK5lmrUPN2FEno7OBm5md0YamDBhwoTpQqZZQLDJsPOFblqksyLvN/+PMGHChAnThUztgXq25NoWgk/hHoibMGHChAnThUybRLdtWM6en3PnQcCwIo4JEyZMmC5kyg/+zXMS3P3oz2xf3+wXEyZMmDBdyDRLIDdF4c2d+QvbBCh1LRwTJkyYML09U9smTIZy2qbppiXZlmvzYjEmTJgwYfoMpk35tW1qzn4rCUGKbbdFXkyYMGHCdC1TEhzMEtH94M6m5XmqKFzEUJgwYcKE6e2ZzgYBp1qhs3tysuRFYsKECROme5lm5d1Tg6E5btvsTFZSlIwxYcKECdO1TKcKrHmzcL+UvBmZp7LHkl5MmDBhwvT2TI/4OouSj8DOxnRmJWBMmDBhwvRJTO3Q56bYmm/s7PcHqt2YMGHChOkqprYxOXtmjpgXZ5P78118E+JgwoQJE6bLmdrDtf2r2TBNu568MZkHK1+zDWPChAkTprdk2hyl7eDLbEynrVi37cynnzFhwoQJ08cxtQltO1S6CS9mJelZ+/arfT+YMGHChOnNmNqi7azgmy9of//sJdXzTZgwYcKE6RKm2bBpfqC2rcf8FzdjQHU6jQkTJkyYPoLp9ebbRedJadvsPAVdBBOYMGHChOlaphyoHbtpG5x58jwcvhldmDBhwoTpdqZHeeVJ7OabWYLdFnmLJigmTJgwYbqWaRNBtJvcNyDbF7YJMo4FWpgwYcKE6Q2Y2iAg/8n2X/Nmap5at2Xip0/DhAkTJkyXM+VjPTnu2dikbZ22gcJqfAcTJkyYMH0QUzu+07Y/21Ulq521Zv9SEceECRMmTB/NlG87L9HuA5F25clqMWHChAnT5zFtirw/d+VdxTbdrZ+ACRMmTJiuZTpVYM2P/5zg1ABQu+FhMRoTJkyYML0X0y/sg5t0yuWgjAAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

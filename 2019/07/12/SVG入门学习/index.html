@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>SVG入门学习 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="svg">
+    <meta name="description" content="前言SVG对于android开发者听起来是陌生的东西，因为它是属于前端的产物，其实Android中也是支持SVG的，语法也很简单易懂，本文就通过我自己学习的经历，和大家一起学习一下SVG。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SVG入门学习">
+<meta property="og:url" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言SVG对于android开发者听起来是陌生的东西，因为它是属于前端的产物，其实Android中也是支持SVG的，语法也很简单易懂，本文就通过我自己学习的经历，和大家一起学习一下SVG。">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg2.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg3.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg4.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg5.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg6.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg7.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg8.png">
+<meta property="article:published_time" content="2019-07-12T09:39:00.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.778Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">SVG入门学习</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">SVG入门学习</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-12T09:39:00.000Z" itemprop="datePublished" class="page-time">
+  2019-07-12
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#什么是SVG"><span class="post-toc-text">什么是SVG?</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#vector的各个属性是什么意义？"><span class="post-toc-text">vector的各个属性是什么意义？</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#path-标签中的绘图指令"><span class="post-toc-text">path 标签中的绘图指令</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#常用指令讲解"><span class="post-toc-text">常用指令讲解</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#VectorDrawable和AnimatedVectorDrawable"><span class="post-toc-text">VectorDrawable和AnimatedVectorDrawable</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、-VectorDrawable"><span class="post-toc-text">1、 VectorDrawable</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、-AnimatedVectorDrawable"><span class="post-toc-text">2、 AnimatedVectorDrawable</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-SVG入门学习"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">SVG入门学习</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-12 17:39:00" datetime="2019-07-12T09:39:00.000Z"  itemprop="datePublished">2019-07-12</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>SVG对于android开发者听起来是陌生的东西，因为它是属于前端的产物，其实Android中也是支持SVG的，语法也很简单易懂，本文就通过我自己学习的经历，和大家一起学习一下SVG。</p>
+<a id="more"></a>
+
+<h2 id="什么是SVG"><a href="#什么是SVG" class="headerlink" title="什么是SVG?"></a>什么是SVG?</h2><p>Google 在Android5.X中增加了对SVG矢量图形的支持，可以用来创建高效率的动画, 所以我们先来了解一下SVG的定义： </p>
+<ul>
+<li>可伸缩矢量图形（Scalable Vector Graphics）</li>
+<li>使用XML格式定义图形</li>
+<li>图像在放大或改变尺寸的情况下图片质量不会有所损失</li>
+<li>android中使用vector标签表示SVG</li>
+</ul>
+<p>与bitmap相比，SVG最大的优点是放大不会失真，而bitmap需要为不同的分辨率准备很多套图标，而SVG则不需要，前面说了SVG要用vector表示，我们先来看看vector标签中属性的含义。</p>
+<h2 id="vector的各个属性是什么意义？"><a href="#vector的各个属性是什么意义？" class="headerlink" title="vector的各个属性是什么意义？"></a>vector的各个属性是什么意义？</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">vector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>  //命名空间</span></span><br><span class="line"><span class="tag">    <span class="attr">android:height</span>=<span class="string">"200dp"</span>  //这个是图片的<span class="attr">intrinsic</span>高度</span></span><br><span class="line"><span class="tag">    <span class="attr">android:width</span>=<span class="string">"200dp"</span>   //这个是图片的<span class="attr">intrinsic</span>宽度</span></span><br><span class="line"><span class="tag">    <span class="attr">android:viewportHeight</span>=<span class="string">"100"</span>    //这个是为这个图片设置的纵坐标,表示将图片分为<span class="attr">100</span>等份,主要下面的<span class="attr">pathData</span>需要依赖这个坐标的划分</span></span><br><span class="line"><span class="tag">    <span class="attr">android:viewportWidth</span>=<span class="string">"100"</span>     //同上,只不过这个是横坐标, <span class="attr">heigh</span>，<span class="attr">width</span>的比例和<span class="attr">viewportHeight</span>，<span class="attr">viewportWidth</span>的比例必须保持一致，不然图形就会发生形变</span></span><br><span class="line"><span class="tag">    <span class="attr">android:alpha</span>=<span class="string">"0.2"</span>     //这个是整个图像的透明度,取值范围<span class="attr">0</span>到<span class="attr">1</span></span></span><br><span class="line"><span class="tag">    &gt;</span></span><br><span class="line"></span><br><span class="line">    &lt;group      //这个标签中可以放入若干个&lt;path/&gt;标签,并给它们设置一些共同的属性</span><br><span class="line">        android:name="group_name"   //这个name很有用,在设置objectAnimator的时候用来区分给那个部分施加动画</span><br><span class="line">        android:pivotY="50"     //这个设置这个group的中心点的X坐标,取值范围为0到100,在做rotation时有用</span><br><span class="line">        android:pivotX="50"     //这个设置这个group的中心点的Y坐标,取值范围为0到100,在做rotation时有用</span><br><span class="line">        android:translateX="20" //将整个group在X轴方向平移多少像素</span><br><span class="line">        android:translateY="30" //将整个group在Y轴方向平移多少像素</span><br><span class="line">        android:rotation="90"   //将整个group以中心点左边旋转的角度,360为一圈</span><br><span class="line">        android:scaleX="0.5"    //横坐标的缩放比例 , 取值1表示100%</span><br><span class="line">        android:scaleY="0.3"&gt;   //纵坐标的缩放比例,取值0.5表示50%,取值1.5表示150%</span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">path</span>   //这个标签是重头戏,矢量图绘制的路径</span></span><br><span class="line"><span class="tag">            <span class="attr">android:name</span>=<span class="string">"path_name"</span>    //为这个<span class="attr">path</span>标记的名字,在使用<span class="attr">objectAnimator</span>的时候用来区分给哪个部分施加动画</span></span><br><span class="line"><span class="tag">            <span class="attr">android:pathData</span>=<span class="string">"m 0,0 L50,0 L100,100 L0,100 z"</span>    //这个是<span class="attr">SVG</span>的语法,下面讲</span></span><br><span class="line"><span class="tag">            <span class="attr">android:fillColor</span>=<span class="string">"@color/red"</span>  //定义填充图形的颜色，如果没有定义则不填充路径</span></span><br><span class="line"><span class="tag">            <span class="attr">android:fillAlpha</span>=<span class="string">"1"</span>       //定义填充图形的透明度，取值范围<span class="attr">0</span>到<span class="attr">1</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeAlpha</span>=<span class="string">"0.5"</span>   //定义路径的透明度,取值范围<span class="attr">0</span>到<span class="attr">1</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeColor</span>=<span class="string">"#ff0000ff"</span> //定义如何绘制路径，如果没有定义则不显示路径</span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeWidth</span>=<span class="string">"20"</span>    //线段的宽度</span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeLineCap</span>=<span class="string">"butt|round|square"</span>   //线的末端形状,<span class="attr">butt</span>严格到指定的坐标就截至,<span class="attr">round</span>是圆角,<span class="attr">square</span>是方形，到指定的坐标后还会再冒出一点来</span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeLineJoin</span>=<span class="string">"round|bevel|miter"</span>  //线的连接处形状,<span class="attr">round</span>是圆角的,<span class="attr">bevel</span>和<span class="attr">miter</span>貌似看不出来有什么区别<span class="attr">....</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:trimPathStart</span>=<span class="string">"0.5"</span>    //顾名思义,从<span class="attr">path</span>开始的地方(<span class="attr">0</span>%)去除<span class="attr">path</span>,去除到指定的百分比位置,取值范围<span class="attr">0</span>到<span class="attr">1</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:trimPathEnd</span>=<span class="string">"0.5"</span>      //顾名思义,从<span class="attr">path</span>结束的地方(<span class="attr">100</span>%的地方)去除<span class="attr">path</span>,去除到指定的百分比位置,取值范围<span class="attr">0</span>到<span class="attr">1</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:trimPathOffset</span>=<span class="string">"0.5"</span>   //这个属性是和上面两个属性共同使用的,单独使用没有用,这个属性的意思是,在去除<span class="attr">path</span>的时候设置<span class="attr">path</span>原点的位置,按百分比设置,取值范围<span class="attr">0</span>到<span class="attr">1</span></span></span><br><span class="line"><span class="tag">            /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">vector</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>下面就来重点讲解path标签，path标签是用来创建SVG的，就像用指令控制一只画笔，path标签所支持的指令有以下几种。</p>
+<h2 id="path-标签中的绘图指令"><a href="#path-标签中的绘图指令" class="headerlink" title="path 标签中的绘图指令"></a>path 标签中的绘图指令</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">M &#x3D; moveto(M X, Y): 将画笔移动到指定的位置，但未发生绘制</span><br><span class="line">L &#x3D; lineto(L X, Y): 画直线到指定位置</span><br><span class="line">H &#x3D; horizontal(H X): 画水平线到指定X坐标</span><br><span class="line">V &#x3D; vertical lineto(V Y): 画垂直线到指定Y坐标</span><br><span class="line">C &#x3D; curveto(C X1,Y1,X1,Y2,ENDX,ENDY): 画三次贝塞尔曲线</span><br><span class="line">S &#x3D; smooth curveto(S X2,Y2,ENDX,ENDY): 画三次贝塞尔曲线</span><br><span class="line">Q &#x3D; quadratic Belzier curve(Q X,Y,ENDX,ENDY): 二次贝塞尔曲线</span><br><span class="line">T &#x3D; smooth quadratic Belzier curveto(T ENDX,ENDY): 映射前面路径后的终点</span><br><span class="line">A &#x3D; elliptical Arc(A RX,RY,XROTATION,FLAG1,FLAG2,X,Y): 画弧线</span><br><span class="line">Z &#x3D; closepath(): 关闭路径，把前面的路径连起来</span><br></pre></td></tr></table></figure>
+
+<p>在使用以上指令时，需要注意：</p>
+<ol>
+<li>坐标轴以（0，0）为中心，X轴水平向右，Y轴水平向下</li>
+<li>所有指令大小写均可。大写绝对定位，参考全局坐标系；小写相对定位，参考父容器坐标系</li>
+<li>指令和数据间的空格可以省略，可以用逗号隔开，也可以用空格</li>
+<li>同一指令出现多次可以只用一个</li>
+</ol>
+<p>SVG的指令参数非常复杂，但是在android中，不需要太多太复杂的SVG图形，所以我们先来掌握几个常用的指令，在以后的学习中，读者将会慢慢掌握更多的SVG绘制技巧和方法。</p>
+<h3 id="常用指令讲解"><a href="#常用指令讲解" class="headerlink" title="常用指令讲解"></a>常用指令讲解</h3><ul>
+<li>M ：类似Android绘图中path类的moveTo方法，即将画笔移动到某一点但并没有发生绘制动作，下面配合L进行讲解</li>
+</ul>
+<hr>
+<ul>
+<li>L ：画一条直线</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">      <span class="attr">...</span>省略一些代码</span></span><br><span class="line"><span class="tag">      <span class="attr">android:pathData</span>=<span class="string">"M 20 50 L 80 50"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>如图：</p>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg1.png" class="" title="svg1">
+
+<p> 上面表示把画笔放在（20,50）位置，连直线到80，50点 。</p>
+<p>同时L后面还可以跟H或V指令来绘制水平、竖直线，后面的参数是x坐标（H指令）或y坐标（V指令）,如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">        <span class="attr">...</span>省略一些代码</span></span><br><span class="line"><span class="tag">        <span class="attr">android:pathData</span>=<span class="string">"M 20 50 L 80 50 V 80 H 20"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>如图：</p>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg2.png" class="" title="svg2">
+
+<hr>
+<ul>
+<li>A ：绘制一段弧线，且弧线不允许闭合，可以把弧线想象成椭圆的某一段，A指令有以下7个参数：</li>
+</ul>
+<ol>
+<li><p>RX，RY 指所在椭圆的半轴大小</p>
+</li>
+<li><p>XROTATION 指椭圆的X轴与水平方向的顺时针方向夹角，可以想象成一个水平的椭圆绕中心点顺时针旋转XRORATION的额角度</p>
+</li>
+<li><p>FLAG1 只有俩个值，1表示大角度弧线，0表示小角度弧线</p>
+</li>
+<li><p>FLAG2 只有俩个值，1为顺时针，0反之</p>
+</li>
+<li><p>X，Y 为终点坐标  </p>
+</li>
+</ol>
+<p>看代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">        <span class="attr">...</span>省略一些代码</span></span><br><span class="line"><span class="tag">        <span class="attr">android:pathData</span>=<span class="string">"</span></span></span><br><span class="line"><span class="tag"><span class="string">        M 50 50</span></span></span><br><span class="line"><span class="tag"><span class="string">        a 30 15 0 1 0 1 0"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>再看图：</p>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg3.png" class="" title="svg3">
+
+<p> <strong>图一</strong> </p>
+<p>上面表示把画笔放在（50,50）位置；30, 15分别表示椭圆的x，y半轴大小；0表示x轴不旋转；1表示用大角度弧线绘制；0表示顺时针：1，0表示相对与以（50，50）为起始点的坐标轴的坐标，因为a是小写。<br>再看一段代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">     <span class="attr">...</span>省略一些代码</span></span><br><span class="line"><span class="tag">     <span class="attr">android:pathData</span>=<span class="string">"</span></span></span><br><span class="line"><span class="tag"><span class="string">     M 25 50</span></span></span><br><span class="line"><span class="tag"><span class="string">     a 25 25 0 1 0 50 0"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>再看图：</p>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg4.png" class="" title="svg4">
+
+<p> <strong>图二</strong> </p>
+<p>可以看到这里显示了一个半圆，因为这里的X，Y轴大小相等 。 </p>
+<p>再看一段代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">      <span class="attr">...</span>省略一些代码</span></span><br><span class="line"><span class="tag">      <span class="attr">android:pathData</span>=<span class="string">"M 25 50</span></span></span><br><span class="line"><span class="tag"><span class="string">      a 25 25 0 1 0 40 0"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>再看图：</p>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg5.png" class="" title="svg5">
+
+<p> <strong>图三</strong> </p>
+<p>这里把终点x轴坐标改为40，图中显示了圆的大部分 。 </p>
+<p>看一段代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">       <span class="attr">...</span>省略一些代码</span></span><br><span class="line"><span class="tag">       <span class="attr">android:pathData</span>=<span class="string">"M 25 50</span></span></span><br><span class="line"><span class="tag"><span class="string">       a 25 25 0 0 0 40 0"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>再看图：</p>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg6.png" class="" title="svg6">
+
+<p> <strong>图四</strong> </p>
+<p>这里把FLAG1改为0，与图三相比，发现弧度变小了，因为用小弧度画。 </p>
+<p>看一段代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">      <span class="attr">...</span>省略一些代码  </span></span><br><span class="line"><span class="tag">      <span class="attr">android:pathData</span>=<span class="string">"M 25 50</span></span></span><br><span class="line"><span class="tag"><span class="string">      a 25 25 0 0 1 40 0"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>再看图：</p>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg7.png" class="" title="svg7">
+
+<p><strong>图五</strong> </p>
+<p>这里把FLAG2改为1，与图四相比，图形翻转了，因为画的方向不一样了 ,  把A指令的几个图结合看一下，就能弄懂A这个指令了。</p>
+<hr>
+<p>关于贝塞尔指令的，这里就不过多介绍了，放出几个链接供大家学习：<br><a href="http://www.cnblogs.com/jay-dong/archive/2012/09/26/2704188.html" target="_blank" rel="noopener">贝塞尔曲线初探</a><br><a href="https://github.com/OCNYang/Android-Animation-Set/wiki/SVG-讲解" target="_blank" rel="noopener">SVG讲解</a> </p>
+<hr>
+<h2 id="VectorDrawable和AnimatedVectorDrawable"><a href="#VectorDrawable和AnimatedVectorDrawable" class="headerlink" title="VectorDrawable和AnimatedVectorDrawable"></a>VectorDrawable和AnimatedVectorDrawable</h2><p>Coogle在Android5.0X中提供了俩个API来帮助支持SVG：</p>
+<ul>
+<li><p>VectorDrawable</p>
+</li>
+<li><p>AnimatedVectorDrawable</p>
+<p>其中VectorDrawable用于创建XML文件的SVG图形，即前面的vector标签，并结合AnimatedVectorDrawable来完成动画效果。</p>
+<h3 id="1、-VectorDrawable"><a href="#1、-VectorDrawable" class="headerlink" title="1、 VectorDrawable"></a>1、 VectorDrawable</h3><p>在XML中创建一个静态的XMLSVG图形，通常会形成如下的树形结构：</p>
+</li>
+</ul>
+<img src="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/svg8.png" class="" title="svg8">
+
+<p> <strong>树形结构</strong>  </p>
+<p>path是树形结构中最小的单位，而通过Group可以将不同的path进行组合，接下来我们使用vector标签创建SVG图形，代码如下： </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">vector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:width</span>=<span class="string">"200dp"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:height</span>=<span class="string">"200dp"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:viewportWidth</span>=<span class="string">"100"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:viewportHeight</span>=<span class="string">"100"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">group</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:name</span>=<span class="string">"line"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:name</span>=<span class="string">"path1"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeColor</span>=<span class="string">"@android:color/holo_green_dark"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeWidth</span>=<span class="string">"5"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeLineCap</span>=<span class="string">"round"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:pathData</span>=<span class="string">"</span></span></span><br><span class="line"><span class="tag"><span class="string">            M 20 20</span></span></span><br><span class="line"><span class="tag"><span class="string">            L 50 20 80 20"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">path</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:name</span>=<span class="string">"path2"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeLineCap</span>=<span class="string">"round"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeWidth</span>=<span class="string">"5"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:strokeColor</span>=<span class="string">"@android:color/holo_green_dark"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:pathData</span>=<span class="string">"</span></span></span><br><span class="line"><span class="tag"><span class="string">            M 20 80</span></span></span><br><span class="line"><span class="tag"><span class="string">            L 50 80 80 80"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">vector</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>上面的代码画了俩条线，每条线由三个点控制，形成初始状态，下面立马通过AnimatedVectorDrawable来实现动画效果。</p>
+<pre><code>源码文末给出</code></pre><h3 id="2、-AnimatedVectorDrawable"><a href="#2、-AnimatedVectorDrawable" class="headerlink" title="2、 AnimatedVectorDrawable"></a>2、 AnimatedVectorDrawable</h3><p>AnimatedVectorDrawable就是通过连接静态的VectorDrawable和动态的objectAninmator来为VectorDrawable提供动画效果，分几个步骤来使用：</p>
+<ul>
+<li>1、在XML中通过animated-vector标签来声明对AnimatedVectorDrawable的使用，并指定它的drawable属性，target标签中的name属性和animation属性 </li>
+</ul>
+<p>代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">animated-vector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:drawable</span>=<span class="string">"@drawable/svg_path"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">target</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:animation</span>=<span class="string">"@animator/anim_path1"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:name</span>=<span class="string">"path1"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">target</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:animation</span>=<span class="string">"@animator/anim_path2"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:name</span>=<span class="string">"path2"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">animated-vector</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>android:drawable=”@drawable/svg_path”指定了上面创建的VectorDrawable即画的俩条线；target标签中的name指定了要作用动画的path或Group的name, 即俩者的name要保持一致，这样系统才能找到要实现动画的元素;taret标签中的animation指定了要作用的都动画。</p>
+<p>在本例中，path1的动画代码如下: </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">objectAnimator</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:duration</span>=<span class="string">"500"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:propertyName</span>=<span class="string">"pathData"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:valueType</span>=<span class="string">"pathType"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:valueFrom</span>=</span></span><br><span class="line"><span class="tag">    "<span class="attr">M</span> <span class="attr">20</span> <span class="attr">20</span></span></span><br><span class="line"><span class="tag">     <span class="attr">L</span> <span class="attr">50</span> <span class="attr">20</span> <span class="attr">80</span> <span class="attr">20</span>"</span></span><br><span class="line"><span class="tag">    <span class="attr">android:valueTo</span>=</span></span><br><span class="line"><span class="tag">    "<span class="attr">M</span> <span class="attr">20</span> <span class="attr">20</span></span></span><br><span class="line"><span class="tag">     <span class="attr">L</span> <span class="attr">50</span> <span class="attr">50</span> <span class="attr">80</span> <span class="attr">20</span>"</span></span><br><span class="line"><span class="tag">    <span class="attr">android:interpolator</span>=<span class="string">"@android:anim/bounce_interpolator"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">objectAnimator</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>path2的动画代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">objectAnimator</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:duration</span>=<span class="string">"500"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:propertyName</span>=<span class="string">"pathData"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:valueType</span>=<span class="string">"pathType"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:valueFrom</span>=</span></span><br><span class="line"><span class="tag">    "<span class="attr">M</span> <span class="attr">20</span> <span class="attr">80</span></span></span><br><span class="line"><span class="tag">     <span class="attr">L</span> <span class="attr">50</span> <span class="attr">80</span> <span class="attr">80</span> <span class="attr">80</span>"</span></span><br><span class="line"><span class="tag">    <span class="attr">android:valueTo</span>=</span></span><br><span class="line"><span class="tag">    "<span class="attr">M</span> <span class="attr">20</span> <span class="attr">80</span></span></span><br><span class="line"><span class="tag">     <span class="attr">L</span> <span class="attr">50</span> <span class="attr">50</span> <span class="attr">80</span> <span class="attr">80</span>"</span></span><br><span class="line"><span class="tag">    <span class="attr">android:interpolator</span>=<span class="string">"@android:anim/bounce_interpolator"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">objectAnimator</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>以上的俩个动画代码中都定义了一个pathType的属性动画，并指定了变换的初始值分别为：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//path1</span><br><span class="line"> android:valueFrom=</span><br><span class="line">    "M 20 20</span><br><span class="line">     L 50 20 80 20"</span><br><span class="line">//path2</span><br><span class="line"> android:valueFrom=</span><br><span class="line">    "M 20 80</span><br><span class="line">     L 50 80 80 80"</span><br></pre></td></tr></table></figure>
+<p>结束值为: </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//path1</span><br><span class="line"> android:valueTo=</span><br><span class="line">    "M 20 20</span><br><span class="line">     L 50 50 80 20"</span><br><span class="line">//path2</span><br><span class="line">  android:valueTo=</span><br><span class="line">    "M 20 80</span><br><span class="line">     L 50 50 80 80"</span><br></pre></td></tr></table></figure>
+<p>这里要注意的是，SVG的路径变换属性动画中，变换前后的节点数必须相同，这也是为什么前面需要使用三个点来绘制一条直线，因为后面需要中点进行动画变换 。</p>
+<ul>
+<li>2、把AnimatedVectorDrawable的XML文件设置给ImageView</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ImageView</span></span></span><br><span class="line"><span class="tag">       <span class="attr">android:id</span>=<span class="string">"@+id/iv_path"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">android:src</span>=<span class="string">"@drawable/svg_path_anim"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">...</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>3、代码中启动AnimatedVectorDrawable动画</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ImageView ivPath;</span><br><span class="line">...</span><br><span class="line">ivPath = findViewById(R.id.iv_path);</span><br><span class="line">       ivPath.setOnClickListener(new View.OnClickListener() &#123;</span><br><span class="line">           @Override</span><br><span class="line">           public void onClick(View v) &#123;</span><br><span class="line">               Drawable drawable = ivPath.getDrawable();</span><br><span class="line">               if(drawable instanceof Animatable)&#123;</span><br><span class="line">                   ((Animatable)drawable).start();</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;);</span><br></pre></td></tr></table></figure>
+<p>这样俩个path就实现了动画效果，如图：</p>
+
+
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>了解了上面SVG知识，也就基本入门了，可以用SVG来实现简单的图标，当然现在也有一些工具来生成SVG图片，不用我们手动去写xml，但是了解它背后的实现也是很重要的，在以后的深入学习中，你会发现SVG结合动画会产生非常好看的动态效果。希望大家阅读完有所收获。</p>
+<p><a href="https://github.com/rain9155/SVGTest" target="_blank" rel="noopener">本文相关源码</a></p>
+<p>参考资料：</p>
+<p>《Android群英传》</p>
+<p><a href="http://www.w3school.com.cn/svg/index.asp" target="_blank" rel="noopener">SVG教程</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.778Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/svg/" rel="tag">svg</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=《SVG入门学习》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=《SVG入门学习》 — jianyu的博客&source=前言SVG对于android开发者听起来是陌生的东西，因为它是属于前端的产物，其实Android中也是支持SVG的，语法也很简单易懂，本文就通过我自己学习..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《SVG入门学习》 — jianyu的博客&url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">基于P2P的局域网即时通信应用</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/10/Activity%E5%BA%94%E7%94%A8%E7%AA%97%E5%8F%A3%E7%9A%84%E6%B7%BB%E5%8A%A0%E8%BF%87%E7%A8%8B/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Activity应用窗口的添加过程</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=《SVG入门学习》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&title=《SVG入门学习》 — jianyu的博客&source=前言SVG对于android开发者听起来是陌生的东西，因为它是属于前端的产物，其实Android中也是支持SVG的，语法也很简单易懂，本文就通过我自己学习..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《SVG入门学习》 — jianyu的博客&url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN4AAADeCAAAAAB3DOFrAAACyElEQVR42u3aS27cQAwFQN//0g6QVYBEo/dItaEApVUQ68PqRTeH5NdXfH3/vj7///cf1+dn/34quf8qhgcuPDw8vFHoV1cS+lW4yRuSGD7Hc3UPHh4e3mneZtNPeMmRky9uEjMeHh7eG3izEPNw26/g4eHh/V+8pPSQHyd5PQEPDw/vPbxkK88rpXkBIj8qjtda8PDw8GJe2wB7w78P9vfw8PDwFl31zXbfpst5Cl5Ei4eHh3eAlyTE+RhWW7DICxl5Iy36xYCHh4e35iXBtWnuU8XcZBGjqPDw8PAe4m1a9UVSGwSXlCHykS88PDy8n+FtBqHyZ/Nyw+ywuTwY8PDw8B7lzTbxdkOfDQGsIsTDw8M7wEs23Ly0mhdeNwNSdWkDDw8P7xiv3Y7bJla+lbdNr5tn8fDw8I7x8hQ5f3XbQtsvGR4eHt5pXrtlP7aiwaK0aXrdwcPDw8Ob/7qPUts84W7LFnlanxwzdXkXDw8Pr+QN3aNG16zg2w4o3MyU4eHh4a15eVLbjgvMUvOkzNHGhoeHh/csb1NQ2LTH2qGr4VGBh4eHd4CXf3iTdudlhfadnxcIDw8P7xxvM97Upt1J8fep4gUeHh7eCV7eTJpt8ZtNP0nHb44NPDw8vGO8zTGwLxZsJh1ulg8PDw/vAC+56aklmL1ndiQUvxjw8PDwSl7efNq0yvLyRJKaJ3/Fw8PD+xle0mpqP5CPDrRHRXQnHh4e3gFe3p6fNbRmpdvN8Otw+gAPDw9v/ep8bLQt8s5aYklp+GZ0AA8PD+8h3uwzeRssCbEtc+zjwcPDw9vz8jLupgiblH3bO6MfA3h4eHjHePtEuR0zbRe0Tejx8PDw3sBrj4H8nlkpISr74uHh4b2S17avZm2tvKQ7TKnx8PDwSt6mwLofHZiVfaN34uHh4R3gzYKoU9vygGlLww+vMR4eHt6/r18M6tjuXvmsrAAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

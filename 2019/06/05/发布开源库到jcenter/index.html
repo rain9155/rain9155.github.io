@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>发布开源库到jcenter | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="jcenter">
+    <meta name="description" content="前言前几天写过一篇文章快速发布开源库到jitpack，在里面我控诉发布jcenter的发布过程繁琐，对新手不友好，直到这几天我遇到了一个bintray-release插件，发现它可以帮助你更简单的发布开源库到jcenter上，而且过程也很简单。 如果你还不懂jcenter是什么或者你不懂那些配置有什么作用，强烈建议你先看一下这个两篇文章教你一步步发布一个开源库到 JCenter、手把手教你发布自己">
+<meta property="og:type" content="article">
+<meta property="og:title" content="发布开源库到jcenter">
+<meta property="og:url" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言前几天写过一篇文章快速发布开源库到jitpack，在里面我控诉发布jcenter的发布过程繁琐，对新手不友好，直到这几天我遇到了一个bintray-release插件，发现它可以帮助你更简单的发布开源库到jcenter上，而且过程也很简单。 如果你还不懂jcenter是什么或者你不懂那些配置有什么作用，强烈建议你先看一下这个两篇文章教你一步步发布一个开源库到 JCenter、手把手教你发布自己">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step1.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step2.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step3.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step4.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step5.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step6.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step7.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step8.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step9.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step10.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step11.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step12.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step13.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step14.png">
+<meta property="article:published_time" content="2019-06-05T10:41:30.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.997Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="jcenter">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">发布开源库到jcenter</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">发布开源库到jcenter</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-06-05T10:41:30.000Z" itemprop="datePublished" class="page-time">
+  2019-06-05
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#步骤"><span class="post-toc-text">步骤</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、注册bintray账号"><span class="post-toc-text">1、注册bintray账号</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、创建Maven库"><span class="post-toc-text">2、创建Maven库</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、配置根目录build-gradle"><span class="post-toc-text">3、配置根目录build.gradle</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、配置库目录中的build-gradle"><span class="post-toc-text">4、配置库目录中的build.gradle</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、执行构建上传命令"><span class="post-toc-text">5、执行构建上传命令</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6、Add-to-Jcenter"><span class="post-toc-text">6、Add to Jcenter</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-发布开源库到jcenter"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">发布开源库到jcenter</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-06-05 18:41:30" datetime="2019-06-05T10:41:30.000Z"  itemprop="datePublished">2019-06-05</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前几天写过一篇文章<a href="https://blog.csdn.net/Rain_9155/article/details/90516026" target="_blank" rel="noopener">快速发布开源库到jitpack</a>，在里面我控诉发布jcenter的发布过程繁琐，对新手不友好，直到这几天我遇到了一个<a href="https://github.com/novoda/bintray-release" target="_blank" rel="noopener">bintray-release</a>插件，发现它可以帮助你更简单的发布开源库到jcenter上，而且过程也很简单。</p>
+<p>如果你还不懂jcenter是什么或者你不懂那些配置有什么作用，强烈建议你先看一下这个两篇文章<a href="https://juejin.im/post/5aef06e56fb9a07aae151406" target="_blank" rel="noopener">教你一步步发布一个开源库到 JCenter</a>、<a href="https://www.jianshu.com/p/cfc9669b732b" target="_blank" rel="noopener">手把手教你发布自己的开源库到jcenter</a>，这两篇文章也教了另外两种发布开源库到jcenter的方式。本文是第3种方式，使用bintray-release发布开源库到jcenter上。</p>
+<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><p>如果你已经有账号和仓库了，就跳过1、2步。</p>
+<h3 id="1、注册bintray账号"><a href="#1、注册bintray账号" class="headerlink" title="1、注册bintray账号"></a>1、注册bintray账号</h3><p>打开<a href="https://bintray.com/" target="_blank" rel="noopener">bintray</a>网站(可能会有点慢，如果你没有翻墙)，点击下图的位置，如下：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step1.png" class="" title="step1">
+
+<p>千万不要点击绿色那个按钮，那个是给企业用的，我们是个人开发者，注册个人账号，然后出现以下画面：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step2.png" class="" title="step2">
+
+<p>可以关联github和google账号注册，但是如果你github和google关联的邮箱是中国的邮箱，会注册失败，所以这里是建议你先去注册一个Google邮箱，要有国外的邮箱才能注册成功。</p>
+<p>这里假设你已经有Google邮箱了，然后你填好图中的信息，First Name填姓，Last Name填名，Username是填用户名，最好不要填中文，剩下的一看就直到填什么了，填好信息后点击<strong>Create My Account</strong>。这时它会发一封认证邮件给你的邮箱，因为邮箱是Google的，可能会有点慢，等你收到邮件点击确认后，它才会进入你的个人界面，否则就一直卡在那里，所以耐心等待邮件确认。</p>
+<h3 id="2、创建Maven库"><a href="#2、创建Maven库" class="headerlink" title="2、创建Maven库"></a>2、创建Maven库</h3><p>收到邮件确认后，进入个人界面，如图：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step3.png" class="" title="step3">
+
+<p>点击<strong>Add New Repository</strong>，进入如下界面：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step4.png" class="" title="step4">
+
+<p>这里填你的maven仓库的信息，Name填maven仓库名，这个很重要，记住你填的仓库名，Type就选maven，Licences就默认，Description可选，填仓库的描述，填完后点击<strong>Create</strong>。</p>
+<p>然后你就可以在个人界面看到你刚才创建的maven仓库，如下：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step5.png" class="" title="step5">
+
+<p>你以后发布的开源库都会放到这个仓库中。</p>
+<h3 id="3、配置根目录build-gradle"><a href="#3、配置根目录build-gradle" class="headerlink" title="3、配置根目录build.gradle"></a>3、配置根目录build.gradle</h3><p>打开你的项目，在根目录的build.gradle种引入插件，这里以我的<a href="https://github.com/rain9155/Utils" target="_blank" rel="noopener">Utils</a>为例，如下：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step6.png" class="" title="step6">
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">classpath <span class="string">'com.novoda:bintray-release:0.9.1'</span></span><br></pre></td></tr></table></figure>
+
+<p>插件的最新版本可以去这里找<a href="https://github.com/novoda/bintray-release/releases" target="_blank" rel="noopener">bintray-release</a>。</p>
+<h3 id="4、配置库目录中的build-gradle"><a href="#4、配置库目录中的build-gradle" class="headerlink" title="4、配置库目录中的build.gradle"></a>4、配置库目录中的build.gradle</h3><p>点开你的库目录，在build.gradle中添加如下代码：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step7.png" class="" title="step7">
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: <span class="string">'com.novoda.bintray-release'</span></span><br><span class="line">publish &#123;</span><br><span class="line">    repoName = <span class="string">'jianyu'</span> <span class="comment">//maven仓库名</span></span><br><span class="line">    userOrg = <span class="string">"rain9155"</span> <span class="comment">//bintray.com注册的用户名</span></span><br><span class="line">    groupId = <span class="string">"com.jianyu"</span> <span class="comment">//jcenter上的路径</span></span><br><span class="line">    artifactId = <span class="string">'utils'</span> <span class="comment">//项目名称</span></span><br><span class="line">    publishVersion = <span class="string">"v1.0"</span> <span class="comment">//版本号</span></span><br><span class="line">    desc = <span class="string">"a simple utils tool"</span> <span class="comment">//描述，不重要，要填的话不要填中文，不然会乱码</span></span><br><span class="line">    website = <span class="string">"https://github.com/rain9155/Utils"</span> <span class="comment">////网站，不重要，就填github上的地址就行了</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我按上述填后，我到时库引用是这样：<strong>implementation ‘com.jianyu:utils:v1.0’</strong>。</p>
+<h3 id="5、执行构建上传命令"><a href="#5、执行构建上传命令" class="headerlink" title="5、执行构建上传命令"></a>5、执行构建上传命令</h3><p>打开<strong>Terminal</strong>面板，在命令行中输入：<strong>gradlew clean build bintrayUpload -PbintrayUser=你的用户名 -PbintrayKey=你的Api密匙 -PdryRun=false</strong></p>
+<p>用户名就是你上面的的用户名，我这里是rain9155，Api密匙需要到网站的个人简介中找，如下:</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step8.png" class="" title="step8">
+
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step9.png" class="" title="step9">
+
+<p>把命令填写完整后填点击回车，等待它上传，我大概等了10几分钟，出现以下代表上传成功：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step10.png" class="" title="step10">
+
+<p>否则出现<strong>BUILD FAILED</strong>，就是有错误，排错后再重新输入命令，重新上传，直到成功。一般的错误都是超时、maven库名字填错、无法找到该类。</p>
+<h3 id="6、Add-to-Jcenter"><a href="#6、Add-to-Jcenter" class="headerlink" title="6、Add to Jcenter"></a>6、Add to Jcenter</h3><p>打开你的maven仓库，如下：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step11.png" class="" title="step11">
+
+<p>可以看到utils库上传成功，点进去，如下：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step12.png" class="" title="step12">
+
+<p>点击1处那里会有一个<strong>Add to jcenter</strong>按钮，因为我已经add过了，所以会消失，但是你们的会有，进入如下画面：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step13.png" class="" title="step13">
+
+<p>直接点击<strong>Send</strong>，等待几个小时后，jcenter的审核人员会给你发一封站内邮件，如下：</p>
+<img src="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/step14.png" class="" title="step14">
+
+<p>然后你就可以愉快的一句话引用你的库到项目中了，在上面2的红色圈那里已经圈出来了。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>有了插件的帮助，发布一个开源库还是挺简单的。大家尝试一下吧。</p>
+<p>更多信息查看<a href="https://github.com/rain9155/Utils" target="_blank" rel="noopener">Utils</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.997Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jcenter/" rel="tag">jcenter</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/&title=《发布开源库到jcenter》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/&title=《发布开源库到jcenter》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《发布开源库到jcenter》 — jianyu的博客&url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">android6.0动态权限申请的正确流程</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B2/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Android8.0的Activity启动流程(2)</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/&title=《发布开源库到jcenter》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/&title=《发布开源库到jcenter》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《发布开源库到jcenter》 — jianyu的博客&url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPYAAAD2CAAAAADAeSUUAAADLUlEQVR42u3aQW7jMAwF0Nz/0hlgVi1au5+kA8TM08pwHUtPAcqQ1OMRj+f/8fX6653z58/vP3+M8/tH63m8YmBjY2PfhP08HefLTTbiHHM0S/Jkcv9wbdjY2Njr2PPl5iHnaLPyWarBDBsbGxu7t+hXbFkS9rCxsbGxkwCWB7kclvy1+vVgY2Njfw67lwZM2gnV7ajOdVktDRsbG/vt2T3Ge16/vL+NjY2N/Wbsa5OHakugWpCarPzbe7CxsbEXsZPjOJPDPXmY6aVAyfOH82JjY2MvZY9e1GoST5q+vZQJGxsbex87D2N5ozcHT5q+edj7ozeCjY2NvY5dPZSTH+upto17wbXQ6MXGxsZex06W20s/qkd5ehtdPqCDjY2NvYI9mThPIebsqzYOGxsb+xPY1YRk0jaelLFyfBTAsLGxsW/InoSlamJQnesVB4CwsbGxd7PzwFZNEuaN2zylidrG2NjY2IvY1cBTbQPkR2eqaUl1tdjY2Nhb2fM96z3Ta0JMkpxvM2JjY2MvYldLOfnSH/HIeb1NPAy02NjY2CvYvc5w8qlqOJwkPI/qwMbGxl7Hnizl2sSjUAnrxWpsbGzspez8A/Mwk5d+kiZ0njL9UUvDxsbGXsROWrOTslG1rF+dt1xFw8bGxr45OykVVQ849oJZ0iQ4n+uCtAQbGxv7tuxqYtBrHuTBKQ+Q1VQKGxsbex+7d+RlnrpUU5HJF/PLG7CxsbEXsZOf8jk4L1cljLxV0LNgY2Njb2LPw9Jkm65KhJoNBmxsbOybs+flofygzCQhmWzuHxkYNjY29s3ZvZ/7edjIy/eTRnJvDdjY2Ng72NVUoXdcJg+No351vH3Y2NjY+9h5kT1PP6qJTd5OqG5BM+piY2Nj34qdj2pxp7ygYkDqpTHY2NjYm9i94lGSeFx76Ke3tgvw2NjY2DdhTxKAakGq2pp9YQDDxsbGXsdOAsNkub0C1mUR+OebsbGxsT+Sff7/v5eu5M2DSeEJGxsbGztn542E3pZNGhjNVAQbGxv7Juz8RUmikiy6WkK6trCFjY2NvYk9afTmgap3nTyZt5CxsbGx17H/AURBwOTNun3GAAAAAElFTkSuQmCC" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>基于P2P的局域网即时通信应用 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="android,p2p">
+    <meta name="description" content="前言这是一个使用java语言开发的基于P2P的局域网即时通信Android应用，界面是高仿微信的聊天界面，在里面你将会学到java多线程并发编程、Socket编程、UDP广播、TCP连接、还有图片加载相关知识等。 项目地址：P2P 设计思路P2P不同于C&#x2F;S方式，它没有集中式的服务器，在P2P中，程序既是服务器又是客户端，在同一个局域网内，每个用户发送的消息不会经过路由器转发到其他局域网，那么如何">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于P2P的局域网即时通信应用">
+<meta property="og:url" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言这是一个使用java语言开发的基于P2P的局域网即时通信Android应用，界面是高仿微信的聊天界面，在里面你将会学到java多线程并发编程、Socket编程、UDP广播、TCP连接、还有图片加载相关知识等。 项目地址：P2P 设计思路P2P不同于C&#x2F;S方式，它没有集中式的服务器，在P2P中，程序既是服务器又是客户端，在同一个局域网内，每个用户发送的消息不会经过路由器转发到其他局域网，那么如何">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/core1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/user1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/user2.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/user3.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/p2p1.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/p2p2.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/p2p3.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/core2.png">
+<meta property="article:published_time" content="2019-07-12T11:25:30.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:49.065Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="android">
+<meta property="article:tag" content="p2p">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/core1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">基于P2P的局域网即时通信应用</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">基于P2P的局域网即时通信应用</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-12T11:25:30.000Z" itemprop="datePublished" class="page-time">
+  2019-07-12
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#设计思路"><span class="post-toc-text">设计思路</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、用户登陆阶段"><span class="post-toc-text">1、用户登陆阶段</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、-用户聊天阶段"><span class="post-toc-text">2、 用户聊天阶段</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、用户退出阶段"><span class="post-toc-text">3、用户退出阶段</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#程序运行截图"><span class="post-toc-text">程序运行截图</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#关键性的代码"><span class="post-toc-text">关键性的代码</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、初始化TCP服务端"><span class="post-toc-text">1、初始化TCP服务端</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、初始化UDP服务端"><span class="post-toc-text">2、初始化UDP服务端</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、Mes类的设计"><span class="post-toc-text">3、Mes类的设计</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、User类的设计"><span class="post-toc-text">4、User类的设计</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、关于心跳机制的实现"><span class="post-toc-text">5、关于心跳机制的实现</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#开发过程中遇到的问题及解决办法"><span class="post-toc-text">开发过程中遇到的问题及解决办法</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-基于P2P的局域网即时通信应用"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">基于P2P的局域网即时通信应用</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-12 19:25:30" datetime="2019-07-12T11:25:30.000Z"  itemprop="datePublished">2019-07-12</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这是一个使用java语言开发的基于P2P的局域网即时通信Android应用，界面是高仿微信的聊天界面，在里面你将会学到java多线程并发编程、Socket编程、UDP广播、TCP连接、还有图片加载相关知识等。</p>
+<p>项目地址：<a href="https://github.com/rain9155/P2P" target="_blank" rel="noopener">P2P</a></p>
+<h2 id="设计思路"><a href="#设计思路" class="headerlink" title="设计思路"></a>设计思路</h2><p>P2P不同于C/S方式，它没有集中式的服务器，在P2P中，程序既是服务器又是客户端，在同一个局域网内，每个用户发送的消息不会经过路由器转发到其他局域网，那么如何保证大家都在同一个局域网内呢？答案是只要大家都连上同一个WIFI就行，这样就保证大家在同一个局域网内，这时你手机或电脑就会被路由器分配一个ip地址。</p>
+<p>如下图：</p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/core1.png" class="" title="core1">
+
+<p>下面是设计思路：</p>
+<h3 id="1、用户登陆阶段"><a href="#1、用户登陆阶段" class="headerlink" title="1、用户登陆阶段"></a>1、用户登陆阶段</h3><p>（1）用户A打开P2P程序的，选择一个名字和头像后，点击登陆，就开始登陆上局域网，用户A登陆时程序同时会启动两个线程，一个线程里面启动UDP服务端(端口号9156)，用来等待其他用户的登陆，另一个线程里面启动TCP服务端(端口号9155)，用来等待其他用户的Socket连接，在登陆同时用户A还会使用UDP广播一个UDP包出去。这个UDP包包含了用户姓名和ip地址等信息，UDP包会发送给同一局域网内所有具有相同端口的UDP服务端程序，包括本程序。</p>
+<p>（2）这时如果有其他在线的用户，那么每个在线的用户程序中的UDP服务端就会收下这个UDP包，然后把用户信息取出来并把用户A加入在线列表，因为UDP包中包含用户A ip地址，所以每个在线的用户使用用户A的ip地址向用户A发一个回复。</p>
+<p>（3）用户A等待一段时间后，就会收到所有在线用户的回复，然后把所有的在线用户加入自己的在线列表。</p>
+<p>登陆阶段如图：</p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/user1.png" class="" title="user1">
+
+<h3 id="2、-用户聊天阶段"><a href="#2、-用户聊天阶段" class="headerlink" title="2、 用户聊天阶段"></a>2、 用户聊天阶段</h3><p>（1）用户A选择自己的在线列表中的用户B聊天，这时用户A就会向用户B发起TCP连接，与此同时用户B的TCP服务端中就会收到一个Socket请求，用户B把这个Socket请求缓存起来，同理用户A发起连接时也会产生一个Socket，用户A也把这个Socket保存缓存起来，这样下一次就不用重复建立连接。</p>
+<p>（2）这样双方都拥有一个Socket，双方基于Socket与Socket之间建立的连接上聊天（传输文件，文字等）。</p>
+<p>聊天阶段如图：</p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/user2.png" class="" title="user2">
+
+<h3 id="3、用户退出阶段"><a href="#3、用户退出阶段" class="headerlink" title="3、用户退出阶段"></a>3、用户退出阶段</h3><p>（1）当用户A离开程序，退出局域网时，用户A就像登陆一样使用广播地址广播一个UDP包出去，UDP中包含了要退出登陆的信息，那么在局域网内的在线用户收到这个UDP后，就把用户A移除出在线用户列表，如果有用户A的Socket连接，就把Socket连接关闭掉。</p>
+<p>（2）用户A发出退出广播后，也把自己缓存的所有Socket连接关闭掉。 </p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/user3.png" class="" title="user3">
+
+<h2 id="程序运行截图"><a href="#程序运行截图" class="headerlink" title="程序运行截图"></a>程序运行截图</h2><p>首先用户A和用户B登陆，分别选择一个头像和姓名，如下</p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/p2p1.png" class="" title="p2p1">
+
+<p>登陆后，双方正常来讲，是只有一个在线用户的，但是考虑到平时测试两台手机不方便，就没有把自己过滤掉，所以现在双方都有两个在线用户，用户A的在线用户是用户B和自己，用户B的在线用户是用户A和自己，如下：</p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/p2p2.png" class="" title="p2p2">
+
+<p>下面是双方聊天的过程，现在可以发文字、图片、语音、文件(支持发送大文件，发送大文件有进度显示)。</p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/p2p3.png" class="" title="p2p3">
+
+<h2 id="关键性的代码"><a href="#关键性的代码" class="headerlink" title="关键性的代码"></a>关键性的代码</h2><p>下面红色方框内的是关键性类，如下：</p>
+<img src="/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/core2.png" class="" title="core2">
+
+<p>下面讲解一些关键性代码：</p>
+<h3 id="1、初始化TCP服务端"><a href="#1、初始化TCP服务端" class="headerlink" title="1、初始化TCP服务端"></a>1、初始化TCP服务端</h3><p>初始化TCP服务端，在<strong>ConnectManager</strong>类中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 初始化ServerSocket监听，绑定端口号, 等待客户端连接</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initListener</span><span class="params">()</span></span>&#123;</span><br><span class="line">    mExecutor.execute(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//创建ServerSocket监听，并绑定端口号</span></span><br><span class="line">            mServerSocket = <span class="keyword">new</span> ServerSocket(PORT);</span><br><span class="line">            LogUtil.d(TAG, <span class="string">"开启服务端监听，端口号 = "</span> + PORT);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            LogUtil.e(TAG, <span class="string">"绑定端口号失败，e = "</span> + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>)&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//调用accept()开始监听，等待客户端的连接</span></span><br><span class="line">                Socket socket = mServerSocket.accept();</span><br><span class="line">                String ipAddress = socket.getInetAddress().getHostAddress();</span><br><span class="line">                <span class="keyword">if</span>(isClose(ipAddress))&#123;</span><br><span class="line">                    LogUtil.d(TAG, <span class="string">"一个用户加入聊天，socket = "</span> + socket);</span><br><span class="line">                    <span class="comment">//每个客户端连接用一个线程不断的读</span></span><br><span class="line">                    ReceiveThread receiveThread = <span class="keyword">new</span> ReceiveThread(socket);</span><br><span class="line">                    <span class="comment">//缓存客户端的连接</span></span><br><span class="line">                    mClients.put(ipAddress, socket);</span><br><span class="line">                    <span class="comment">//放到线程池中执行</span></span><br><span class="line">                    mExecutor.execute(receiveThread);</span><br><span class="line">                    LogUtil.d(TAG, <span class="string">"已连接的客户端数量："</span> + mClients.size());</span><br><span class="line">                    <span class="comment">//简单的心跳机制</span></span><br><span class="line">                    heartBeat(ipAddress);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">                LogUtil.e(TAG, <span class="string">"调用accept()监听失败， e = "</span> + e.getMessage());</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//释放掉ServerSocket占用的端口号</span></span><br><span class="line">            mServerSocket.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            LogUtil.e(TAG, <span class="string">"关闭端口号失败， e = "</span> + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ConnectManager是用来管理每个用户的连接，ConnectManager的initListener()方法里面会绑定一个端口号，然后调用accept()方法等待其他客户端的连接，如果有客户端的连接请求，就会为每一个客户端的连接创建一个Thread，这个Thread会不停等待接收客户端的消息。如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReceiveThread</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>)&#123;</span><br><span class="line">            Mes mes;</span><br><span class="line">            <span class="keyword">try</span>&#123;</span><br><span class="line">                InputStream in = mSocket.getInputStream();</span><br><span class="line">                mes = receiveMessageByType(in);</span><br><span class="line">               <span class="comment">//...</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">                LogUtil.e(TAG, <span class="string">"获取客户端消息失败，e = "</span> + e.getMessage());</span><br><span class="line">                <span class="comment">//两端的Socker连接都要关闭</span></span><br><span class="line">                ConnectManager.getInstance().removeConnect(mClientIp);</span><br><span class="line">                ConnectManager.getInstance().removeReceiveCallback(mClientIp);</span><br><span class="line">                ConnectManager.getInstance().cancelScheduledTask(mClientIp);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2、初始化UDP服务端"><a href="#2、初始化UDP服务端" class="headerlink" title="2、初始化UDP服务端"></a>2、初始化UDP服务端</h3><p>初始化UDP服务端，在<strong>OnlineUserManager</strong>类中，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 初始化监听，绑定指定端口, 等待接受广播</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initListener</span><span class="params">()</span></span>&#123;</span><br><span class="line">    mExecutor.execute(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            mDatagramSocket = <span class="keyword">new</span> DatagramSocket(PORT);</span><br><span class="line">            LogUtil.d(TAG, <span class="string">"开启广播监听，端口号 = "</span> + PORT);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SocketException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            LogUtil.e(TAG, <span class="string">"创建DatagramSocket监听失败， e = "</span> + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>)&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[MAX_RECEIVE_DATA];</span><br><span class="line">                DatagramPacket datagramPacket = <span class="keyword">new</span> DatagramPacket(buffer, buffer.length);</span><br><span class="line">                mDatagramSocket.receive(datagramPacket);</span><br><span class="line">                <span class="keyword">byte</span>[] data = datagramPacket.getData();</span><br><span class="line">                <span class="comment">//获得发送方的ip地址</span></span><br><span class="line">                String receiveIp = datagramPacket.getAddress().getHostAddress();</span><br><span class="line">                <span class="comment">//解析数据</span></span><br><span class="line">                Data datas = resolveData(data);</span><br><span class="line">                <span class="keyword">if</span>(datas != <span class="keyword">null</span>)&#123;</span><br><span class="line">                    <span class="comment">//用户数据</span></span><br><span class="line">                    <span class="keyword">int</span> code = datas.getCode();</span><br><span class="line">                    User user = datas.getUser();</span><br><span class="line">                    user.setIp(receiveIp);</span><br><span class="line">                    <span class="keyword">if</span>(code == <span class="number">0</span>)&#123;</span><br><span class="line">                        <span class="comment">//把它加入在线用户列表</span></span><br><span class="line">                        <span class="keyword">if</span>(!mOnlineUsers.containsKey(receiveIp))&#123;</span><br><span class="line">                            mOnlineUsers.put(receiveIp, user);</span><br><span class="line">                            <span class="comment">//通知主活动用用户加入</span></span><br><span class="line">                            <span class="keyword">if</span>(mUserCallback != <span class="keyword">null</span>)&#123;</span><br><span class="line">                                mHandler.obtainMessage(TYPE_JOIN_USER, mOnlineUsers.get(receiveIp)).sendToTarget();</span><br><span class="line">                            &#125;</span><br><span class="line">                            LogUtil.d(TAG, <span class="string">"一个用户加入，地址 = "</span> + receiveIp);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="comment">//回复它</span></span><br><span class="line">                        reply(receiveIp);</span><br><span class="line">                    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(code == <span class="number">1</span>)&#123;</span><br><span class="line">                        <span class="comment">//用户退出在线用户列表</span></span><br><span class="line">                        <span class="keyword">if</span>(mOnlineUsers.containsKey(receiveIp))&#123;</span><br><span class="line">                            User exitUser = mOnlineUsers.remove(receiveIp);</span><br><span class="line">                            <span class="keyword">if</span>(mUserCallback != <span class="keyword">null</span>)&#123;</span><br><span class="line">                                mHandler.obtainMessage(TYPE_EXIT_USER, exitUser).sendToTarget();</span><br><span class="line">                            &#125;</span><br><span class="line">                            LogUtil.d(TAG, <span class="string">"一个用户退出，地址 = "</span> + receiveIp);</span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="comment">//得到所有在线用户列表</span></span><br><span class="line">                        <span class="keyword">if</span>(!mOnlineUsers.containsKey(receiveIp)) &#123;</span><br><span class="line">                            mOnlineUsers.put(receiveIp, user);</span><br><span class="line">                            <span class="comment">//通知主活动用用户加入</span></span><br><span class="line">                            <span class="keyword">if</span>(mUserCallback != <span class="keyword">null</span>)&#123;</span><br><span class="line">                                mHandler.obtainMessage(TYPE_JOIN_USER, mOnlineUsers.get(receiveIp)).sendToTarget();</span><br><span class="line">                            &#125;</span><br><span class="line">                            LogUtil.d(TAG, <span class="string">"获得一个用户信息，地址 = "</span> + receiveIp);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                LogUtil.d(TAG, <span class="string">"当前在线用户，count = "</span> + mOnlineUsers.size());</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">                LogUtil.e(TAG, <span class="string">"接受广播失败， e = "</span> + e.getMessage());</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(mDatagramSocket != <span class="keyword">null</span>)&#123;</span><br><span class="line">            mDatagramSocket.close();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>OnlineUserManager是用来管理在线用户的，OnlineUserManager的initListener()方法里面也是会绑定一个端口号，然后调用receive()方法等待用户的广播信息，如果有用户的广播信息，就根据用户的广播信息类型做出不同的动作，如把用户加入在线用户列表。</p>
+<h3 id="3、Mes类的设计"><a href="#3、Mes类的设计" class="headerlink" title="3、Mes类的设计"></a>3、Mes类的设计</h3><p>Mes类是用户之间建立连接后传输消息的实体类，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Mes</span>&lt;<span class="title">T</span>&gt;</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> ItemType itemType;<span class="comment">//Mes的Item类型</span></span><br><span class="line">    <span class="keyword">public</span> MesType mesType;<span class="comment">//Mes的类型</span></span><br><span class="line">    <span class="keyword">public</span> String userIp;<span class="comment">//发送Mes的用户的ip</span></span><br><span class="line">    <span class="keyword">public</span> T data;<span class="comment">//具体消息</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中<strong>T</strong>是一个泛型，它可以代表着文本、音频、文件、图片的类型，所以在构造一个Mes时，就要确定它是属于什么类型，然后文本、音频、文件、图片分别在对应一个实体类。</p>
+<h3 id="4、User类的设计"><a href="#4、User类的设计" class="headerlink" title="4、User类的设计"></a>4、User类的设计</h3><p>User就代表着用户，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String mName;<span class="comment">//名字</span></span><br><span class="line">    <span class="keyword">private</span> String mIp;<span class="comment">//ip</span></span><br><span class="line">    <span class="keyword">private</span> String mImagePath;<span class="comment">//头像路径</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mImageLen;<span class="comment">//头像长度</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它在传输前中会转成一个Json字符串，收到后再把它转成User类，这样就很容易的把它里面的数据解析出来也方便了传输。</p>
+<h3 id="5、关于心跳机制的实现"><a href="#5、关于心跳机制的实现" class="headerlink" title="5、关于心跳机制的实现"></a>5、关于心跳机制的实现</h3><p>心跳机制是什么？它就每隔一段事件发一个探测，探测在线的用户是否存活。有些在线用户由于手机关机，不正常退出应用等会导致它无法正常退出登陆，这时就需要每隔一段时间探测它是否存活。</p>
+<p>P2P中实现了一个简单的心跳机制，其实它就是一个定时任务，线程池中可以提交周期执行的任务，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 简单心跳机制</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">heartBeat</span><span class="params">(String ipAddress)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!mScheduledTasks.containsKey(ipAddress))&#123;</span><br><span class="line">        ScheduledFuture task = mScheduledExecutor.scheduleAtFixedRate(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">int</span> result = PingManager.getInstance().ping(ipAddress);</span><br><span class="line">            Log.d(TAG, <span class="string">"探测对方是否在线, result = "</span> + result + <span class="string">", ipAddress = "</span> + ipAddress);</span><br><span class="line">            <span class="keyword">if</span>(result != <span class="number">0</span>)&#123;</span><br><span class="line">                removeConnect(ipAddress);</span><br><span class="line">                cancelScheduledTask(ipAddress);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="number">10</span>, <span class="number">10</span>, TimeUnit.SECONDS);</span><br><span class="line">        mScheduledTasks.put(ipAddress, task);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它每隔10秒就会执行一次，然后会ping一下用户的ip地址，如果它不连通了，就要把它从在线用户中移除。</p>
+<h2 id="开发过程中遇到的问题及解决办法"><a href="#开发过程中遇到的问题及解决办法" class="headerlink" title="开发过程中遇到的问题及解决办法"></a>开发过程中遇到的问题及解决办法</h2><ul>
+<li><strong>问题1：获取获得在线用户列表和如果告诉别人我上线了？</strong></li>
+</ul>
+<p>因为第一次开发P2P应用，所以不知道用户体系建立的逻辑，尝试的第一种方法是：使用Ping命令把ip地址的最后三位用循环从0~255不断的ping，如果ping通，就说明这个ip地址的用户连接着局域网的同一个WIFI，把它记录下来，但是这有一个缺点，能ping通的ip地址只是说明这个用户连着WIFI，并没有说明这个用户打开了P2P应用，也并不代表这个用户上线了，所以这种方法不行；后来想到了一种改进办法：就是把ping通的ip地址列表逐个建立Socket连接，如果能够连接上，就说明这个用户打开了P2P应用并且上线了，这个办法可以，但是逐个建立连接有很麻烦，耗时。</p>
+<p>解决办法：就是使用UDP的广播，UDP广播能够告诉同一局域网内的所有打开了同一端口的在线用户我上线了，并且收到他们的回复。</p>
+<ul>
+<li><strong>问题2：用户头像的发送？</strong></li>
+</ul>
+<p>因为使用UDP广播，但是UDP广播每次最大只能发送64Kb数据，一个头像就算压缩了，也有几百Kb，所以如何把头像发送出去是一个问题，尝试的第一种方法是：把头像转化成字节数组和用户信息一起转化为json数据，json数据再转化为字节数组，然后把json数据的字节数组分段发送出去，但是这有一个缺点，就是会额外增大发送时UDP的字节数组的长度导致发送额外多的字节，耗时，这种方法不行；尝试的第二种方法是：把头像和用户信息分开发送，先发送用户信息，然后再把头像转化为字节数组分段发送，但是有一个无法解决的问题，就是UDP是不可靠，很难保证分段后的字节再重新组合成一个完整的头像字节数组，会有顺序问题，所以这种办法不行。</p>
+<p>解决办法：用户信息用UDP广播发送，因为用户信息短，不用分段，然后等获取到在线用户列表后再逐一建立TCP连接把用户头像发送给在线用户列表，TCP可靠。 </p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:49.065Z" itemprop="dateUpdated">2023-01-07 18:44:49</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/" rel="tag">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/p2p/" rel="tag">p2p</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/&title=《基于P2P的局域网即时通信应用》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/&title=《基于P2P的局域网即时通信应用》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《基于P2P的局域网即时通信应用》 — jianyu的博客&url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/12/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96Android%E5%BA%94%E7%94%A8%E4%B8%8E%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">如何获取Android应用和系统信息</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">SVG入门学习</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/&title=《基于P2P的局域网即时通信应用》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/&title=《基于P2P的局域网即时通信应用》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《基于P2P的局域网即时通信应用》 — jianyu的博客&url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/12/%E5%9F%BA%E4%BA%8EP2P%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%E5%8D%B3%E6%97%B6%E9%80%9A%E4%BF%A1%E5%BA%94%E7%94%A8/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAAAAADqr2IGAAAEjUlEQVR42u3aS27bQBAFwNz/0gqQVQBH0nvddKyRiivDpslhzWL69+tXfN3+XF9/vnfP5r++/vXv697vHz8/WckFFyZMmDBhekmm28Pr8XLzD9vck5DNNib5dkyYMGHC9B5M7eMeBwEJdx4cPH7CvWc+/n0dpmDChAkTpg9gyvPBBDFPgPNkOPkZEyZMmDBhmjFt0tdZoXkWmmDChAkTps9kyh+3TzJbvuTtm9T94lo4JkyYMGF6MabN4M7pP/+n+SZMmDBhwvRDTLfyyg/XJJn8jpQ4SYzrr8aECRMmTMcytUM5eUKbJ5ntiZxj7duldR8VEyZMmDC9GNOs4bcfvkk2aXbA5+3P4k5MmDBhwnQ402y57WHfjt20bdQiiS3DF0yYMGHCdC7TbCmbT03u3Iz1bN4+7OhiwoQJE6YXZspfnDw6bxlelRK36fEQFxMmTJgwHcvUljvzpcxKt99RIG5btkmIgwkTJkyYzmLalGXbNmG+AfvC7ia3fdL7xYQJEyZMhzBtGor5QM+sUNs2JvcbfPc5mDBhwoTpWKa8AJqMv7QLnf31+9qWT7YEEyZMmDAdy5QfnLPh1E0bsqUsRk5nhWNMmDBhwnQU0/5gbsdfNm3O/Gltwvwk7ceECRMmTIcztWXZzbhMGzQk4UKScrdF3n8EBJgwYcKE6XCmtgXYFnZnReEZaxKyFKEMJkyYMGF6C6b8MM6HbGZH+CwZvqope7fIiwkTJkyYDmfaNCOTheZwsw3Lg5U6mMCECRMmTIcztS/+qY/cBByzInWU02PChAkTpsOZ8qR0U5BN2ortoZ6UdyNuTJgwYcJ0LFNeEp2VejfcyaE+C1w268SECRMmTKczbYZHo4JpmTy3rdYk0JlluJgwYcKE6VymW3y1ocPsAM5Xst+YAhcTJkyYMB3IlI+5tC3JfUixv6cNQepYCRMmTJgwvTzT/thum6P74GC2SXl48ST4wIQJEyZMRzEl/zD77NmwTr6e1aFefh0mTJgwYTqdqR3HmR2ubVm25ZgFMdFKMGHChAnT4UztIdomtO1mzEBnAU0UNGDChAkTpjdlmn32bOAmHwzKQ5k23S0mmzBhwoQJ0yFMSYq7H47JG5l5Y3W2JZuNwYQJEyZMJzLtH5cvtx2smZWe9xuDCRMmTJjelSknawd9ZuFFe2dLXyTAmDBhwoTpWKbNRyZNx7bduGlGbratLvJiwoQJE6ZDmB4/KPmkNoy4qgl6LUSd+mLChAkTpgOZNoluG320KW5y5ffnAQcmTJgwYTqdKT/CZ0lsUTwtuWfb1haFMWHChAnT6Uy38mqLs/mntsHHLOnN34UJEyZMmN6DKb9mzch8LGYTUuQN11kbFRMmTJgwnc40K57mxdm2yNu2OfPS7erIx4QJEyZMhzO1B2e+rE1UkjdW27JvXQjGhAkTJkwfwJQXgtvmZTsqNNueWSKNCRMmTJg+jWkzFnPZohdl6Lb9iQkTJkyY3oOpLfK2wzHDxQVvb0OBfCUXtDMxYcKECdMLMLUF0LYZmcMlQPk9+yZrfWHChAkTptdi+g3prao7iurmqgAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

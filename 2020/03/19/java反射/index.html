@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>java学习总结之反射 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="反射">
+    <meta name="description" content="前言在java中，反射就是在程序运行时动态的获取某一个类的元数据(metadata，描述数据的数据)的过程，这些元数据包括构造器、方法、成员变量、内部类、接口、父类等，通过反射，我们可以在程序运行时动态地去操作类的方法、成员变量等信息，所以，在java中，反射为我们提供了一种动态访问、修改类的能力，掌握反射，对我们加深java语言的理解很有帮助，反射大部分所使用到的类都在java.lang.ref">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java学习总结之反射">
+<meta property="og:url" content="http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言在java中，反射就是在程序运行时动态的获取某一个类的元数据(metadata，描述数据的数据)的过程，这些元数据包括构造器、方法、成员变量、内部类、接口、父类等，通过反射，我们可以在程序运行时动态地去操作类的方法、成员变量等信息，所以，在java中，反射为我们提供了一种动态访问、修改类的能力，掌握反射，对我们加深java语言的理解很有帮助，反射大部分所使用到的类都在java.lang.ref">
+<meta property="article:published_time" content="2020-03-19T06:59:32.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.854Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="反射">
+<meta name="twitter:card" content="summary">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">java学习总结之反射</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">java学习总结之反射</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-03-19T06:59:32.000Z" itemprop="datePublished" class="page-time">
+  2020-03-19
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#为什么使用反射"><span class="post-toc-text">为什么使用反射</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#反射的基本使用"><span class="post-toc-text">反射的基本使用</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、获取Class对象"><span class="post-toc-text">1、获取Class对象</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、通过Class对象获取类信息"><span class="post-toc-text">2、通过Class对象获取类信息</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-1、获取类的Constructor"><span class="post-toc-text">2.1、获取类的Constructor</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-2、获取类的Method"><span class="post-toc-text">2.2、获取类的Method</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-3、获取类的Field"><span class="post-toc-text">2.3、获取类的Field</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、小结"><span class="post-toc-text">3、小结</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#通过反射获取变量的类型"><span class="post-toc-text">通过反射获取变量的类型</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-java反射"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">java学习总结之反射</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020-03-19 14:59:32" datetime="2020-03-19T06:59:32.000Z"  itemprop="datePublished">2020-03-19</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在java中，反射就是在程序<strong>运行时</strong>动态的获取某一个类的元数据(metadata，描述数据的数据)的过程，这些元数据包括构造器、方法、成员变量、内部类、接口、父类等，通过反射，我们可以在程序<strong>运行时</strong>动态地去操作类的方法、成员变量等信息，所以，在java中，反射为我们提供了一种<strong>动态访问、修改</strong>类的能力，掌握反射，对我们加深java语言的理解很有帮助，反射大部分所使用到的类都在<strong>java.lang.reflect</strong>包下。</p>
+<h2 id="为什么使用反射"><a href="#为什么使用反射" class="headerlink" title="为什么使用反射"></a>为什么使用反射</h2><p>首先我们要知道在java中，对象分为<strong>编译时类型</strong>和<strong>运行时类型</strong>，例如：<strong>Object obj = new String(“123”)；</strong> 其中obj变量的编译时类型为Object类型，运行时类型为String类型，编译时类型在<strong>编译期</strong>就确定了变量的类型，而运行时类型则在<strong>运行期</strong>才确定变量的类型。</p>
+<p>这时假设我需要通过obj 变量调用String中的length()方法，当我写下<strong>obj.length()</strong>这句代码时，编译就会报错，因为编译时会检查obj变量的编译时类型Object，发现它不存在length()方法，编译不通过，报错，这时的解决方法是：把obj强转成String，然后再调用length()方法，如：<strong>((String)obj).length()；</strong>这时编译就通过了。</p>
+<p>但是如果此时我并不知道obj变量的运行时类型是String，我怎么强转，我怎么调用它的length()方法？这时就要通过反射来实现了，例如下面的场景：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//外部调用getLen方法，把obj变量传入方法</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">    Object obj = <span class="keyword">new</span> String(<span class="string">"123"</span>);</span><br><span class="line">    System.out.println(getLen(obj));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//在方法内部的我们只知道obj的编译时类型为Object，并不知道它的运行时类型是什么？</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getLen</span><span class="params">(Object obj)</span></span>&#123;</span><br><span class="line">    <span class="comment">//通过反射调用obj的length()方法</span></span><br><span class="line">    Method method = obj.getClass().getMethod(<span class="string">"length"</span>);</span><br><span class="line">    <span class="keyword">return</span> (Integer) method.invoke(obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述我们在执行一个getLen方法，方法传入了一个Object类型的对象，但是我们却需要调用对象运行时类型的方法length()，我们此时并不知道该对象的运行时类型，只知道对象编译时类型是Object，这时就需要通过反射来实现该方法的调用，obj变量在运行时是String类型，所以上述代码在运行时通过反射调用了obj的length()方法。</p>
+<p>所以为什么要使用反射呢？这是因为有时候<strong>我们在编译时无法预知对象的运行时类型，但却需要使用对象的运行时类型的信息</strong>，这时就需要通过反射来实现。</p>
+<h2 id="反射的基本使用"><a href="#反射的基本使用" class="headerlink" title="反射的基本使用"></a>反射的基本使用</h2><h3 id="1、获取Class对象"><a href="#1、获取Class对象" class="headerlink" title="1、获取Class对象"></a>1、获取Class对象</h3><p>每个类被加载进JVM时，JVM会为这个类创建一个java.lang.Class对象，Class对象就是类的元数据，通过这个Class对象，我们可以在代码运行时访问到这个类的所有信息，Class对象是代码运行时访问类信息的唯一入口，所以要想使用反射，我们首先要获取到类的Class对象，获取Class对象主要有以下3种方法：</p>
+<ul>
+<li>1、<strong>使用Class的forName(String className)方法</strong>：该方法需要传入类的全限定名，通过类的全限定名加载这个类进入JVM，并返回该类的Class对象，如果无法加载这个类就抛出一个ClassNotFoundException异常；</li>
+<li>2、<strong>调用某个类的class属性</strong>：每个类都有一个class属性，调用类.class会返回该类的Class对象；</li>
+<li>3、<strong>调用某个对象的getClass方法</strong>：getClass方法是Object类中的一个方法，所以java中的所有对象都可以调用这个方法，getClass方法会返回该对象所属类的Class对象；</li>
+</ul>
+<p>下面使用上面的3种方法获取String类的Class对象，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</span><br><span class="line">    <span class="comment">//1、使用Class的forName(String className)方法</span></span><br><span class="line">    Class&lt;?&gt; stringClass1 = Class.forName(<span class="string">"java.lang.String"</span>);</span><br><span class="line">    <span class="comment">//2、调用String类的class属性</span></span><br><span class="line">    Class&lt;String&gt; stringClass2 = String<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="comment">//3、调用String对象的getClass方法</span></span><br><span class="line">    Class&lt;?&gt; stringClass3 = <span class="keyword">new</span> String().getClass();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在JDK5之后，Class添加了<strong>泛型支持</strong>，允许使用泛型来限制Class的类型，例如上面的String.class，它的Class类型为Class&lt;String&gt;，它表示Class对应的类为String类，如果Class对应的类未知，可以使用Class&lt;?&gt;或Class表示，在java中，通过forName或getClass方法获取的Class对象的对应的类是<strong>未知的</strong>，而通过某个类的class属性返回的Class对象的对应的类是<strong>确定的</strong>，通过泛型限制，可以避免使用反射创建对象时进行强制类型转换。</p>
+<p>在java中，除了类有对应的Class对象外，<strong>8大基本数据类型+void类型</strong>都有自己的Class对象，但是这些基本类型并不是对象，所以它们不能通过getClass方法获取Class对象，同时基本类型也没有类名的概念，所以它们也不能通过forName方法获取Class对象，它们只能通过XX.class的方式获取相应的Class对象，如：int.class、byte.class、short.class、long.class、double.class、float.class、char.class、boolean.class和void.class，JVM中会内置这九大类型的Class对象，无需我们从外部加载，同时在这九大类型的对应的包装类中都有一个<strong>TYPE</strong>常量，这个TYPE常量就是对应基本类的Class对象，但是包装类的Class对象并不等于基本类的Class对象，以int为例，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</span><br><span class="line">    System.out.println(<span class="keyword">int</span><span class="class">.<span class="keyword">class</span> </span>== Integer.TYPE);<span class="comment">//输出true</span></span><br><span class="line">    System.out.println(<span class="keyword">int</span><span class="class">.<span class="keyword">class</span> </span>== Integer<span class="class">.<span class="keyword">class</span>)</span>;<span class="comment">//输出false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在java中，数组也是一个引用类型，也是一个对象，所以数组也有自己的Class对象，数组可以通过getClass方法和XX.class方式获取自己的Class对象，以int[]为例，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] ints = &#123;&#125;;</span><br><span class="line">    <span class="comment">//1、通过XX.class方式获取数组的Class对象</span></span><br><span class="line">    Class&lt;<span class="keyword">int</span>[]&gt; intsClass1 = <span class="keyword">int</span>[]<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="comment">//2、通过getClass方法获取数组的Class对象</span></span><br><span class="line">    Class&lt;?&gt; intsClass2 = ints.getClass();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2、通过Class对象获取类信息"><a href="#2、通过Class对象获取类信息" class="headerlink" title="2、通过Class对象获取类信息"></a>2、通过Class对象获取类信息</h3><p>一旦获取到类的Class对象后，就可以通过Class对象获取类中的所有信息，这些信息包括：构造器、方法、成员变量、内部类、外部类、接口、父类、注解、类的修饰符，类名、类所在包等，但是我们常用的类信息只有<strong>构造器、方法、成员变量</strong>，它们的元数据代表如下：</p>
+<ul>
+<li><strong>Constructor</strong>：代表类的构造器对象；</li>
+<li><strong>Method</strong>：代表类的方法对象；</li>
+<li><strong>Field</strong>：代表类的成员变量对象；</li>
+</ul>
+<p>在Class类中都有这些元数据的相应的获取方法，通过Class对象获取这些元数据的相应方法的名称命名都有一个规律：如果获取方法中<strong>不带Declared</strong>关键字的，那么这个方法只能获取到类的<strong>public</strong>属性，<strong>包括继承的</strong>；而如果这个获取方法<strong>带Declared</strong>关键字，那么这个方法就能获取到类的所有<strong>public、protected、default、private</strong>属性，但<strong>不包括继承的</strong>，而子类是无法继承父类的构造器的，所以通过子类获取构造器时，是无法获取到父类的构造器，只能获取到属于子类的构造器，而对于方法、成员变量它们是可以继承自父类的。</p>
+<p>下面分别介绍它们的获取方法和使用场景：</p>
+<h4 id="2-1、获取类的Constructor"><a href="#2-1、获取类的Constructor" class="headerlink" title="2.1、获取类的Constructor"></a>2.1、获取类的Constructor</h4><p>下面的4个方法可以获取Class对应类的构造器对象Constructor：</p>
+<ul>
+<li>1、<strong>Constructor&lt;T&gt; getConstructor(Class&lt;?&gt;… parameterTypes)</strong>：返回此Class对应类的、带指定形参列表的<strong>public</strong>构造器对象，传入的形参也要用对应类型的Class对象表示；</li>
+<li>2、<strong>Constructor&lt;?&gt;[] getConstructors()</strong>：以数组的形式返回此Class对应类的所有<strong>public</strong>构造器对象；</li>
+<li>3、 *<em>Constructor&lt;T&gt; getDeclaredConstructor(Class&lt;?&gt;… parameterTypes) *</em>：返回此Class对应类的、带指定形参列表的构造器对象，与访问权限无关，传入的形参也要用对应类型的Class对象表示；</li>
+<li>4、<strong>Constructor&lt;?&gt;[] getDeclaredConstructors()</strong>：以数组的形式返回此Class对应类的所有构造器对象，与访问权限无关.</li>
+</ul>
+<p>获得到构造器对象Constructor后，就可以调用Constructor的<strong>newInstance(Object … initargs)方法</strong>创建对应类的实例，newInstance方法的initargs参数就是构造器中需要传入的参数，它是一个可变参数，如下我通过反射创建了一个值为123的String对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//通过反射创建对象</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException </span>&#123;</span><br><span class="line">    <span class="comment">//1、获取String类的Class对象</span></span><br><span class="line">    Class&lt;String&gt; stringClass = String<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="comment">//2、通过Class对象获取一个带String类型参数的构造器Constructor</span></span><br><span class="line">    Constructor&lt;String&gt; stringConstructor = stringClass.getConstructor(String<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    <span class="comment">//3、使用Constructor的newInstance方法创建String对象，并传入该构造器需要的参数“123”</span></span><br><span class="line">    String string = stringConstructor.newInstance(<span class="string">"123"</span>);</span><br><span class="line">    <span class="comment">//输出：123</span></span><br><span class="line">    System.out.println(string);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果你需要调用类的默认构造器来创建对象，这时调用Constructor的newInstance方法时就不需要传入参数，类的默认构造器就是没有参数的那个构造器，同时为了简化获取Constructor这一步骤，java允许我们直接使用<strong>Class对象的newInstance()</strong>方法来调用类的<strong>默认构造器</strong>来创建对象，如下我通过Class对象的newInstance方法创建了一个空String对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//通过反射创建对象</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IllegalAccessException, InstantiationException</span>&#123;</span><br><span class="line">    <span class="comment">//1、获取String类的Class对象</span></span><br><span class="line">    Class&lt;String&gt; stringClass = String<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="comment">//2、调用String类的默认构造器来创建对象</span></span><br><span class="line">    String string = stringClass.newInstance();</span><br><span class="line">    System.out.println(string);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Class对象的newInstance方法从java9之后就被标记为Deprecated，java9之后推荐使用Constructor的newInstance方法来反射创建对象实例。</p>
+</blockquote>
+<p>为什么要使用Constructor来创建对象呢，直接使用new不行吗？这是因为某些场景下我们无法直接调用某个类的构造器，例如在一些框架中，传给我们的都是关于类的字符串(类的全限定名)，我们只能通过Class的forName方法获取到Class对象，然后获取到Constructor对象，然后通过Constructor对象来创建实例。</p>
+<h4 id="2-2、获取类的Method"><a href="#2-2、获取类的Method" class="headerlink" title="2.2、获取类的Method"></a>2.2、获取类的Method</h4><p>下面的4个方法可以获取Class对应类的方法对象Method：</p>
+<ul>
+<li>1、<strong>Method getMethod(String name, Class&lt;?&gt;… parameterTypes) **：返回此Class对应类的、指定名称的、带指定形参列表的</strong>public**方法对象，传入的形参也要用对应类型的Class对象表示；</li>
+<li>2、<strong>Method[] getMethods() **：以数组的形式返回此Class对应类的所有</strong>public**方法对象；</li>
+<li>3、<strong>Method getDeclaredMethod(String name, Class&lt;?&gt;… parameterTypes) **：返回此Class对应类的、</strong>非继承的**、指定名称的、带指定形参列表的方法对象，与访问权限无关，传入的形参也要用对应类型的Class对象表示；</li>
+<li>4、 <strong>Method[] getDeclaredMethods() **：以数组的形式返回此Class对应类的、</strong>非继承的**所有方法对象，与访问权限无关.</li>
+</ul>
+<p>获取到方法对象Method后，就可以通过Method的<strong>invoke(Object obj, Object… args)</strong>方法来调用Method对应的方法，其中invoke方法的返回值就是被调用方法的返回值，而invoke方法的obj参数表示被调用方法的所属对象，args参数表示被调用方法的需要传入的参数，如下我通过反射调用String对象的length方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//通过反射调用方法</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException </span>&#123;</span><br><span class="line">     <span class="comment">//1、获取String类的Class对象</span></span><br><span class="line">    Class&lt;String&gt; stringClass = String<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="comment">//2、通过Class对象获取名称为length、没有参数的方法对象method</span></span><br><span class="line">    Method method = stringClass.getMethod(<span class="string">"length"</span>);</span><br><span class="line">    <span class="comment">//3、通过invoke方法执行String对象的length方法，返回String的长度</span></span><br><span class="line">    Integer len = (Integer) method.invoke(stringClass.newInstance());</span><br><span class="line">    <span class="comment">//输出：0</span></span><br><span class="line">    System.out.println(len);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果需要调用的是<strong>静态方法</strong>，那么invoke方法的第一个参数obj参数就要<strong>传入null</strong>，因为静态方法不属于任何对象，静态方法只属于对应的类，如下我通过反射调用String的valueOf(int)静态方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//通过反射调用静态方法</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, IllegalAccessException, InvocationTargetException </span>&#123;</span><br><span class="line">    <span class="comment">//1、获取String类的Class对象</span></span><br><span class="line">    Class&lt;String&gt; stringClass = String<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="comment">//2、通过Class对象获取名称为valueOf、参数类型为int的方法对象method</span></span><br><span class="line">    Method method = stringClass.getMethod(<span class="string">"valueOf"</span>, <span class="keyword">int</span><span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    <span class="comment">//3、通过invoke方法执行String类的valueOf方法，返回字符串“123”</span></span><br><span class="line">    <span class="comment">//注意：这里第一个参数传入了null，而不是String实例</span></span><br><span class="line">    String num = (String) method.invoke(<span class="keyword">null</span>, <span class="number">123</span>);</span><br><span class="line">    <span class="comment">//输出：123</span></span><br><span class="line">    System.out.println(num);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果需要调用的方法有一个<strong>数组类型或可变参数类型</strong>的参数，那么调用时就需要注意，而可变参数底层实现其实就是数组，下面我以数组为例，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//通过反射调用参数含有数组类型的方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException, IllegalAccessException </span>&#123;</span><br><span class="line">        <span class="comment">//获取Main类的Class对象</span></span><br><span class="line">        Class&lt;Main&gt; mainClass = Main<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//情况1：数组的元素类型为基本数据类型</span></span><br><span class="line">        Method method1 = mainClass.getMethod(<span class="string">"doWork"</span>, <span class="keyword">int</span>[]<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        <span class="comment">//method1.invoke(null, 1, 2, 3);//错误</span></span><br><span class="line">        method1.invoke(<span class="keyword">null</span>, <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;);<span class="comment">//正确</span></span><br><span class="line">        method1.invoke(<span class="keyword">null</span>, <span class="keyword">new</span> Object[]&#123;<span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;&#125;);<span class="comment">//正确</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//情况2：数组的元素类型为引用类型</span></span><br><span class="line">        Method method2 = mainClass.getMethod(<span class="string">"doWork"</span>, String[]<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        <span class="comment">//method2.invoke(null, "1", "2", "3");//错误</span></span><br><span class="line">        <span class="comment">//method2.invoke(null, new String[]&#123;"1", "2", "3"&#125;);//错误</span></span><br><span class="line">        method2.invoke(<span class="keyword">null</span>, <span class="keyword">new</span> Object[]&#123;<span class="keyword">new</span> String[]&#123;<span class="string">"1"</span>, <span class="string">"2"</span>, <span class="string">"3"</span>&#125;&#125;);<span class="comment">//正确</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//数组的元素类型为基本数据类型</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doWork</span><span class="params">(<span class="keyword">int</span>[] nums)</span></span>&#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> num : nums)&#123;</span><br><span class="line">            System.out.print(num + <span class="string">" "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//数组的元素类型为引用类型</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doWork</span><span class="params">(String[] strs)</span></span>&#123;</span><br><span class="line">        <span class="keyword">for</span>(String str : strs)&#123;</span><br><span class="line">            System.out.print(str + <span class="string">" "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到反射调用的方法的参数含有数组类型，在执行invoke方法时传参会很容易出错，所以为了保险起见，建议以后反射调用参数含有数组类型的方法时，<strong>把被调用方法的实际参数统统作为Object数组的元素即可，如：Method对象.invoke(方法所属对象，new Object[]{参数1，参数2，…})</strong>。</p>
+<h4 id="2-3、获取类的Field"><a href="#2-3、获取类的Field" class="headerlink" title="2.3、获取类的Field"></a>2.3、获取类的Field</h4><p>下面的4个方法可以获取Class对应类的成员变量对象Field：</p>
+<ul>
+<li>1、<strong>Field getField(String name) **：返回此Class对应类的、指定名称的</strong>public**成员变量对象；</li>
+<li>2、<strong>Field[] getFields() **：以数组的形式返回此Class对应类的所有</strong>public**成员变量对象；</li>
+<li>3、<strong>Field getDeclaredField(String name) **：返回此Class对应类的、</strong>非继承的**、指定名称的成员变量对象，与访问权限无关；</li>
+<li>4、<strong>Field[] getDeclaredFields() **：以数组的形式返回此Class对应类的、</strong>非继承的**所有成员变量对象，与访问权限无关.</li>
+</ul>
+<p>获得成员变量对象Field后，就可以通过Field的<strong>setXX(Object obj)</strong>方法和<strong>getXX(Object obj)</strong>方法为成员变量<strong>赋值</strong>和向成员变量<strong>取值</strong>，其中setXX或getXX方法中的obj参数表示成员变量所属的对象实例，而XX对应8种基本数据类型，如果成员变量为引用类型，则取消setXX或getXX方法中XX，例如下面我通过反射为一个引用类型变量和一个基本数据类型变量赋值和取值：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//引用类型</span></span><br><span class="line">    <span class="keyword">public</span> String str = <span class="string">"123"</span>;</span><br><span class="line">    <span class="comment">//基本数据类型</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> num = <span class="number">123</span>;</span><br><span class="line"></span><br><span class="line">     <span class="comment">//通过反射访问成员变量</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException, InstantiationException </span>&#123;</span><br><span class="line">        Main mainInstance = <span class="keyword">new</span> Main();</span><br><span class="line">        <span class="comment">//1、获取Main类的Class对象</span></span><br><span class="line">        Class&lt;Main&gt; mainClass = Main<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        <span class="comment">//2、通过Class对象分别获取名为str和名为num的成员变量对象Field</span></span><br><span class="line">        Field field1 = mainClass.getField(<span class="string">"str"</span>);</span><br><span class="line">        Field field2 = mainClass.getField(<span class="string">"num"</span>);</span><br><span class="line">        <span class="comment">//3、分别通过Field的setXX方法赋值，getXX方法取值</span></span><br><span class="line">        <span class="comment">//重新赋值，如果是引用类型就直接调用set方法就行，如果是基本数据类型就可以调用setXX方法</span></span><br><span class="line">        field1.set(mainInstance, <span class="string">"321"</span>);</span><br><span class="line">        field2.setInt(mainInstance, <span class="number">321</span>);</span><br><span class="line">        <span class="comment">//取值，如果是引用类型就直接调用get方法就行，如果是基本数据类型就可以调用getXX方法</span></span><br><span class="line">        String str = (String) field1.get(mainInstance);</span><br><span class="line">        <span class="keyword">int</span> num = (Integer)field2.getInt(mainInstance);</span><br><span class="line">        <span class="comment">//输出</span></span><br><span class="line">        System.out.println(str);<span class="comment">//输出：321</span></span><br><span class="line">        System.out.println(num);<span class="comment">//输出：321</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果成员变量为静态成员变量，那么调用setXX或getXX方法时第一个参数就直接传<strong>null</strong>，如果这个成员变量是一个<strong>私有变量</strong>，那么还要调用<strong>setAccessible(true)</strong>方法后才能访问这个变量，如下我通过反射访问了一个名为data的私有变量：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//私有成员变量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> data = <span class="number">123</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//通过反射访问私有成员变量</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException, InstantiationException </span>&#123;</span><br><span class="line">        Main mainInstance = <span class="keyword">new</span> Main();</span><br><span class="line">        <span class="comment">//1、获取Main类的Class对象</span></span><br><span class="line">        Class&lt;Main&gt; mainClass = Main<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        <span class="comment">//2、通过Class对象获取名为data的成员变量对象Field，这里使用了getDeclaredField方法，因为getDeclaredField方法可以获取到私有变量</span></span><br><span class="line">        Field field = mainClass.getDeclaredField(<span class="string">"data"</span>);</span><br><span class="line">        <span class="comment">//注意：这里调用了setAccessible(true)方法把私有成员变量设置为可访问</span></span><br><span class="line">        field.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">        <span class="comment">//3、通过Field的getXX方法取值</span></span><br><span class="line">        <span class="keyword">int</span> data = field.getInt(mainClass.newInstance());</span><br><span class="line">        <span class="comment">//输出：123</span></span><br><span class="line">        System.out.println(data);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对变量调用了setAccessible(true)后，就会在使用时关闭访问权限的检查，该变量就不会受访问权限的控制，我们就可以任意的修改和访问它。</p>
+<p>其实不止Field可以调用setAccessible方法，对于Constructor、Method等也可以调用setAccessible方法，因为setAccessible方法是在<strong>AccessibleObject</strong>类中，而Field、Constructor、Method都继承自AccessibleObject，所以当以后想要通过Class对象访问<strong>private</strong>的Field、Constructor、Method时，都需要先调用<strong>setAccessible(true)</strong>关闭访问权限的检查后才能访问。</p>
+<h3 id="3、小结"><a href="#3、小结" class="headerlink" title="3、小结"></a>3、小结</h3><p>以上就是反射的基本使用，下面再总结一下：</p>
+<p>通过反射创建对象，需要通过下面三个步骤：</p>
+<ul>
+<li>1、获取该类的Class对象；</li>
+<li>2、利用Class对象的getConstructor或getDeclaredConstructor方法来获取指定的构造器对象Constructor；</li>
+<li>3、调用Constructor的newInstance方法来创建相应的对象.</li>
+</ul>
+<p>通过反射调用方法，需要通过下面三个步骤：</p>
+<ul>
+<li>1、获取该类的Class对象；</li>
+<li>2、利用Class对象的getMethod或getDeclaredMethod方法来获取指定的方法对象Method;</li>
+<li>3、调用Method的invoke方法来执行相应的方法.</li>
+</ul>
+<p>通过反射访问成员变量，需要通过下面三个步骤：</p>
+<ul>
+<li>1、获取该类的Class对象；</li>
+<li>2、利用Class对象的getField或getDeclaredField方法来获取指定的成员变量对象Field;</li>
+<li>3、调用Field的setXX和getXX方法来访问相应的成员变量。</li>
+</ul>
+<p>如果通过Class对象获取到的属性是私有的，还要调用setAccessible(true)方法关闭访问权限的检查。</p>
+<h2 id="通过反射获取变量的类型"><a href="#通过反射获取变量的类型" class="headerlink" title="通过反射获取变量的类型"></a>通过反射获取变量的类型</h2><p>在JDK5之前，java中只有原始类型(raw types)和基本类型(primitive types)，它们都用Class类表示，从JDK5开始引入了泛型(ParameterizedType)，这时为了统一表示这些类型就引入了<strong>Type</strong>接口，同时为了扩展java的泛型，还引入了数组类型(GenericArrayType)、类型变量(TypeVariable)、通配符类型(WildcardType)，这5种类型的父接口都是Type，他们的各自含义如下：</p>
+<ul>
+<li><strong>Class</strong>：原始类型或基本类型，原始类型表示我们平常所使用的类、注解、枚举、数组等，基本类型表示基本数据类型，如int、byte、short等，它们都用Class类表示；</li>
+<li><strong>ParameterizedType</strong>：参数化类型，表示java5引入的泛型类型，如List&lt;String&gt;、Map&lt;String, Integer&gt;等；</li>
+<li><strong>GenericArrayType</strong>：数组类型，表示带有泛型的数组，如T[]、List&lt;String&gt;[]等；</li>
+<li><strong>TypeVariable</strong>：类型变量，表示泛型的尖括号中的类型，如T、K、V等；</li>
+<li><strong>WildcardType</strong>：通配符类型，表示泛型尖括号中带有上限或下限的通配符表达式，如? extends String、? super String等.</li>
+</ul>
+<p>泛型经过编译后会被自动擦除，所以最终JVM中运行的都是Class文件，Class类是反射的基础。</p>
+<p>当一个成员变量被定义在类中的时候，它的编译时类型就已经确定，当我们通过Class对象获取到这个成员变量的Field对象后，就可以通过Field的<strong>getType</strong>方法返回它的编译时类型，即这个成员变量的数据类型，getType方法会返回一个Class对象，代表这个数据类型的Class对象，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String str = <span class="string">"123"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException, InstantiationException </span>&#123;</span><br><span class="line">        Class&lt;Main&gt; mainClass = Main<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        Field field = mainClass.getField(<span class="string">"str"</span>);</span><br><span class="line">        <span class="comment">//调用Field的getType方法返回Field对应变量的数据类型</span></span><br><span class="line">        Class&lt;?&gt; type = field.getType();</span><br><span class="line">        <span class="comment">//输出：java.lang.String</span></span><br><span class="line">        System.out.println(type.getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是如果这个成员变量的类型是一个泛型，那么Field的getType方法返回的Class对象就会丢失了泛型尖括号中的类型参数，例如：Map&lt;Integer, String&gt; map = new HashMap&lt;&gt;()；获取到map变量的Field对象后，调用getType方法返回的Class类就是java.util.Map，丢失了尖括号中的类型参数信息，所以如果成员变量的类型是一个泛型，你可以通过Field的<strong>getGenericType</strong>方法返回它的参数化类型ParameterizedType，通过ParameterizedType就可以获取到泛型信息，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Map&lt;Integer, String&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchFieldException</span>&#123;</span><br><span class="line">        Class&lt;Main&gt; mainClass = Main<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">        Field field = mainClass.getField(<span class="string">"map"</span>);</span><br><span class="line">        <span class="comment">//调用Field的getGenericType方法返回Field对应变量的数据类型</span></span><br><span class="line">        <span class="comment">//注意：getGenericType方法的返回值是一个Type类型，这说明它可以向下转型为Class、ParameterizedType、GenericArrayType、TypeVariable、WildcardType中的一个</span></span><br><span class="line">        Type type = field.getGenericType();</span><br><span class="line">        <span class="comment">//我们已经知道它是一个泛型</span></span><br><span class="line">        <span class="keyword">if</span> (type <span class="keyword">instanceof</span> ParameterizedType) &#123;</span><br><span class="line">            <span class="comment">//强转为参数化类型ParameterizedType</span></span><br><span class="line">            ParameterizedType parameterizedType = (ParameterizedType) type;</span><br><span class="line">            <span class="comment">//通过ParameterizedType的getRawType方法返回它的原始类型</span></span><br><span class="line">            Type rawType = parameterizedType.getRawType();</span><br><span class="line">            <span class="comment">//通过ParameterizedType的getActualTypeArguments方法返回泛型中的类型信息</span></span><br><span class="line">            Type[] types = parameterizedType.getActualTypeArguments();</span><br><span class="line">            System.out.println(<span class="string">"原始类型："</span> + rawType.getTypeName());</span><br><span class="line">            <span class="keyword">for</span>(Type t : types)&#123;</span><br><span class="line">                System.out.println(<span class="string">"类型形参： "</span> + t.getTypeName());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//输出：</span></span><br><span class="line">            <span class="comment">//原始类型：java.util.Map</span></span><br><span class="line">            <span class="comment">//类型形参： java.lang.Integer</span></span><br><span class="line">            <span class="comment">//类型形参： java.lang.String</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，如果成员变量的类型是一个泛型，就可以通过ParameterizedType的<strong>getRawType</strong>方法返回它的没有泛型信息的原始类型，通过ParameterizedType的<strong>getActualTypeArguments</strong>方法返回它的泛型信息，getActualTypeArguments方法它的返回值是一个Type数组，因为泛型的&lt;&gt;中会有多个Type，所以如果泛型的&lt;&gt;中某个Type是一个类型变量T，那么就可以把这个Type转成<strong>TypeVariable</strong>，通过TypeVariable的相应方法获取更多关于T的信息，如果&lt;&gt;中某个Type是一个通配符类型? extends XX或？super XX，那么就可以把这个Type转成<strong>WildcardType</strong>，通过WildcardType的相应方法获取更多关于通配符的信息，<strong>GenericArrayType</strong>同理。</p>
+<p>所以对于数据类型为基本类型或原始类型的成员变量来说，通过getType方法就可以获取它的相应类型的Class对象；对于数据类型含有泛型的成员变量来说，就可以通过getGenericType方法获取它的相应类型，它返回一个Type，这个Type可以向下转型为ParameterizedType、GenericArrayType、TypeVariable中的一个，通过实际类型的相应方法获取泛型信息。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文通过对Class、Constructor、Method、Field、Type的基本使用来简单的介绍了一下java的反射，正是由于反射的存在，才使得java具有动态性、灵活性，反射在一些java的框架上应用非常广泛，如Spring等，对于我们平常开发的应用，主要就是本文的内容，同时反射也会和一些设计模式结合使用，让设计模式具有更好的扩展性，具体可以查看以下两篇文章:</p>
+<p><a href="https://blog.csdn.net/Rain_9155/article/details/82942275" target="_blank" rel="noopener">工厂方法模式</a></p>
+<p><a href="https://juejin.im/post/5db2fbd0518825645a5ba18b" target="_blank" rel="noopener">静态和动态代理模式</a></p>
+<p>但同时反射也有它的缺点，反射的缺点就是执行效率低，因为反射需要按名称来检索类和方法，有一定的时间开销，同时反射会很容易破坏类的原本结构，所以在一些不必要的场景下不要频繁的使用反射。</p>
+<p>以上就是本文的全部内容，希望大家有所收获！</p>
+<p>参考资料：</p>
+<p><a href="https://www.cnblogs.com/linghu-java/p/8067886.html" target="_blank" rel="noopener">java中的Type</a></p>
+<p><a href="https://blog.csdn.net/carson_ho/article/details/80921333" target="_blank" rel="noopener">了解神秘的Java反射机制</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.854Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%8F%8D%E5%B0%84/" rel="tag">反射</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/&title=《java学习总结之反射》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/&title=《java学习总结之反射》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《java学习总结之反射》 — jianyu的博客&url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2020/05/30/java%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">java学习总结之I/O操作</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2020/01/17/Http%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E6%B5%85%E6%9E%90/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">这是一份关于HTTP协议的学习总结</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/&title=《java学习总结之反射》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/&title=《java学习总结之反射》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《java学习总结之反射》 — jianyu的博客&url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2020/03/19/java%E5%8F%8D%E5%B0%84/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMYAAADGCAAAAACs8KCBAAACMElEQVR42u3aQZKjMAwF0Nz/0pntTPVA/pdJV2GeV6luCH5ZCFnS6xWv91/r59/Pr/95b3LX6xsLAwPjtoz36Tp6wNGVLen825K9YWBgPIdx9Pijz/ldSZg+f9b5UzAwMDCSzeUpXXsNBgYGxozR3pWHVwwMDIxzRl4ga4tlK7CvnMUxMDBuyMir7r//+Sv9DQwMjFsx3uVqD6izBkO9KwwMjK0ZbQlsVvRfCeLF8AcGBsamjGsTtdkxOCm9fdgDBgbG1oz60lG5bfbfZOz1P+8NDAyMTRkr4w55eG2LaPloLAYGxhMYbVEsSeOSUl0yXp/fhYGBsSvjvEA/G5XIGwZt4li8HzAwMLZjtCEy+QlacPvN/1yJgYGxNaM9pq4UznLGh0y27cRiYGBsxFgqwcfFslmbM4FhYGDsymjLarOB1HbYIj/0YmBgYLQjEUnRbXaI/YDBwMB4AKM9TLarTTHbwh8GBsbejMuSs7hslzcSikIbBgbGYxh54/CqQ2m+0aQgiIGB8QRGO/QwGwu7LLye57kYGBibMmZf0aZ3bcEuaTNgYGA8h9EeRNvGQL2tcuAMAwNjV8asxD8LxEniOBvXwMDA2JuRrxZTlMlGgxdDDAYGxm0ZeZBdoea/3HAPGBgYD2CsB75ZUG7fAIdXYmBgYMRtyPWEbyl7xcDAwAiOpknwnbUTPjQqMDAwHsDImwFJ9a4dP52FbwwMjOcw1vOuvPOw0p68rL+BgYFxJ8YfKgosuhzij0oAAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

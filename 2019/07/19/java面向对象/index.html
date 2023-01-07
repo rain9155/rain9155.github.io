@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>java学习总结之面向对象 | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="面向对象">
+    <meta name="description" content="前言 上一篇文章java基础本篇文章继续Java知识点的归纳，梳理一下关于面向对象的知识点，涉及到封装、继承、多态，还有接口，类之间的关系。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java学习总结之面向对象">
+<meta property="og:url" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言 上一篇文章java基础本篇文章继续Java知识点的归纳，梳理一下关于面向对象的知识点，涉及到封装、继承、多态，还有接口，类之间的关系。">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/generalization.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/realization.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/aggregation.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/composition.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/association.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/directedassociation.png">
+<meta property="og:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/dependency.png">
+<meta property="article:published_time" content="2019-07-19T04:29:50.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.932Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="面向对象">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/generalization.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">java学习总结之面向对象</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">java学习总结之面向对象</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-07-19T04:29:50.000Z" itemprop="datePublished" class="page-time">
+  2019-07-19
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#接口和抽象类"><span class="post-toc-text">接口和抽象类</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、抽象类"><span class="post-toc-text">1、抽象类</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、接口"><span class="post-toc-text">2、接口</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、接口和抽象类的比较"><span class="post-toc-text">3、接口和抽象类的比较</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#外部类和内部类"><span class="post-toc-text">外部类和内部类</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、非静态内部类"><span class="post-toc-text">1、非静态内部类</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、静态内部类"><span class="post-toc-text">2、静态内部类</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、局部内部类"><span class="post-toc-text">3、局部内部类</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、匿名内部类"><span class="post-toc-text">4、匿名内部类</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#面向对象三大特性"><span class="post-toc-text">面向对象三大特性</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、封装"><span class="post-toc-text">1、封装</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、继承"><span class="post-toc-text">2、继承</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-1、父类构造和子类构造"><span class="post-toc-text">2.1、父类构造和子类构造</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-2、子类调用父类信息"><span class="post-toc-text">2.2、子类调用父类信息</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#2-3、方法重写"><span class="post-toc-text">2.3、方法重写</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、多态"><span class="post-toc-text">3、多态</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#类图"><span class="post-toc-text">类图</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、泛化关系（Generalization）"><span class="post-toc-text">1、泛化关系（Generalization）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、实现关系（Realization）"><span class="post-toc-text">2、实现关系（Realization）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、聚合关系（Aggregation）"><span class="post-toc-text">3、聚合关系（Aggregation）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、组合关系-Composition"><span class="post-toc-text">4、组合关系  ( Composition )</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、关联关系（Association）"><span class="post-toc-text">5、关联关系（Association）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6、依赖关系（Dependency）"><span class="post-toc-text">6、依赖关系（Dependency）</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#结语"><span class="post-toc-text">结语</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-java面向对象"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">java学习总结之面向对象</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-07-19 12:29:50" datetime="2019-07-19T04:29:50.000Z"  itemprop="datePublished">2019-07-19</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
+<li>上一篇文章<a href="https://rain9155.github.io/2019/07/19/java%E5%9F%BA%E7%A1%80/#more" target="_blank" rel="noopener">java基础</a><br>本篇文章继续Java知识点的归纳，梳理一下关于面向对象的知识点，涉及到封装、继承、多态，还有接口，类之间的关系。</li>
+</ul>
+<a id="more"></a>
+
+<h2 id="接口和抽象类"><a href="#接口和抽象类" class="headerlink" title="接口和抽象类"></a>接口和抽象类</h2><h3 id="1、抽象类"><a href="#1、抽象类" class="headerlink" title="1、抽象类"></a>1、抽象类</h3><p>抽象类和抽象方法都用abstract关键字进行声明，抽象类不能被实例化，不能直接创建，抽象方法必须放在抽象类中，类中如果有抽象方法，这个类继续声明为抽象类，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Hero</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">fight</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//子类实现抽象方法，完成实际操作</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Warrior</span> <span class="keyword">extends</span> <span class="title">Hero</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fight</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//子类继续声明为抽象类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">LongRange</span> <span class="keyword">extends</span> <span class="title">Hero</span></span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2、接口"><a href="#2、接口" class="headerlink" title="2、接口"></a>2、接口</h3><p>接口被认为是一种特殊的抽象类，同样不能使用new实例化，接口的字段和方法都默认为public，且不能声明为private或protected，接口只能包含常量(static final)和待实现的方法，java8以后接口中可以有方法的实现，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Eat</span></span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="function"><span class="keyword">default</span> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eating</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"eating"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>在接口中，也可以定义内部类，但是只能是public static修饰的内部类，所以接口中只能定义静态内部类，但是在接口中定义内部类的用处不大，很少使用。</p>
+</blockquote>
+<h3 id="3、接口和抽象类的比较"><a href="#3、接口和抽象类的比较" class="headerlink" title="3、接口和抽象类的比较"></a>3、接口和抽象类的比较</h3><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">变量</th>
+<th align="center">成员方法</th>
+<th align="center">构造方法</th>
+<th align="center">使用场合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">抽象类</td>
+<td align="center">无限制</td>
+<td align="center">无限制</td>
+<td align="center">可以有</td>
+<td align="center">强的“is a”关系（是一种）</td>
+</tr>
+<tr>
+<td align="center">接口</td>
+<td align="center">所有变量必须是public static final</td>
+<td align="center">所有方法必须是public abstract</td>
+<td align="center">无</td>
+<td align="center">弱的“is a”关系（is kind of，是一类）</td>
+</tr>
+</tbody></table>
+<p>在很多情况下，接口优先于抽象类。因为接口没有抽象类严格的类层次结构要求，可以灵活地为一个类添加行为。并且从 Java 8 开始，接口也可以有默认的方法实现，使得修改接口的成本也变的很低，而且接口可以实现多继承。</p>
+<h2 id="外部类和内部类"><a href="#外部类和内部类" class="headerlink" title="外部类和内部类"></a>外部类和内部类</h2><p>把一个类放在另外一个类的内部，处于类内部的类就叫做内部类，包含内部类的类就叫做外部类，一个外部类不一定有内部类，但是一个内部类就一定有一个”依附“的外部类，内部类比外部类多使用3个修饰符：private、protected、static，外部类不能使用这3个修饰符，虽然外部类和内部类整体是一个类文件，但是编译之后，它会分别生成外部类的class文件和内部类的class文件，这说明在运行时外部类和内部类其实是两个独立的类，内部类可以分为：<strong>非静态内部类</strong>、<strong>静态内部类</strong>、<strong>局部内部类</strong>、<strong>匿名内部类</strong>。</p>
+<h3 id="1、非静态内部类"><a href="#1、非静态内部类" class="headerlink" title="1、非静态内部类"></a>1、非静态内部类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OuterClass</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String outer = <span class="string">"外部类私有变量"</span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">outerMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"外部类私有方法"</span> );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span></span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">            <span class="comment">//非静态内部类调用外部类的私有方法</span></span><br><span class="line">            outerMethod();</span><br><span class="line">            <span class="comment">//非静态内部类访问外部类的私有变量</span></span><br><span class="line">            System.out.println(outer);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>没有使用static修饰的就是非静态内部类，它依赖于<strong>外部类实例</strong>，要创建非静态内部类实例，必须先创建外部类实例，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    OuterClass outerClass = <span class="keyword">new</span> OuterClass();</span><br><span class="line">    <span class="comment">//通过 外部类实例 调用非静态内部类的构造器</span></span><br><span class="line">    OuterClass.InnerClass innerClass = outerClass.<span class="keyword">new</span> InnerClass();</span><br><span class="line">    innerClass.innerMethod();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总的来说，非静态内部类有以下几个特点：</p>
+<ul>
+<li>1、非静态内部类属于外部类实例，必须依赖外部类实例才能够创建；</li>
+<li>2、非静态内部类编译之后，会保留一个外部类对象的引用(在构造方法中传入)；</li>
+<li>3、非静态内部类不能含有静态成员、静态方法和static语句块；</li>
+<li>4、非静态内部类中可以直接访问外部类的所有成员和方法(包括private的)，但是在外部类中不能直接访问内部类的任何成员和方法，必须先创建实例后才能访问(包括private的)。</li>
+</ul>
+<blockquote>
+<p>如果外部类和内部类的成员变量重名，可以通过<strong>this</strong>和<strong>外部类.this</strong>区分。</p>
+</blockquote>
+<h3 id="2、静态内部类"><a href="#2、静态内部类" class="headerlink" title="2、静态内部类"></a>2、静态内部类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OuterClass</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String outer = <span class="string">"外部类私有变量"</span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">outerMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"外部类私有方法"</span> );</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">            <span class="comment">//静态内部类调用外部类的私有静态方法</span></span><br><span class="line">            outerMethod();</span><br><span class="line">            <span class="comment">//静态内部类访问外部类的私有静态变量</span></span><br><span class="line">            System.out.println(outer);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用static修饰的就是静态内部类，它依赖于<strong>外部类</strong>，创建静态内部类实例时，不需要先创建外部类实例，因为静态内部类依赖的是类而不是类实例，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//通过 外部类 调用静态内部类的构造器</span></span><br><span class="line">    OuterClass.InnerClass innerClass = <span class="keyword">new</span> OuterClass.InnerClass();</span><br><span class="line">    innerClass.innerMethod();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总的来说，静态内部类有以下几个特点：</p>
+<ul>
+<li>1、静态内部类属于类，而不属于类实例；</li>
+<li>2、静态内部类编译之后，不会含有外部类对象的引用；</li>
+<li>3、静态内部类可以包含静态成员、静态方法和static语句块，也能包含非静态的；</li>
+<li>4、静态内部类不能直接访问外部类的实例成员或方法，只能访问静态成员或方法(包括private的)，外部类可以直接通过类名访问静态内部类的静态成员或方法(包括private的)，如果要访问实例成员或方法，必须先创建实例后才能访问(包括private的)。</li>
+</ul>
+<blockquote>
+<p>外部类和内部类之间要访问对方的private/protected成员时，编译器会自动生成合适的“access method”静态方法来提供合适的可访问性，这样就绕开了原本的成员的可访问性不足的问题。</p>
+</blockquote>
+<h3 id="3、局部内部类"><a href="#3、局部内部类" class="headerlink" title="3、局部内部类"></a>3、局部内部类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OuterClass</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//局部内部类</span></span><br><span class="line">       <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span></span>&#123;</span><br><span class="line">            <span class="keyword">private</span> String inner = <span class="string">"内部类私有变量"</span>;</span><br><span class="line">            <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">innerMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">                System.out.println(<span class="string">"内部类私有方法"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       InnerClass innerClass = <span class="keyword">new</span> InnerClass();</span><br><span class="line">       <span class="comment">//访问局部内部类的私有变量</span></span><br><span class="line">       System.out.println(innerClass.inner);</span><br><span class="line">       <span class="comment">//调用局部内部类的私有方法</span></span><br><span class="line">        innerClass.innerMethod();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>把一个类在方法里定义，这个类就是局部内部类，局部内部类只能在方法里面使用，它的作用域在方法之内，由于局部内部类不能在方法之外使用，所以它不能使用static和任何访问修饰符修饰，局部内部类在开发中很少用到，因为它的作用域太小了，不能被其他方法复用。</p>
+<h3 id="4、匿名内部类"><a href="#4、匿名内部类" class="headerlink" title="4、匿名内部类"></a>4、匿名内部类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OuterClass</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">outerMethod</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//创建匿名内部类</span></span><br><span class="line">        InnerClass innerClass = <span class="keyword">new</span> InnerClass()&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerMethod</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                System.out.println(<span class="string">"内部类私有方法"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="comment">//调用匿名内部类的方法</span></span><br><span class="line">        innerClass.innerMethod();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> num = <span class="number">1</span>;</span><br><span class="line">        <span class="function"><span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">innerMethod</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>匿名内部类就是没有名字的内部类，它没有使用class关键字来定义类，而是在使用时直接创建接口或抽象父类的实现类来使用，匿名内部类一般在只使用一次的场景下使用，总的来说，匿名内部类有以下几个特点：</p>
+<ul>
+<li>1、匿名内部类不能继续声明为抽象类，它必须实现接口或抽象父类的所有抽象方法；</li>
+<li>2、匿名内部类不能定义构造器，因为它没有名字，但是它可以使用实例语句块来完成初始化；</li>
+<li>3、匿名内部类必须实现一个接口或抽象父类，但最多只能实现一个接口或抽象父类；</li>
+<li>4、匿名内部类编译之后，会保留一个外部类对象的引用。</li>
+</ul>
+<blockquote>
+<p>在java8之前，局部内部类或匿名内部类访问方法的局部变量时，这个局部变量必须使用final修饰，在java8之后，被局部内部类或匿名内部类访问的局部变量编译器会自动加上final，无需显式声明，但是如果局部变量在内部类中被修改，那么它还是要显式声明final，总之，在局部内部类或匿名内部类中使用局部变量时，必须按照有final修饰的方式来用(一次赋值，以后不能重复赋值)。</p>
+</blockquote>
+<h2 id="面向对象三大特性"><a href="#面向对象三大特性" class="headerlink" title="面向对象三大特性"></a>面向对象三大特性</h2><p>面向对象是一种程序设计方法，它的基本思想是封装、继承、多态，根据现实世界中各种事物的本质特点，把它们抽象成类，作为系统的基本构成单元，然后这些类可以生成系统中的多个对象，而这些对象则是映射成客观世界的各种事物的实例。</p>
+<h3 id="1、封装"><a href="#1、封装" class="headerlink" title="1、封装"></a>1、封装</h3><p>封装就是尽可能地隐藏对象内部的实现细节，只保留一些对外接口使之与外部发生联系。用户无需知道对象内部的细节，但可以通过对象对外提供的接口来访问该对象。</p>
+<h3 id="2、继承"><a href="#2、继承" class="headerlink" title="2、继承"></a>2、继承</h3><p>继承是面向对象实现复用的手段，继承是一种“is a”关系，父类和子类之间必须存在“is a”关系，通过继承，子类可以获得父类的所有非 private 属性和方法，父类的私有属性在子类中不能直接访问，例如Cat 和 Animal 就是一种 “is a” 关系，因此 Cat 可以继承自 Animal，从而获得 Animal 非 private 的属性和方法。</p>
+<h4 id="2-1、父类构造和子类构造"><a href="#2-1、父类构造和子类构造" class="headerlink" title="2.1、父类构造和子类构造"></a>2.1、父类构造和子类构造</h4><ul>
+<li>构造方法不可继承，使用super关键字调用父类构造</li>
+<li>默认会先调用父类构造，再调用子类构造</li>
+</ul>
+<h4 id="2-2、子类调用父类信息"><a href="#2-2、子类调用父类信息" class="headerlink" title="2.2、子类调用父类信息"></a>2.2、子类调用父类信息</h4><ul>
+<li>使用super关键字</li>
+<li>可以调用父类的公有属性和方法</li>
+<li>可以调用父类的protected属性和方法</li>
+</ul>
+<p>下面一张表给出java中访问权限修饰符的访问范围：</p>
+<table>
+<thead>
+<tr>
+<th align="center">修饰符</th>
+<th align="center">在同一类中可访问</th>
+<th align="center">在同一包内可访问</th>
+<th align="center">在子类内可访问</th>
+<th align="center">在不同包可访问</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">public</td>
+<td align="center">可以</td>
+<td align="center">可以</td>
+<td align="center">可以</td>
+<td align="center">可以</td>
+</tr>
+<tr>
+<td align="center">protected</td>
+<td align="center">可以</td>
+<td align="center">可以</td>
+<td align="center">可以</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td align="center">default</td>
+<td align="center">可以</td>
+<td align="center">可以</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td align="center">private</td>
+<td align="center">可以</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+</tbody></table>
+<h4 id="2-3、方法重写"><a href="#2-3、方法重写" class="headerlink" title="2.3、方法重写"></a>2.3、方法重写</h4><p>在子类中提供一个对方法的新的实现。</p>
+<ul>
+<li>方法重写发生在通过继承而相关的不同类中；</li>
+<li>方法重写具有相同的方法签名和返回值；</li>
+<li>子类重写方法时子类方法访问权限大于父类的；</li>
+<li>子类重写方法时子类抛出的异常类型是父类抛出异常的子类；</li>
+<li>@Overiide称为重写标注，用来保证重写的方法和原方法的签名和返回值一致。</li>
+</ul>
+<blockquote>
+<p>方法重载：方法重载是指在于同一个类中，一个方法与已经存在的方法名称上相同，但是参数类型、个数、顺序至少有一个不同。应该注意的是，返回值不同，其它都相同不算是重载。</p>
+</blockquote>
+<h3 id="3、多态"><a href="#3、多态" class="headerlink" title="3、多态"></a>3、多态</h3><p>多态是指子类对象可以直接赋值给父类变量，但是运行时依然表现出子类的行为特征，这表示同一个类型的对象在运行时可以具有多种形态，多态分为以下两种：</p>
+<ul>
+<li>编译时多态：主要指方法的重载</li>
+<li>运行时多态：指程序中定义的对象引用所指向的具体类型在运行期间才确定（运行时多态有三个条件：继承，方法重写，向上转型）</li>
+</ul>
+<p>例如下面的代码中，子类Warrior<strong>继承</strong>父类Hero，它<strong>重写</strong>了父类的fight方法，并且在main函数中父类Hero引用子类Warrior（父类引用指向子类对象称为<strong>向上转型</strong>），在Hero引用调用fight方法时，会执行实际对象所在类的fight方法，即Warrior类的fight方法，而不是Hero的fight方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Hero</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fight</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"hero"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Warrior</span> <span class="keyword">extends</span> <span class="title">Hero</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fight</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Warrior"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Hero warrior = <span class="keyword">new</span> Warrior();</span><br><span class="line">    warrior.fight();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">输出：Warrior</span><br></pre></td></tr></table></figure>
+
+<h2 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h2><p>了解下面6种关系有助于看懂UML图。</p>
+<h3 id="1、泛化关系（Generalization）"><a href="#1、泛化关系（Generalization）" class="headerlink" title="1、泛化关系（Generalization）"></a>1、泛化关系（Generalization）</h3><p>泛化关系用一条带空心箭头的直线表示，在类图中表示为类的继承关系（“is a”关系），在java中用extends关键字表示，最终代码中，泛化关系表现为继承非抽象类。例如下面ASUS继承自Laptop，ASUS是一台笔记本，ASUS与Laptop之间是泛化关系。</p>
+<img src="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/generalization.png" class="" title="generalization">
+
+<h3 id="2、实现关系（Realization）"><a href="#2、实现关系（Realization）" class="headerlink" title="2、实现关系（Realization）"></a>2、实现关系（Realization）</h3><p>实现关系用一条带空心箭头的虚线表示，在类图中表示实现了一个接口（在java中用implements 关键字表示），或继承抽象类，实现了抽象类中的方法。例如下面Laptop实现了IO接口，同时它继承Computer这个抽象类，Laptop是它们的具体实现。</p>
+<img src="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/realization.png" class="" title="realization">
+
+<h3 id="3、聚合关系（Aggregation）"><a href="#3、聚合关系（Aggregation）" class="headerlink" title="3、聚合关系（Aggregation）"></a>3、聚合关系（Aggregation）</h3><p>聚合关系用一条带空心菱形箭头的直线表示，表示整体是由部分组成的，但是整体和部分之间并不是强依赖的，整体不存在了，部分还是会存在。例如下面表示Staff聚合到Department，或者说部门是由员工组成的，部门不存在了，员工还是会存在的。</p>
+<img src="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/aggregation.png" class="" title="aggregation">
+
+<h3 id="4、组合关系-Composition"><a href="#4、组合关系-Composition" class="headerlink" title="4、组合关系  ( Composition )"></a>4、组合关系  ( Composition )</h3><p>组合关系是用一条带实心菱形箭头的直线表示，和聚合关系不同，组合关系中整体和部分是强依赖的，即整体不存在了部分也不存在，组合关系是一种强依赖的特殊聚合关系。例如下面表示Department组合到Company中，或者说Company是由Department组成的，但是公司不存在了，部门也将不存在。</p>
+<img src="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/composition.png" class="" title="composition">
+
+<h3 id="5、关联关系（Association）"><a href="#5、关联关系（Association）" class="headerlink" title="5、关联关系（Association）"></a>5、关联关系（Association）</h3><p>关联关系用一条直线表示，表示不同类对象之间有关联，这是一种静态关系，与运行过程的状态无关，在最开始就可以确定。因此也可以用 1 对 1、多对 1、多对多这种关联关系来表示.。例如下面学生和学校就是一种关联关系，一个学校可以有很多学生，但是一个学生只属于一个学校，因此这是一种多对一的关系，在运行开始之前就可以确定。</p>
+<img src="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/association.png" class="" title="association">
+
+<p>关联关系默认不强调方向，表示对象之间相互知道，如果要特别强调方向，如下图，表示A知道B，但是B不知道A，这又叫DirectedAssociation。</p>
+<img src="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/directedassociation.png" class="" title="directedassociation">
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps: 在最终代码中，关联对象通常以成员变量的形式存在。</span><br></pre></td></tr></table></figure>
+
+<h3 id="6、依赖关系（Dependency）"><a href="#6、依赖关系（Dependency）" class="headerlink" title="6、依赖关系（Dependency）"></a>6、依赖关系（Dependency）</h3><p>依赖关系用一条带箭头的虚线表示，与关联关系不同的是，他描述一个对象在运行期间会用到另一个对象的关系，是一种动态关系，并且随着运行时的变化， 依赖关系也可能发生变化。依赖也有方向，但是我们总是应该保持单向依赖，避免双向依赖的产生。例如下面表示A依赖于B，A的一个方法中使用到了B作为参数。</p>
+<img src="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/dependency.png" class="" title="dependency">
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ps: 在最终代码中，依赖关系主要表现为：</span><br><span class="line">1、A 类是 B 类方法的局部变量；</span><br><span class="line">2、A 类是 B 类方法或构造的传入参数；</span><br><span class="line">3、A 类向 B 类发送消息，从而影响 B 类发生变化;</span><br></pre></td></tr></table></figure>
+
+<p>箭头的指向为调用关系。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文都是关于面向对象的一些知识，虽然简单，但是也挺繁琐的，积少成多，希望大家阅读过后有所收获。</p>
+<p>参考资料：</p>
+<p><a href="https://www.jianshu.com/p/00cb3c4e6336" target="_blank" rel="noopener">看懂UML类图和时序图</a></p>
+<p><a href="https://www.zhihu.com/question/54730071" target="_blank" rel="noopener">为什么内部类的private变量可被外部类直接访问？</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.932Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" rel="tag">面向对象</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/&title=《java学习总结之面向对象》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/&title=《java学习总结之面向对象》 — jianyu的博客&source=前言
+上一篇文章java基础本篇文章继续Java知识点的归纳，梳理一下关于面向对象的知识点，涉及到封装、继承、多态，还有接口，类之间的关系。
+" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《java学习总结之面向对象》 — jianyu的博客&url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">View的工作原理</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/07/19/java%E7%BA%BF%E7%A8%8B%E6%B1%A0/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">java学习总结之线程池</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/&title=《java学习总结之面向对象》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/&title=《java学习总结之面向对象》 — jianyu的博客&source=前言
+上一篇文章java基础本篇文章继续Java知识点的归纳，梳理一下关于面向对象的知识点，涉及到封装、继承、多态，还有接口，类之间的关系。
+" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《java学习总结之面向对象》 — jianyu的博客&url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN4AAADeCAAAAAB3DOFrAAACv0lEQVR42u3a0W7jMAwEwPz/T1+Beypwtb0riUkPGD8FSmxrXMBkSb5e8fHn7/H98/eVf9evvk1+f//L18SBh4eHt7T1q+OKl1Pvr3B/zeS+948VDw8Pb46XBIP7t+5akEjuvnMWHh4e3md5+es7X8/TaDw8PLz/kdf+psWspdd4eHh4n+IlxYjkSK6cINswc6DWgoeHhxfz1hpgn/083t/Dw8PDW+qq56EiKTecStmLfeLh4eEN8PZHmtoGf3LH9tuHnePh4eEN8JKT91tf+22z/I9x+S0eHh7eGC8fHdgvGeTn5sXixZoKHh4eXsxLkte2+dSOC+RBqH6UeHh4eEd5ecKaB4m15lnyiq9X8PDw8IZ5eSmhTZF3mmRbiTUeHh7eGG+/7dQWVdfADyMCV4EBDw8Pb5jXvojz5DhPoNtzL9fx8PDwxngtMikKrK3nxY4onODh4eGN8dZuc/Z137bH6riHh4eHN8DLixFJKWGnAJG35R6Sezw8PLy38HLSWmFi/6wi3cfDw8Mb4OXpbDtK1a7kDyIJM5d/Qzw8PLxtXpscrzX486baTuD5YQUPDw9vgJeXR9tf5mclV2iD0+Km8fDw8AJe28TKn9n+OFc71vAQEvDw8PAO8dpBgXZbSUlirfVVhyg8PDy8o7yd1lQ7UpCk0e3Vii4fHh4e3iFeGyTWkub8OAXGw8PDm+PlWz+bTJ89Hoq5eHh4eGO8JNlNxp6SBPpsM+xhdAAPDw/vEG8n2W23lQSGtTT6MrHGw8PDG+Adnt5aGixYu2/yOPDw8PDmeO0/+UmQyEsYbfW1Dgx4eHh4Y7z2FZ/HmTwt3olgeHh4eL+Zl49MJQEjIeUPN+rv4eHh4b2Rl49GtcXZtsFW7A0PDw9vjNde4lQJow0edVEYDw8Pb4C31ohqC7vJS7wNG0kowsPDwzvK+wJLBLtgDXkDAgAAAABJRU5ErkJggg==" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

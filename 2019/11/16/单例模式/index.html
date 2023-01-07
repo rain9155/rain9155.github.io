@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    
+    <title>你知道有多少种方式实现单例模式？ | jianyu的博客 | 每天进步一点点</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#009688">
+    
+    
+    <meta name="keywords" content="设计模式">
+    <meta name="description" content="前言单例模式是应用最广的模式之一，也是最简单的模式，但越是简单的东西，就越容易忽略它的细节，在应用这个模式时，同一个进程内，单例对象的类必须保证只有一个实例存在，比如在一个应用中，应该只有一个ImagerLoader实例，因为这个ImagerLoader中含有线程池、缓存系统、网路请求等，创建一次需要消耗很多资源，因此，没有理由让它构造多个实例，这种不能自由的构造对象，确保某一个类有且只有一个对象">
+<meta property="og:type" content="article">
+<meta property="og:title" content="你知道有多少种方式实现单例模式？">
+<meta property="og:url" content="http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="jianyu的博客">
+<meta property="og:description" content="前言单例模式是应用最广的模式之一，也是最简单的模式，但越是简单的东西，就越容易忽略它的细节，在应用这个模式时，同一个进程内，单例对象的类必须保证只有一个实例存在，比如在一个应用中，应该只有一个ImagerLoader实例，因为这个ImagerLoader中含有线程池、缓存系统、网路请求等，创建一次需要消耗很多资源，因此，没有理由让它构造多个实例，这种不能自由的构造对象，确保某一个类有且只有一个对象">
+<meta property="og:image" content="http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/design1.png">
+<meta property="article:published_time" content="2019-11-16T06:32:26.000Z">
+<meta property="article:modified_time" content="2023-01-07T10:44:48.994Z">
+<meta property="article:author" content="rain9155">
+<meta property="article:tag" content="设计模式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/design1.png">
+    
+        <link rel="alternate" type="application/atom+xml" title="jianyu的博客" href="/atom.xml">
+    
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.7.2">
+    <script>window.lazyScripts=[]</script>
+
+    <!-- custom head -->
+    
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap" style="background-image:url(/img/brand.jpg)">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">rain9155</h5>
+          <a href="mailto:jianyu9155@gmail.com" title="jianyu9155@gmail.com" class="mail">jianyu9155@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Home
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/rain9155" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://juejin.im/user/5b437173e51d45191d79c27a/posts" target="_blank" >
+                <i class="icon icon-lg icon-gg"></i>
+                Juejin
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://blog.csdn.net/Rain_9155" target="_blank" >
+                <i class="icon icon-lg icon-eye"></i>
+                CSDN
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://www.jianshu.com/u/93cb7ffd83e9" target="_blank" >
+                <i class="icon icon-lg icon-book"></i>
+                Jianshu
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/links"  >
+                <i class="icon icon-lg icon-link"></i>
+                Links
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">你知道有多少种方式实现单例模式？</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="搜尋">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">你知道有多少种方式实现单例模式？</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2019-11-16T06:32:26.000Z" itemprop="datePublished" class="page-time">
+  2019-11-16
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap post-toc-shrink" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前言"><span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#类图"><span class="post-toc-text">类图</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#实现方式"><span class="post-toc-text">实现方式</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、饿汉方式"><span class="post-toc-text">1、饿汉方式</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、静态内部类形式"><span class="post-toc-text">2、静态内部类形式</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、懒汉模式（线程安全）"><span class="post-toc-text">3、懒汉模式（线程安全）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、Double-Check-Lock（DCL）"><span class="post-toc-text">4、Double Check Lock（DCL）</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#解决方法1：使用Volatile关键字"><span class="post-toc-text">解决方法1：使用Volatile关键字</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#解决方法2：增加一个局部变量"><span class="post-toc-text">解决方法2：增加一个局部变量</span></a></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、枚举模式"><span class="post-toc-text">5、枚举模式</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6、使用容器实现"><span class="post-toc-text">6、使用容器实现</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#考虑反序列化"><span class="post-toc-text">考虑反序列化</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#总结"><span class="post-toc-text">总结</span></a></li></ol>
+        </nav>
+    </aside>
+
+
+<article id="post-单例模式"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">你知道有多少种方式实现单例模式？</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2019-11-16 14:32:26" datetime="2019-11-16T06:32:26.000Z"  itemprop="datePublished">2019-11-16</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></li></ul>
+
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>单例模式是应用最广的模式之一，也是最简单的模式，但越是简单的东西，就越容易忽略它的细节，在应用这个模式时，<strong>同一个进程内</strong>，单例对象的类必须保证<strong>只有一个实例</strong>存在，比如在一个应用中，应该只有一个ImagerLoader实例，因为这个ImagerLoader中含有线程池、缓存系统、网路请求等，创建一次需要消耗很多资源，因此，没有理由让它构造多个实例，这种不能自由的构造对象，确保某一个类有且只有一个对象实例的情况，就是单例模式的使用场景，那么你知道有多少种方式实现单例？具我所了解的，有<strong>六种</strong>，下面分别介绍。</p>
+<h2 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h2><p>简单看一下单例模式的类图：</p>
+<img src="/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/design1.png" class="" title="design">
+
+<p>角色介绍：</p>
+<ul>
+<li>Client - 高端客户层</li>
+<li>Singleton - 单例类</li>
+</ul>
+<h2 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h2><p>以公司中的CEO来举例，一个公司中只能有一个CEO，所以CEO就是单例，可以使用单例模式来实现，下面以这个例子来实现单例.</p>
+<h3 id="1、饿汉方式"><a href="#1、饿汉方式" class="headerlink" title="1、饿汉方式"></a>1、饿汉方式</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span></span>&#123;</span><br><span class="line">    <span class="comment">//静态对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> CEO mCeo = <span class="keyword">new</span> CEO();</span><br><span class="line">    <span class="comment">//构造函数私有</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">CEO</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//公有的静态函数，对外暴露获取单例对象的接口</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> CEO <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mCeo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种方式叫做饿汉方式，它的关键点是：</p>
+<p>1、构造函数私有;</p>
+<p>2、通过一个静态方法返回一个<strong>静态对象实例</strong>.</p>
+<p>为什么这种方式能够保证实例的唯一性呢？<strong>因为在同一个类加载器下，类的初始化只会进行一次，并且在多线程环境下，JVM会保证只有一个线程执行类的初始化</strong>，所以当我们第一次调用getInstance方法，访问mCeo静态变量时，CEO类还没有没有进行初始化，就会首先进行CEO类的初始化，类的初始化之前会经历加载、验证、准备、解析阶段，然后才到初始化阶段，在初始化阶段中JVM会执行<strong>static语句块</strong>，此时就会为CEO在java堆上为<strong>分配一块内存</strong>，然后把mCeo指向这块内存，即实例化了CEO，接着getInstance方法就会返回CEO的实例，当我们第二次调用getInstance()方法时，它会返回上次在类初始化阶段创建的CEO实例，而不会再进行一次类的初始化，所以这就保证了每次调用getInstance()方法都是返回<strong>同一个实例</strong>。</p>
+<p>饿汉方式的优点是线程安全，类初始化时就完成实例的创建，以后调用getInstance方法<strong>获取对象实例时速度比较快</strong>，缺点是会造成<strong>类初始化过程变慢</strong>，还可能会<strong>提前初始化单例类</strong>，例如CEO中有另外一个静态方法hello()，我第一次调用时并不是调用getInstance方法而是调用hello方法，它也会进行CEO类的初始化，导致单例类也完成实例创建，但此时我并没有使用这个单例类，所以说饿汉方式的优点也是它的缺点。</p>
+<blockquote>
+<p>类的初始化和类的实例化是两个不同的过程，在类的实例化过程中，如果发现类还未进行初始化，就会先进行类的初始化.</p>
+</blockquote>
+<h3 id="2、静态内部类形式"><a href="#2、静态内部类形式" class="headerlink" title="2、静态内部类形式"></a>2、静态内部类形式</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span></span>&#123;</span><br><span class="line">    <span class="comment">//构造函数私有</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">CEO</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> CEO <span class="title">getInstanse</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//返回静态内部类中的静态变量实例</span></span><br><span class="line">        <span class="keyword">return</span> SingletonHolder.mCeo;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 静态内部类</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonHolder</span></span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> CEO mCeo = <span class="keyword">new</span> CEO();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>静态内部类方式的关键点是：</p>
+<p>1、构造函数私有；</p>
+<p>2、通过一个静态方法返回<strong>静态内部类中的静态变量实例</strong>.</p>
+<p>静态内部类形式的特点和饿汉方式一样都是<strong>基于类的初始化</strong>保证实例的唯一性，同时它在饿汉方式的基础上增加了<strong>延迟初始化</strong>，在饿汉方式中说到在CEO类初始化时，就会完成单例类实例的创建，这样就可能导致了<strong>提前初始化</strong>了单例类，造成资源浪费，而静态内部类就解决了这个缺点，当第一次初始化CEO类时并不会创建CEO实例，只有在调用getInstance方法时才会导致CEO类实例化，因为第一次调用getInstance方法时会让JVM初始化<strong>SingletonHolder类</strong>，在初始化SingletonHolder类的同时完成了CEO单例类实例的创建，然后返回CEO实例，以后调用getInstance方法时都会返回<strong>同一实例</strong>.</p>
+<p>这种方式的优点是不仅能保证线程安全，也能保证单例对象的唯一性，同时也<strong>延迟了单例的实例化</strong>，所以这是推荐使用的单例模式；它的缺点就是第一次加载时反应稍慢。</p>
+<blockquote>
+<p>为什么基于类初始化的单例就是线程安全的呢？这是因为类的初始化过程其实是在执行clinit方法，clinit方法又叫做类构造器，clinit方法是由编译器收集所有的静态变量赋值动作和static语句块合并形成的，在多线程环境下，JVM执行clinit方法时，会给clinit方法加锁，多个线程初始化类时，只有一个线程会获得clinit方法的执行权，其他线程会阻塞等待，等某个线程执行完clinit方法后，就完成了类的初始化，这时就会唤醒其他等待线程，其他等待线程发现类已经执行过clinit方法了，就不再重复执行了，所以这就是单例模式线程安全实现的保证，也是单例模式实例唯一性的保证。</p>
+</blockquote>
+<h3 id="3、懒汉模式（线程安全）"><a href="#3、懒汉模式（线程安全）" class="headerlink" title="3、懒汉模式（线程安全）"></a>3、懒汉模式（线程安全）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> CEO mCeo;</span><br><span class="line">    <span class="comment">//构造函数私有</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">CEO</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//方法加上synchronized关键字</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> CEO <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//判空处理，保证只实例化一次</span></span><br><span class="line">        <span class="keyword">if</span>(mCeo == <span class="keyword">null</span>)&#123;</span><br><span class="line">            mCeo = <span class="keyword">new</span> CEO();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mCeo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种方式叫做<strong>线程安全</strong>的懒汉模式，它的关键点是：</p>
+<p>1、构造函数私有；</p>
+<p>2、通过一个<strong>同步</strong>静态方法返回静态对象实例；</p>
+<p>3、静态对象实例创建时加入了<strong>判空处理</strong>，保证只实例化一次.</p>
+<p>通过给 getInstance方法加synchronized关键字，保证了在多线程环境下只有一个线程对CEO进行初始化，同时又加入了判空处理，避免了重复创建对象实例，保证每次调用getInstance方法都会返回<strong>同一个实例</strong>.</p>
+<p>这种懒汉模式的优点是线程安全，单例只有在使用时才会被实例化，节约资源，即<strong>延迟初始化</strong>；缺点是第一次加载时需要及时进行实例化，反应稍慢，还有每次调用getInstance方法时都进行同步，造成不必要的<strong>同步开销</strong>，这种模式不建议使用。</p>
+<blockquote>
+<p>还有一种叫<strong>非线程安全</strong>的懒汉模式，与线程安全的懒汉模式相比，只是少了一个synchronized关键字，不适合在多线程环境下使用，因为没有正确同步会造成创建多个实例，适合在单线程环境下使用。</p>
+</blockquote>
+<h3 id="4、Double-Check-Lock（DCL）"><a href="#4、Double-Check-Lock（DCL）" class="headerlink" title="4、Double Check Lock（DCL）"></a>4、Double Check Lock（DCL）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> CEO mCeo = <span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//构造函数私有</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">CEO</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> CEO <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//第一次判空，保证只同步一次</span></span><br><span class="line">        <span class="keyword">if</span>(mCeo == <span class="keyword">null</span>)&#123;<span class="comment">//1</span></span><br><span class="line">            <span class="comment">//synchronized语句块，锁住的是类的Class对象</span></span><br><span class="line">            <span class="keyword">synchronized</span> (CEO<span class="class">.<span class="keyword">class</span>)</span>&#123;</span><br><span class="line">                <span class="comment">//第二次判空，保证只实例化一次</span></span><br><span class="line">                <span class="keyword">if</span>(mCeo == <span class="keyword">null</span>)&#123;</span><br><span class="line">                    mCeo = <span class="keyword">new</span> CEO();<span class="comment">//2</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mCeo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种方式的名字叫<strong>双重检查锁定</strong>，简称DCL，它的关键点是：</p>
+<p>1、构造函数私有；</p>
+<p>2、通过一个静态方法返回静态对象实例；</p>
+<p>3、静态对象实例创建时加入了<strong>双重判空处理 + synchronized块</strong>，保证只<strong>同步一次</strong>和<strong>只实例化一次</strong>.</p>
+<p>在getInstance方法中对实例进行了俩次判空：<strong>第一次判空</strong>是为了避免不必要的同步，解决了懒汉模式每次调用getInstance方法都需要同步的缺点，只有对象为null的情况下才进入synchronized块，才需要同步；<strong>第二次判空</strong>则是为了进入synchronized块后只有对象为null的情况下才创建实例，避免重复创建对象实例，而且synchronized块锁住的是<strong>类的Class对象</strong>，保证了在多线程环境下只有一个线程进入synchronized块，所以采用DCL方式每次调用 getInstance方法返回的都是<strong>同一个实例</strong>。</p>
+<p>DCL优点是资源利用率高，第一次执行getInstance方法时单例对象才会被实例化，即<strong>延迟初始化</strong>，第一次实例化时才进行同步，减少了<strong>同步开销</strong>，并且能在<strong>大多数情况</strong>下保证单例唯一性；缺点是第一次加载<strong>反应稍慢</strong>，因为又要加锁，又要初始化对象，导致第一次调用getInstance方法返回较慢。</p>
+<p>为什么说DCL在<strong>大多数情况</strong>能下保证单例唯一性？这说明在少数情况下DCL还是会<strong>出现问题</strong>的，问题就出现在注释2：<strong>mCeo = new CEO();</strong>  在CEO第一次进行实例化过程中，这个实例化过程可以分为以下3步：</p>
+<p>1、在java堆分配中CEO对象的内存空间；</p>
+<p>2、进行CEO类的初始化过程；</p>
+<p>3、把mCeo指向1步骤中分配的内存空间.</p>
+<p>某些JVM会把这3个步骤进行<strong>指令重排序</strong>，变为以下顺序：</p>
+<p>1、在java堆分配中CEO对象的内存空间；</p>
+<p>3、把mCeo指向1步骤中分配的内存空间；</p>
+<p>2、进行CEO类的初始化过程.</p>
+<p>如果在单线程环境下这样是没有问题的，因为就算指令重排，在getInstance方法返回时mCeo指向的对象已经<strong>完成了初始化</strong>，但是在多线程环境下就出现问题了，假设现在有两个线程A、B，线程A执行到了getInstance方法的注释2，即进行CEO的实例化，由于指令重排，线程A先执行1、3步骤，此时mCeo已经指向了分配的内存空间，导致此时的<strong>mCeo != null</strong>，而恰好线程B此时执行到了getInstance方法的注释1，进入判断 <strong>if(mCeo == null)</strong>，因为此时mCeo != null，所以条件判断为false，不进入if语句，直接来到return语句，返回了<strong>还没初始化完毕</strong>的mCeo ，这样就可能导致程序崩溃！因为你在使用一个还未初始化完成的对象。</p>
+<p>针对DCL的错误，有两种解决办法，第一种办法是使用<strong>Volatile关键字</strong>，因为Volatile会<strong>禁止指令重排序</strong>，保证对象实例化过程按1、2、3步骤进行；第二种办法是再加一个<strong>局部变量</strong>做一层缓冲，下面分别使用来完善DCL:</p>
+<h4 id="解决方法1：使用Volatile关键字"><a href="#解决方法1：使用Volatile关键字" class="headerlink" title="解决方法1：使用Volatile关键字"></a>解决方法1：使用Volatile关键字</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span> </span>&#123;</span><br><span class="line">    <span class="comment">//加上Volatile关键字修饰</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> CEO mCeo = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">CEO</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> CEO <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(mCeo == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (CEO<span class="class">.<span class="keyword">class</span>)</span>&#123;</span><br><span class="line">                <span class="keyword">if</span>(mCeo == <span class="keyword">null</span>)&#123;</span><br><span class="line">                    mCeo = <span class="keyword">new</span> CEO();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mCeo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>熟悉Volatile特性的朋友都知道，在多线程环境下，Volatile会禁止指令重排序保证内存可见性，所以线程执行到mCeo = new CEO()时，保证CEO类初始化完毕后才把mCeo引用指向java堆的内存空间，避免另外一个线程访问到未初始化完毕的mCeo。</p>
+<h4 id="解决方法2：增加一个局部变量"><a href="#解决方法2：增加一个局部变量" class="headerlink" title="解决方法2：增加一个局部变量"></a>解决方法2：增加一个局部变量</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> CEO mCeo = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">CEO</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> CEO <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//1、增加一个局部变量，同为CEO类型</span></span><br><span class="line">        CEO ceo = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span>(mCeo == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (CEO<span class="class">.<span class="keyword">class</span>)</span>&#123;</span><br><span class="line">                <span class="keyword">if</span>(mCeo == <span class="keyword">null</span>)&#123;</span><br><span class="line">                    <span class="comment">//2、执行实例时，先实例化这个局部变量</span></span><br><span class="line">                    ceo = <span class="keyword">new</span> CEO();</span><br><span class="line">                    <span class="comment">//3、待局部变量实例化完毕后，才把这个实例赋值给要返回的静态变量mCeo</span></span><br><span class="line">                    mCeo = ceo;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mCeo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种方法也能够保证DCL的正确性，因为它是先把同为CEO类型的局部变量ceo实例化后，才赋值给mCeo，这就不管ceo实例化过程中怎么样重排序，在ceo还未初始化完毕之前，mCeo一直为null，当ceo实例化完毕后，mCeo才指向它，这样就避免了mCeo指向一个未初始化完毕的对象。</p>
+<blockquote>
+<p>使用DCL时，建议使用解决方法1、2中的DCL方式。</p>
+</blockquote>
+<h3 id="5、枚举模式"><a href="#5、枚举模式" class="headerlink" title="5、枚举模式"></a>5、枚举模式</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> CEO&#123;</span><br><span class="line">    INSTANCE;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//枚举中还可以定义一些方法和字段</span></span><br><span class="line">    String name = <span class="string">"ceo"</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"do Something"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>枚举模式的关键点是：在枚举类中定义一个枚举，叫什么名字都可以，这里叫INSTANCE，而且只能定义一个枚举，不能定义第二个枚举如INSTANCE2。</p>
+<p>写法简单是枚举单例最大的优点，枚举实例的创建天生就是线程安全的，并且<strong>任何情况</strong>下它都是一个单例，我们直接通过<strong>CEO.INSTANCE</strong>就可以访问到这个单例，枚举中还可以为这个单例定义一些方法，例如这里我定义了一个doSomething方法，我通过<strong>CEO.INSTANCE.doSomething()</strong>就可以调用这个方法，字段的访问同理。</p>
+<p>那么枚举的<strong>实现原理</strong>是什么？接下来把CEO.java文件编译成CEO.class，然后通过jad工具反编译，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//CEO枚举类反编译后的java代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span> <span class="keyword">extends</span> <span class="title">Enum</span></span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">CEO</span><span class="params">(String s, <span class="keyword">int</span> i)</span></span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(s, i);</span><br><span class="line">        name = <span class="string">"ceo"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> CEO INSTANCE;</span><br><span class="line"></span><br><span class="line">    String name;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"do Something"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        INSTANCE = <span class="keyword">new</span> CEO(<span class="string">"INSTANCE"</span>, <span class="number">0</span>);</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我省略了一些无关代码，可以看到CEO继承自一个<strong>Enum类</strong>，所以枚举类本质还是一个类，并且它是final的，所以它不可被继承，它里面的<strong>构造方法私有</strong>，并且INSTANCE字段是一个<strong>静态变量</strong>，在<strong>static语句块</strong>中实例化，所以枚举模式保持单例唯一性的本质还是基于<strong>类的初始化</strong>，它的原理和前面讲过的饿汉方式、静态内部类形式一样。</p>
+<blockquote>
+<p>在effective java中，枚举模式被推荐为实现的单例是<strong>最好的方式</strong>。</p>
+</blockquote>
+<h3 id="6、使用容器实现"><a href="#6、使用容器实现" class="headerlink" title="6、使用容器实现"></a>6、使用容器实现</h3><p>前面所讲的方式都是针对单个类的单例，如果一个程序中存在着多种类型的单例，就可以通过一个容器把它们集中管理：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonManager</span> <span class="keyword">extends</span> <span class="title">Staff</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Map&lt;String, Object&gt; mServices = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SingletonManager</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">registerService</span><span class="params">(String key, Object instance)</span></span>&#123;</span><br><span class="line">         <span class="comment">//加入了一个判断处理，避免重复添加</span></span><br><span class="line">        <span class="keyword">if</span>(!mServices.containsKey(key))&#123;</span><br><span class="line">            mServices.put(key, instance);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getService</span><span class="params">(String key)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mServices.get(key);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种方式的关键点是：将多种类型的单例注入到一个统一的管理类中，且只能注入一次(注入时判断)，在使用时根据key可以获取对象对应的单例。</p>
+<p>这种方式可以让我们管理多种类型的单例，并且使用时通过统一的接口进行获取，例如在Android中，各种类型的服务在应用启动时都注册在Context内的一个容器中，我们需要使用各种服务时，可以通过Context的getService方法获得服务的单例，服务不能重复创建，会很消耗资源。</p>
+<h2 id="考虑反序列化"><a href="#考虑反序列化" class="headerlink" title="考虑反序列化"></a>考虑反序列化</h2><p>上面所介绍的6种实现单例的方法中，除了使用容器实现单例模式的方法，其他5种方法都有以下共同的关键点：</p>
+<p>1、构造函数私有；</p>
+<p>2、通过一个静态方法或枚举返回单例对象；</p>
+<p>3、在多线程环境下，确保单例类的实例只有一个.</p>
+<p>一般要实现单例模式，做到这3个点就行了，这样就能确保在同一个进程内单例类只有一个实例存在，但是，如果你的单例类是可以保存到磁盘或通过网络传输，换句话说你的单例类是<strong>支持序列化</strong>的，那么你就要保证单例类在<strong>反序列化时不会重新创建新的对象实例</strong>，因为反序列化时会创建一个和单例一模一样的实例的，java中通过ObjectInputStream的<strong>readObject方法</strong>来实现反序列化，它里面会通过反射来创建一个新的实例，所以就算你的构造方法私有，它还是可以通过setAccessible(true)来获得单例构造器的访问权，从而创建一个新的对象实例，<strong>反序列化的本质就是反射</strong>，换句话说，<strong>反射会破坏单例模式的实例唯一性</strong>。</p>
+<p>那么如何确保单例类反序化时不会重新创建新实例呢？只要在单例类中加入以下方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CEO</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> CEO mCeo = <span class="keyword">null</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> Object <span class="title">readResolve</span><span class="params">()</span> <span class="keyword">throws</span> ObjectStreamException </span>&#123;</span><br><span class="line">        <span class="comment">//返回单例对象</span></span><br><span class="line">        <span class="keyword">return</span> mCeo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>加入readResolve方法后就可以改变反序列化的规则，在readObject方法中，它发现该类定义了readResolve方法，它就会通过反射调用readResolve方法返回对象实例，而不是默认的通过反射重新创建一个新的对象，所以只要我们<strong>在readResolve方法中返回单例对象</strong>，readObject方法就会返回单例对象，这样就防止了单例模式被反序列化的破坏。</p>
+<p><strong>注意：</strong>对于枚举模式不存在反序列化重新生成实例的情况，所以<strong>对于枚举模式实现的单例不用考虑反序列化情况</strong>，因为枚举的反序列化<strong>不是通过反射实现</strong>的，而是通过其他方式实现，枚举有自己的一套处理反序列化的机制，类似于使用容器的方式，有兴趣可以自己查找资料，而对于饿汉模式、静态内部类形式、懒汉模式、DCL、容器中的单例就需要考虑反序列情况。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文讲解了6种方式实现单例模式，分别是饿汉方式、静态内部类形式、懒汉模式、DCL、枚举模式和容器方式，不管使用哪种形式实现单例，其核心思想都是以下4点：</p>
+<p>1、构造函数私有化；</p>
+<p>2、通过静态方法获取单例；</p>
+<p>3、保证线程安全；</p>
+<p>4、避免反序列化重新生成实例.</p>
+<p>这6种方式的优缺点如下：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th align="left">饿汉方式</th>
+<th align="center">静态内部类方式</th>
+<th align="left">懒汉模式（线程安全）</th>
+<th>DCL</th>
+<th>枚举模式</th>
+<th>容器方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>优点</td>
+<td align="left">安全，获取单例速度快</td>
+<td align="center">安全，延迟初始化</td>
+<td align="left">安全，延迟初始化</td>
+<td>安全，延迟初始化</td>
+<td>写法简洁，延迟初始化，安全，反射也无法破坏单例</td>
+<td>实现简单，获取单例速度快</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td align="left">提前初始化单例类，浪费空间</td>
+<td align="center">第一次使用反应慢</td>
+<td align="left">第一次使用反应慢，效率低，同步开销大</td>
+<td>写法复杂，第一次使用反应慢</td>
+<td>暂时没发现缺点，枚举是java5之后才加入，使用的人少，很多人不熟悉枚举</td>
+<td>需要保证线程安全</td>
+</tr>
+</tbody></table>
+<p>这么多种方式实现单例模式，我们如何选择呢？</p>
+<p>首先如果你确保程序是在<strong>单线程环境</strong>下工作，那么推荐你使用<strong>不加synchronized关键字</strong>的懒汉模式；但是如果程序是在<strong>多线程环境</strong>下工作，这时就要考虑线程安全问题，基于<strong>类的初始化的</strong>单例模式天生线程安全，可以使用饿汉方式、静态内部类方式、枚举模式；如果你要明确的<strong>延迟初始化要求</strong>，推荐使用静态内部类方式、DCL、枚举模式；如果你有<strong>选择困难症</strong>，那不用考虑那么多了，推荐你使用DCL和静态内部类形式；不管在什么场合，都不要考虑使用<strong>加synchronized关键字</strong>的懒汉模式，它的缺点最多。</p>
+<p>以上就是本文的全部内容，希望大家有所收获。</p>
+<p><a href="https://github.com/rain9155/DesignPatternDemo/tree/master/src/com/example/hy/designpatternDemo/singleton" target="_blank" rel="noopener">本文源码相关位置</a></p>
+<p>参考资料：</p>
+<p><a href="http://blog.sina.cn/dpool/blog/s/blog_597a437101011o66.html" target="_blank" rel="noopener">多线程问题与double-check小结</a></p>
+<p><a href="https://www.hollischuang.com/archives/197" target="_blank" rel="noopener">枚举的线程安全性及序列化问题</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    
+    <div class="content">
+        
+<span class="post-time">
+    最後更新時間：<time datetime="2023-01-07T10:44:48.994Z" itemprop="dateUpdated">2023-01-07 18:44:48</time>
+</span><br>
+
+
+        
+        谢谢大家的阅读！
+        
+    </div>
+    
+    <footer>
+        <a href="http://yoursite.com">
+            <img src="/img/avatar.jpg" alt="rain9155">
+            rain9155
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/&title=《你知道有多少种方式实现单例模式？》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/&title=《你知道有多少种方式实现单例模式？》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《你知道有多少种方式实现单例模式？》 — jianyu的博客&url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2020/01/17/Http%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E6%B5%85%E6%9E%90/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">这是一份关于HTTP协议的学习总结</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/11/05/java%E9%9B%86%E5%90%88/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">java学习总结之集合框架</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        谢谢打赏!
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <div class="reward-content">
+        
+        <div class="reward-code">
+            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
+        </div>
+        
+        <label class="reward-toggle">
+            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
+                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
+            <div class="reward-toggle-ctrol">
+                <span class="reward-toggle-item wechat">微信</span>
+                <span class="reward-toggle-label"></span>
+                <span class="reward-toggle-item alipay">支付宝</span>
+            </div>
+        </label>
+        
+    </div>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+
+        <p>
+            
+                <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            
+            <span>本部落格係採用<a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">創用 CC 姓名標示 4.0 國際 授權條款授權</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p><span>rain9155 &copy; 2018 - 2023</span>
+            <span>
+                
+                Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a>
+            </span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/&title=《你知道有多少种方式实现单例模式？》 — jianyu的博客&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/&title=《你知道有多少种方式实现单例模式？》 — jianyu的博客&source=记录我学习的点点滴滴" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《你知道有多少种方式实现单例模式？》 — jianyu的博客&url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/&via=http://yoursite.com" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/11/16/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN4AAADeCAAAAAB3DOFrAAACuklEQVR42u3awU7DQAwEUP7/p0HiWprO2NnSw8sJlbbZt0ixGe/XV3x9/17PXn+8Hj/1+A3JO6+/4bYLDw8Pb7T0ZKH5Ox8/lW9TvgXXK8HDw8M7zbsuBs9unNyyLS1JcUrWjIeHh/cJvLypTbYj4c02Cw8PD+8zeftlJSWhDSbw8PDw3smbNcSz0GHGOJ614OHh4cW8tkX+hJ8Pzvfw8PDwFlP1/OG7aco3LfiLFeLh4eEd4LUBQdI6zx7ryfdcByJR1oKHh4d3gJd0pLMF5UFwfq8ohsDDw8M7wMuPWM0KSXv4YIYp/oZ4eHh4a94sgGgXlEcV+aZEG42Hh4d3Ky8fKeUP4lk8MQuLX7yCh4eHd4zXNqntIa3Z4a22+Y7me3h4eHhr3ub2bRiRMGaByIs74uHh4d3Ka2OIPJJoF70vMH/8Fg8PD+8wry0SeWzRbkR73yifxsPDw7uV187ZZ2FuWwZuaLLx8PDwDvDawVIb7LbFIz9AUBQzPDw8vMO8NqidjbXuDR1ebC4eHh7eAd7+ANamj90UhlX1w8PDw1vzZtP2HJAUm9mhq+JTeHh4eGve5sjUph2fDcnqURkeHh7eAd6skpxoqWcBbl398PDw8Na8WSw7I7WNch7pFoeu8PDw8G7itR/LI4bNkYJ20IWHh4f3Hl5L2h+HumGI9WTNw9EXHh4eXsmb/fM/C3DbowPtqOxpGIGHh4d3K6+tIdfU/aN/MyorWmo8PDy8Be+7vGYHC9piM2vrVyfI8PDw8CZP12K4lW9EEtom1Lyo4OHh4b2H146XZsOwduPuatzx8PDwzvFmQW1+ACs5IrCpYy8CXDw8PLx/5d1bMGZhR35AAQ8PD+9/eZuzXfuQom3Q8fDw8E7zZmHErIGeAWZRBR4eHt4JXjsAaxeaMxJA8g2r+R4eHh7eFe8Hr9u7YB8W/2sAAAAASUVORK5CYII=" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.7.2"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.7.2" async></script>
+
+
+
+
+
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '去哪里了?';
+            clearTimeout(titleTime);
+        } else {
+            document.title = '欢迎光临!';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
