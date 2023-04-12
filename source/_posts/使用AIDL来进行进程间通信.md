@@ -401,13 +401,13 @@ public interface IUserManager extends android.os.IInterface {
 
 **2、IUserManager.Stub抽象类**
 
-IUserManager的静态内部类，它继承自Binder，**说明它是一个 Binder 本地对象**（Binder下面介绍），它虽然实现了IUserManager接口，但是它继续声明为一个抽象类，并没有实现IUserManager接口中的getUser方法，表明子类需要实现getUser方法，返回具体的User信息，而服务端将会实现这个Stub抽象类。
+IUserManager的静态内部类，它继承自Binder，说明它是一个**Binder本地对象**，它虽然实现了IUserManager接口，但是它继续声明为一个抽象类，并没有实现IUserManager接口中的getUser方法，表明子类需要实现getUser方法，返回具体的User信息，而服务端将会实现这个Stub抽象类。
 
-**3、IUserManager.Stub.Proxy代理类 **
+**3、IUserManager.Stub.Proxy代理类**
 
-IUserManager.stub的静态内部类，它实现了IUserManager接口，并且实现了getUser方法，但是里面只是把数据装进data这个Parcel对象，通过mRemote的transact方法发送给服务端，接着用reply这个Parcel对象等待服务端数据的返回，这一切都是通过mRemote这个IBinder对象进行，**mRemote代表着Binder对象的本地代理**（IBinder下面介绍），mRemote会通过Binder驱动来完成与远程服务端的Stub的通信。
+IUserManager.stub的静态内部类，它实现了IUserManager接口，并且实现了getUser方法，但是里面只是把数据装进data这个Parcel对象，通过**mRemote**的**transact方法**发送给服务端，接着用reply这个Parcel对象等待服务端数据的返回，这一切都是通过mRemote这个IBinder对象进行，mRemote代表着**Binder对象的本地代理**，mRemote会通过**Binder驱动**来完成与远程服务端的Stub的通信。
 
-可以看到Stub类和Stub.Proxy类都实现了IUserManager接口，这就是一个典型的[代理模式](https://rain9155.github.io/2019/10/15/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/)，它们的getUser方法有着不同的实现，Stub类它将会在远程的服务端完成getUser方法的具体实现，而Stub.Proxy类是本地客户端的一个代理类，它已经替我们默认的实现了getUser方法，该方法里面通过**mRemote**这个Binder引用的**transact方法**把请求通过驱动发送给服务端，我们注意到mRemote发送请求时还传进了**TRANSACTION_getUser**这个代表着getUser方法的标识名，这表示客户端告诉服务端我要调用getUser这个方法，当驱动把请求转发给服务端后，服务端的Stub类的**onTransact方法**就会回调，它里面有一个switch语句，根据code来调用不同的方法，这时它就会走到case TRANSACTION_getUser这个分支，然后调用getUser方法的在服务端的具体实现，如果有返回值的话，还会通过reply返回给客户端，这样就通过Binder驱动完成了一次远程方法调用(RPC)。
+可以看到Stub类和Stub.Proxy类都实现了IUserManager接口，这就是一个典型的[代理模式](https://rain9155.github.io/2019/10/15/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/)，它们的getUser方法有着不同的实现，Stub类它将会在远程的服务端完成getUser方法的具体实现，而Stub.Proxy类是本地客户端的一个代理类，它已经替我们默认的实现了getUser方法，该方法里面通过**mRemote**这个Binder引用的**transact方法**把请求通过**Binder驱动**发送给服务端，我们注意到mRemote发送请求时还传进了**TRANSACTION_getUser**这个代表着getUser方法的标识名，这表示客户端告诉服务端我要调用getUser这个方法，当驱动把请求转发给服务端后，服务端的Stub类的**onTransact方法**就会回调，它里面有一个switch语句，根据code来调用不同的方法，这时它就会走到case TRANSACTION_getUser这个分支，然后调用getUser方法的在服务端的具体实现，如果有返回值的话，还会通过reply返回给客户端，这样就通过Binder驱动完成了一次远程方法调用(RPC)。
 
 这里要注意的是客户端通过mRemote的transact方法把请求发送给客户端之后，这时会阻塞UI线程等待服务端的返回，而服务端的onTransact方法回调时，服务端的getUser方法会被回调，这时服务端的getUser方法是运行在服务端Binder线程池中，所以如果此时有UI操作需要回到UI线程再进行UI操作。
 
@@ -415,15 +415,15 @@ IUserManager.stub的静态内部类，它实现了IUserManager接口，并且实
 
 **IInterface**
 
-这是一个接口，用来表示服务端提供了哪些服务，如果服务端需要暴露调用服务的方法给客户端使用，就一定要继承这个接口，它里面有个asBinder方法，用于返回当前的Binder对象。
+这是一个接口，用来表示服务端提供了哪些服务，如果服务端需要暴露调用服务的方法给客户端使用，就一定要继承这个接口，它里面有个**asBinder方法**，用于返回当前的Binder对象。
 
 **IBinder**
 
-这时一个跨进程通信的Base接口，它声明了跨进程通信需要实现的一系列抽象方法，实现了这个接口就说明可以进行跨进程通信，Binder和BinderProxy都继承了这个接口。
+这是一个跨进程通信的Base接口，它声明了跨进程通信需要实现的一系列抽象方法，实现了这个接口就说明可以进行跨进程通信，**Binder**和**BinderProxy**都继承了这个接口。
 
 **Binder**
 
-代表的是 Binder 本地对象（Binder实体），它继承自IBinder，所有本地对象都要继承Binder，Binder中有一个内部类BinderProxy，它也继承自IBinder，它代表着Binder对象的本地代理(Binder引用)，Binder实体只存在于服务端，而Binder引用则遍布于各个客户端。
+代表的是**Binder本地对象**（Binder实体），它继承自IBinder，所有本地对象都要继承Binder，Binder中有一个内部类BinderProxy，它也继承自IBinder，它代表着**Binder对象的本地代理**(Binder引用)，**Binder实体**只存在于服务端，而**Binder引用**则遍布于各个客户端。
 
 接下来我们动手实践一下，首先在服务端RemoteService中，我们要这样做：
 
@@ -510,13 +510,13 @@ public class ClientActivity extends AppCompatActivity {
 
 在服务端我们首先要创建ServiceConnection，然后通过ServiceConnection来绑定RemoteService，在成功绑定后，ServiceConnection的onServiceConnected方法就会回调，它的第二个输入参数就是RemoteService在onBind方法返回的Stub类的Binder引用，我们拿到这个引用后，就可以通过通过Stub.asInterface方法转换为本地代理类Stub.Proxy，然后调用它的getUser方法，Proxy的getUser方法会远程调用RemoteService的getUser方法，方法返回后，在log中打印出User的信息，最后，活动结束，我们记得解绑服务，这个过程和上面介绍的一次RPC过程是一样的。
 
-我们发现完成一次进程间的通信是非常的简单，这就好像只是简单的调用一个对象的方法，但其实这都得益于Binder在底层为我们做了更多工作，我们上层使用得有多简单，它得底层实现就有多复杂，上面的一次进程间通信，可以简单的用下图表示：
+我们发现完成一次进程间的通信是非常的简单，这就好像只是简单的调用一个对象的方法，但其实这都得益于Binder在底层为我们做了更多工作，上面的一次进程间通信，可以简单的用下图表示：
 
 {% asset_img aidl3.png aidl %}
 
-其中ServiceManager就是根据Binder的名字查找Binder引用并返回，如果你对Binder的通信架构有一定的了解，理解这个就不难，对象转换就是完成Binder实体 -> Binder引用，Binder引用 -> Binder实体的转换，在java层继承自Binder的都代表Binder本地对象，即Binder实体，而Binder类的内部类BinderProxy就代表着Binder对象的本地代理，即Binder引用，这两个类都继承自IBinder, 因而都具有跨进程传输的能力，在跨越进程的时候，Binder 驱动会自动完成这两个对象的转换。
+对象转换就是完成Binder实体 -> Binder引用，Binder引用 -> Binder实体的转换，在java层继承自Binder的都代表Binder本地对象，即Binder实体，而Binder类的内部类BinderProxy就代表着Binder对象的本地代理，即Binder引用，这两个类都继承自IBinder, 因而都具有跨进程传输的能力，在跨越进程的时候，Binder 驱动会自动完成这两个对象的转换。
 
-我们重点讲一下图中的第3步：**将Binder引用赋值给Proxy的mRemote字段**，Proxy就是前面介绍的Stub.Proxy，所以接着我们看看**IUserManager.Stub.asInterface(IBinder)**方法是如何把服务端返回的Binder引用赋值给本地的代理类Proxy的mRemote字段，asInterface方法如下：
+我们重点讲一下图中的第3步：**Binder引用赋值给Proxy的mRemote字段**，Proxy就是前面介绍的Stub.Proxy，所以接着我们看看**IUserManager.Stub.asInterface(IBinder)**方法是如何把服务端返回的Binder引用赋值给本地的代理类Proxy的mRemote字段，asInterface方法如下：
 
 ```java
 //IUserManager.Stub.java
@@ -752,15 +752,14 @@ public class Proxy implements IUserManager {
 
 本文简单的介绍了一下Android几种进程间通信的方式，然后通过SDK自动生成AIDL代码来理解了一下生成的代码中各个类的作用和关系，还根据自动生成AIDL代码来手动实现了一遍简单的跨进程通信，加深理解，掌握了一些基础AIDL知识，可能会有些不全面，但是足够基本使用，想要了解更全面的AIDL知识，最好的途径还是参阅官方文档：[Android 接口定义语言 (AIDL)](https://developer.android.google.cn/guide/components/aidl#Defining)
 
-[本文源码地址](https://github.com/rain9155/AIDLTest)
+[本文源码地址](https://github.com/rain9155/AndroidDemo/tree/master/app/src/main/java/com/example/androiddemo/ipc/aidl)
 
 参考资料：
 
 [Android系统中Parcelable和Serializable的区别](http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0204/2410.html)
 
-[关于Binder，作为应用开发者你需要知道的全部](https://www.jianshu.com/p/062a6e4f5cbe)
+[Android Binder框架实现之何为匿名/实名Binder](https://blog.csdn.net/tkwxty/article/details/108343847)
 
-[如何理解Android的多进程](https://blog.csdn.net/cmyperson/article/details/56278433)
 
 
 
