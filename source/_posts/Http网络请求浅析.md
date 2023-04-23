@@ -647,6 +647,8 @@ HTTPS的数字签名是如何保证可靠性的？假设中间人截获了报文
 
 图解HTTP
 
+[RFC2626: Hypertext Transfer Protocol](https://datatracker.ietf.org/doc/html/rfc2616)
+
 [HTTP1.0、HTTP1.1 和 HTTP2.0 的区别](https://www.cnblogs.com/heluan/p/8620312.html)
 
 [深度解密 HTTP 通信细节](https://mp.weixin.qq.com/s/xU8X2gF_M_9_qzqbBdr4xQ)
