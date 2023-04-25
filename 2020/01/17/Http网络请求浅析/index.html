@@ -44,7 +44,7 @@
 <meta property="og:image" content="http://yoursite.com/2020/01/17/Http%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E6%B5%85%E6%9E%90/http17.png">
 <meta property="og:image" content="http://yoursite.com/2020/01/17/Http%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E6%B5%85%E6%9E%90/http18.png">
 <meta property="article:published_time" content="2020-01-17T07:33:15.000Z">
-<meta property="article:modified_time" content="2023-04-23T09:46:37.907Z">
+<meta property="article:modified_time" content="2023-04-25T06:49:00.618Z">
 <meta property="article:author" content="rain9155">
 <meta property="article:tag" content="http">
 <meta property="article:tag" content="https">
@@ -238,7 +238,7 @@
 <li><strong>HTTP/1.1</strong>：1997年，HTTP/1.1 版本发布，1999年广泛应用于各大浏览器网络请求中，直到现在HTTP/1.1也是使用最为广泛的HTTP协议，它进一步完善了HTTP/1.0，HTTP/1.1支持在一个TCP连接上传送多个HTTP请求和响应，即一个TCP连接可以被多个请求复用，减少了建立和关闭连接的消耗延迟，一定程度上弥补了HTTP/1.0每次请求都要创建连接的缺点，这种持续连接过程又叫做<strong>长连接</strong>，HTTP/1.1默认使用长连接。</li>
 <li><strong>HTTP/2.0</strong>：2015年，HTTP/2 .0版本发布，前面的两个版本都是<strong>基于超文本</strong>的协议，HTTP 2.0把基于超文本的协议改成了<strong>基于二进制</strong>的，把HTTP请求和响应变成数据帧，这样易于实现<strong>多路复用</strong>，在一个TCP连接上可以同时“混合”发送多个HTTP的请求和响应，效率大大提高。</li>
 </ul>
-<p>*<em>长连接和多路复用的区别: *</em></p>
+<p><strong>长连接和多路复用的区别:</strong></p>
 <p>上面讲到HTTP/1.1的长连接和HTTP 2.0的多路复用都是复用TCP连接，它们之间有什么区别呢？在讲解它们的区别之前先来聊一聊HTTP/1.1的长连接，HTTP/1.1的长连接可以分为非流水线和流水线工作方式：</p>
 <ul>
 <li><strong>非流水线</strong>：在同一个TCP连接下，客户端的下一个请求只有收到当前请求的响应后才能发出；</li>
@@ -248,16 +248,16 @@
 <img src="/2020/01/17/Http%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E6%B5%85%E6%9E%90/http2.png" class="" title="http1">
 
 <p>所以你会发现非流水线工作方式的长连接的若干个请求只能排队发送，后面的请求等待前面请求的响应返回才能获得执行机会，一旦有某请求处理超时，后续请求只能被阻塞，这样会导致TCP连接空闲，浪费资源；而流水线工作方式的长连接就可以连续的发送多个请求而不必等待响应的返回，这样看起来效率提高了一些。</p>
-<p>所以流水线工作方式就是好的吗？这里根据我查到的<a href="https://www.thinbug.com/q/45583861" target="_blank" rel="noopener">资料</a>是：<strong>Pipelining在现代浏览器中是默认关闭</strong>的，因为由于技术和安全的关系，实现Pipelining在HTTP/1.X上是很复杂，同时Pipelining技术不支持所有的请求方法，而且就算开启了，由于<a href="https://zh.wikipedia.org/wiki/%E9%98%9F%E5%A4%B4%E9%98%BB%E5%A1%9E" target="_blank" rel="noopener">队头阻塞</a>的存在，它的效率也不会提高多少，假设多个请求按顺序 (现实情况可能由于网络拥堵不会按顺序到达) 到达服务端，多个请求会在服务端缓存那边排队，如果第一个请求处理时间过长，会导致后面的请求阻塞，而且很有可能后面有优先级更高的请求，这样导致高优先级请求不能被优先处理，所以不管有没有流水线工作方式，请求还是要排队处理，队头阻塞还是存在，流水线工作方式只能说是对非流水线方式的一种改进。</p>
-<p>那么就没有办法提高响应效率了吗？为了解决这些问题，HTTP1.x支持在<strong>同一个域名(host)下建立多个TCP连接</strong>，现代浏览器支持同时建立<strong>5~10</strong>个TCP连接，即支持<strong>并行</strong>发送请求，每个浏览器都有一个Max-Connection最大连接限制，例如谷歌浏览器的Max-Connection值为6，即同一个域名下最多建立6个TCP连接，一次最多同时发送6个请求，超过限制后续请求就会被阻塞。</p>
-<p>所以，综上所述，由于Pipelining技术在浏览器中默认是<strong>关闭</strong>的，所以HTTP1.1<strong>长连接</strong>的工作方式是<strong>非流水线形式</strong>，为了实现<strong>并行</strong>发送请求只能通过建立<strong>多个TCP</strong>连接，这在HTTP1.x时代中已经很不错了，但是随着技术的发展，现在一个网站每秒简简单单就上百个请求，而频繁的建立和保留TCP连接又是一件工作量不小的工作，所以并行TCP连接带来的效率有时也会很低。</p>
-<p>所以为了解决以上所有问题，HTTP/2.0就诞生了，HTTP/2.0的<strong>多路复用(multiplexing)</strong>才是做到了<strong>同一个TCP</strong>连接下的真正的<strong>并发</strong>请求，多个请求可同时在一个TCP连接上并行发送，某个请求任务超时，不会影响到其它连接的正常执行，而且每个请求都可以分配优先级，优先级高的先执行。</p>
-<p>如图：</p>
+<p>但是<strong>Pipelining在现代浏览器中是默认关闭</strong>的，因为由于没有规范指导和技术安全的原因，实现Pipelining在HTTP/1.X上是很复杂，同时Pipelining技术不支持所有的请求方法，而且就算开启了，由于HTTP<a href="https://zh.wikipedia.org/wiki/%E9%98%9F%E5%A4%B4%E9%98%BB%E5%A1%9E" target="_blank" rel="noopener">队头阻塞</a>存在，它的效率也会受到服务端响应处理排队的影响，HTTP规定响应的返回必须进行严格的排队，迫使每个响应必须等待前一个响应传输完成后才返回，假设多个请求同时到达服务端，如果第一个请求处理时间过长，会导致后面的请求响应阻塞，即使后面的请求先处理完成了，而且很有可能后面有优先级更高的请求，这样导致高优先级的请求不能被优先处理。</p>
+<p>为了解决没有开启Pipelining导致请求排队的问题，现代浏览器支持在<strong>同一个域名(host)下建立多个TCP连接</strong>，一般支持同时建立<strong>5~10</strong>个TCP连接，即支持<strong>并行</strong>发送请求，每个浏览器都有一个Max-Connection最大连接限制，例如谷歌浏览器的Max-Connection值为6，即同一个域名下最多建立6个TCP连接，一次最多同时发送6个请求，超过限制后续请求就会被阻塞。</p>
+<p>所以综上所述，由于Pipelining技术在浏览器中默认是<strong>关闭</strong>的，所以HTTP1.1<strong>长连接</strong>的工作方式是<strong>非流水线形式</strong>，为了实现<strong>并行</strong>发送请求只能通过建立<strong>多个TCP</strong>连接，这在HTTP1.x时代中已经很不错了，但是随着技术的发展，现在一个网站每秒简简单单就上百个请求，而频繁的建立和保留TCP连接又是一件很耗费系统资源的工作，所以并行TCP连接带来的效率有时也会很低。</p>
+<p>为了解决HTTP/1.x的问题，HTTP/2.0就诞生了，HTTP/2.0在TCP层上引入一个二进制帧层, 请求和响应被拆分为更小的帧发送，不同帧之前可以交错发送，然后在另一端重新组装，从而实现了请求和响应的<strong>多路复用(multiplexing)</strong>，做到了<strong>同一个TCP</strong>连接下的真正的<strong>并发</strong>请求，多个请求和响应可同时在一个TCP连接上并行发送和返回，某个请求任务超时，不会影响到其它请求的正常执行，而且每个请求都可以分配优先级，优先级高的先执行，如图：</p>
 <img src="/2020/01/17/Http%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E6%B5%85%E6%9E%90/http3.png" class="" title="http1">
 
-<p>HTTP/2.0从协议的层面改进了HTTP，是未来的应用，对于HTTP2.0的更多优点可以查看<a href="https://juejin.im/post/5a4dfb2ef265da43305ee2d0" target="_blank" rel="noopener">HTTP2.0新特性</a>,  由于HTTP/2.0还未大规模应用，所以下面的讨论都是围绕<strong>HTTP/1.x</strong>。</p>
+<p>HTTP/2.0从协议的层面改进了HTTP，是未来的应用， HTTP/2.0介绍不是本文重点，对于HTTP2.0的更多优点可以查看<a href="https://juejin.im/post/5a4dfb2ef265da43305ee2d0" target="_blank" rel="noopener">HTTP2.0新特性</a>, 本文讨论都是围绕<strong>HTTP/1.x</strong>。</p>
 <blockquote>
 <p>HTTP1.1的长连接在浏览器中是<strong>默认开启</strong>的，通过指定首部<strong>Connection：Keep-Alive</strong>，后面会讲到长连接的工作原理。</p>
+<p>HTTP2.0的多路复用解决了HTTP的队头阻塞，而<strong>TCP的队头阻塞</strong>还是存在的，要解决TCP的队头阻塞只能改变运输层协议，例如使用基于UDP的<a href="https://juejin.cn/post/6844903554684043277" target="_blank" rel="noopener">QUIC</a>协议。</p>
 </blockquote>
 <h2 id="二、HTTP工作过程"><a href="#二、HTTP工作过程" class="headerlink" title="二、HTTP工作过程"></a>二、HTTP工作过程</h2><img src="/2020/01/17/Http%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E6%B5%85%E6%9E%90/http4.png" class="" title="http1">
 
@@ -684,15 +684,15 @@
 <ul>
 <li><p><strong>Accept</strong>：</p>
 <p><strong>示例：Accept: text/html，image/jepg;q=0.8，video/mpeg;q=0.5，*/*;q=0.1</strong></p>
-<p>客户端在Accept首部中列举了它支持的内容类型，服务端从这些内容类型中挑选出一个优先级最高的类型，返回这个类型的内容给客户端，内容类型一般是<strong>type/subtybe</strong>形式，例如文本类型text/html、text/plain、…，图片类型image/jepg、image/gif、…，视频类型video/mpeg、…，等，多个类型之间用逗号 <strong>,</strong> 分隔，可以用 <strong>*** 通配符表示接受所有类型，通过</strong>q=<strong>表示优先级，与类型用分号 **;</strong> 分隔, q值越大，优先级越高，q值得范围是(0~1），如果不指定优先级，默认优先级都是1.0，内容类型放置顺序按优先级排序；</p>
+<p>客户端在Accept首部中列举了它支持的内容类型，服务端从这些内容类型中挑选出一个优先级最高的类型，返回这个类型的内容给客户端，内容类型一般是<strong>type/subtybe</strong>形式，例如文本类型text/html、text/plain、…，图片类型image/jepg、image/gif、…，视频类型video/mpeg、…，等，多个类型之间用逗号 <strong>,</strong> 分隔，可以用  <strong>*</strong> 通配符表示接受所有类型，通过 <strong>q</strong> 表示优先级，与类型用分号 <strong>;</strong> 分隔, q值越大，优先级越高，q值得范围是(0~1），如果不指定优先级，默认优先级都是1.0，内容类型放置顺序按优先级排序；</p>
 </li>
 <li><p><strong>Accept-Charset</strong></p>
 <p><strong>示例：Accept-Charset: iso-8859，unicode-1-1;q=0.5</strong></p>
-<p>客户端在Accept-Charset首部中列举了它支持的字符集，服务端从这些字符集中挑选出一个优先级最高的字符集，返回这个字符集的内容给客户端，与Accept相同，可以通过<strong>q=</strong>指定字符集的优先级，并且和Accept一样，字符集的放置顺序按优先级排序；</p>
+<p>客户端在Accept-Charset首部中列举了它支持的字符集，服务端从这些字符集中挑选出一个优先级最高的字符集，返回这个字符集的内容给客户端，与Accept相同，可以通过 <strong>q</strong> 指定字符集的优先级，并且和Accept一样，字符集的放置顺序按优先级排序；</p>
 </li>
 <li><p><strong>Accept-Encoding</strong></p>
 <p><strong>示例：Accept-Encoding: gzip，compress，deflate;q=0.5</strong></p>
-<p>客户端在Accept-Encoding首部中列举了它支持的内容压缩格式，服务端从这些内容压缩格式中挑选出一个优先级最高的，把响应内容用这种格式压缩后再返回给客户端，客户端收到压缩的内容后，用相应的解压算法解压内容，再显示出来，与Accept相同，可以通过<strong>q=</strong>指定优先级，通过 ***** 通配符表示支持任意压缩格式；</p>
+<p>客户端在Accept-Encoding首部中列举了它支持的内容压缩格式，服务端从这些内容压缩格式中挑选出一个优先级最高的，把响应内容用这种格式压缩后再返回给客户端，客户端收到压缩的内容后，用相应的解压算法解压内容，再显示出来，与Accept相同，可以通过 <strong>q</strong> 指定优先级，通过 <strong>*</strong> 通配符表示支持任意压缩格式；</p>
 </li>
 <li><p><strong>Accept-Language</strong></p>
 <p><strong>示例：Accept-Language: zh-cn，en-us;q=0.5</strong></p>
@@ -873,9 +873,11 @@
 <p>以上就是本文全部内容，希望大家有所收获。</p>
 <p>参考资料：</p>
 <p>图解HTTP</p>
-<p><a href="https://www.cnblogs.com/heluan/p/8620312.html" target="_blank" rel="noopener">HTTP1.0、HTTP1.1 和 HTTP2.0 的区别</a></p>
-<p><a href="https://mp.weixin.qq.com/s/xU8X2gF_M_9_qzqbBdr4xQ" target="_blank" rel="noopener">深度解密 HTTP 通信细节</a></p>
+<p><a href="https://datatracker.ietf.org/doc/html/rfc2616" target="_blank" rel="noopener">RFC2626: Hypertext Transfer Protocol</a></p>
 <p><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Connection_management_in_HTTP_1.x" target="_blank" rel="noopener">HTTP/1.x 的连接管理</a></p>
+<p><a href="https://hpbn.co/http1x/#http-pipelining" target="_blank" rel="noopener">HTTP/1.x: HTTP Pipelining</a></p>
+<p><a href="https://hpbn.co/http2/#request-and-response-multiplexing" target="_blank" rel="noopener">HTTP/2.0: Request and Response Multiplexing</a></p>
+<p><a href="https://mp.weixin.qq.com/s/xU8X2gF_M_9_qzqbBdr4xQ" target="_blank" rel="noopener">深度解密 HTTP 通信细节</a></p>
 <p><a href="https://mp.weixin.qq.com/s/G-mw8oJHWgcSOAV8Vp6bPw" target="_blank" rel="noopener">深入理解https工作原理</a></p>
 <p><a href="https://blog.csdn.net/mrpre/article/details/78025940" target="_blank" rel="noopener">SSL中的RSA、DHE、ECDHE、ECDH流程与区别</a></p>
 <p><a href="https://harttle.land/2015/08/10/cookie-session.html" target="_blank" rel="noopener">Cookie/Session的机制与安全</a></p>
@@ -887,7 +889,7 @@
     <div class="content">
         
 <span class="post-time">
-    Last updated: <time datetime="2023-04-23T09:46:37.907Z" itemprop="dateUpdated">2023-04-23 17:46:37</time>
+    Last updated: <time datetime="2023-04-25T06:49:00.618Z" itemprop="dateUpdated">2023-04-25 14:49:00</time>
 </span><br>
 
 
