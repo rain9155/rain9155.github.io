@@ -144,7 +144,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="検索">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -178,14 +178,14 @@
     <ul class="post-list">
     
         <li class="post-list-item fade">
-            <article id="post-okhttp3源码分析之请求流程"
+            <article id="post-SVG入门学习"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-09-03 22:49:13" datetime="2019-09-03T14:49:13.000Z"  itemprop="datePublished">2019-09-03</time>
+        <time class="post-time" title="2019-07-12 17:39:00" datetime="2019-07-12T09:39:00.000Z"  itemprop="datePublished">2019-07-12</time>
 
         
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E4%BC%98%E7%A7%80%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%86%E6%9E%90/">优秀开源库分析</a></li></ul>
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
 
 
 
@@ -196,7 +196,7 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/">okhttp3源码分析之请求流程</a>
+      <a class="post-title-link" href="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/">SVG入门学习</a>
     </h3>
   
 
@@ -206,22 +206,17 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言在Android开发中，当下最火的网络请求框架莫过于okhttp和retrofit，它们都是square公司的产品，两个都是非常优秀开源库，值得我们去阅读它们的源码，学习它们的设计理念，但其实retrofit底层还是用okhttp来发起网络请求的，所以深入理解了okhttp也就深入理解了retrofit，它们的源码阅读顺序应该是先看okhttp，我在retrofit上发现它最近的一次提交才把okhttp版本更新到3.14，okhttp目前最新的版本是4.0.x，okhttp从4.0.x开始采用kotlin编写，在这之前还是用java，而我本次分析的okhttp源码版本是基本3.14.x，看哪个版本的不重要，重要的是阅读过后的收获，我打算分2篇文章去分析okhttp，分别是：
-
-请求流程(同步、异步)
-拦截器(Interceptor)
-
-本文是第一篇 - okhttp的请求流程，okhttp项目地址：okhttp
+        前言SVG对于android开发者听起来是陌生的东西，因为它是属于前端的产物，其实Android中也是支持SVG的，语法也很简单易懂，本文就通过我自己学习的经历，和大家一起学习一下SVG。
     
 
-        <a href="/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/07/12/SVG%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/okhttp/" rel="tag">okhttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/svg/" rel="tag">svg</a></li></ul>
 
     </div>
     
@@ -230,11 +225,108 @@
         </li>
     
         <li class="post-list-item fade">
-            <article id="post-自定义View实践-使用贝塞尔曲线实现WaveLoadingView"
+            <article id="post-Activity应用窗口的添加过程"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-08-23 18:19:46" datetime="2019-08-23T10:19:46.000Z"  itemprop="datePublished">2019-08-23</time>
+        <time class="post-time" title="2019-07-10 15:20:32" datetime="2019-07-10T07:20:32.000Z"  itemprop="datePublished">2019-07-10</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Window%E6%9C%BA%E5%88%B6/">Window机制</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/07/10/Activity%E5%BA%94%E7%94%A8%E7%AA%97%E5%8F%A3%E7%9A%84%E6%B7%BB%E5%8A%A0%E8%BF%87%E7%A8%8B/">Activity应用窗口的添加过程</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言
+上一篇文章Window, WindowManager和WindowManagerService之间的关系
+
+从上一篇文章中，我们了解到了Window的体系机制，也知道了window分为三种类型，分别是应用窗口(Application Window)、子窗口(Sub Window)、系统窗口(System Window），本文通过源码以Activity为例讲解一下应用窗口的添加过程，如果没看过上一篇文章建议先看，对于不同类型的窗口的添加，它们在WindowManager中的处理过程会有一点不一样，但是对于在WMS的处理过程中，基本上都是一样的。所以本文深入讲解一下Activity窗口的添加过程，知道了这个过程，对于其他类型的窗口添加也就能举一反三了。
+    
+
+        <a href="/2019/07/10/Activity%E5%BA%94%E7%94%A8%E7%AA%97%E5%8F%A3%E7%9A%84%E6%B7%BB%E5%8A%A0%E8%BF%87%E7%A8%8B/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WMS/" rel="tag">WMS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/activity/" rel="tag">activity</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/window/" rel="tag">window</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windowManager/" rel="tag">windowManager</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-发布开源库到jitpack"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-06-10 18:47:41" datetime="2019-06-10T10:47:41.000Z"  itemprop="datePublished">2019-06-10</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/">发布开源库到jitpack</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言最近几天准备发布一个开源库，方便自己使用，一开始了解到的是发布到jcenter仓库中，它是目前世界上最大的java和Android开源软件构件仓库，而且 JCenter 是 Android Studio 默认使用的服务器仓库，只需要一句话就可以搞定整个包的导入过程，但是它的发布过程繁琐，而且对于新手来说特别不友好，就算你跟着网上教程来发布，运气好的话你就会发布成功，如果运气不好，你就会遇...
+    
+
+        <a href="/2019/06/10/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jitpack/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jitpack/" rel="tag">jitpack</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-android6-0动态权限申请的正确流程"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-06-06 18:13:59" datetime="2019-06-06T10:13:59.000Z"  itemprop="datePublished">2019-06-06</time>
 
         
 	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
@@ -248,7 +340,7 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/08/23/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BD%BF%E7%94%A8%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF%E5%AE%9E%E7%8E%B0WaveLoadingView/">自定义View实践-使用贝塞尔曲线实现一个loading控件</a>
+      <a class="post-title-link" href="/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/">android6.0动态权限申请的正确流程</a>
     </h3>
   
 
@@ -258,23 +350,17 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言上一篇文章：仿微信滑动按钮
-本文是自定义View实践第二篇，上一篇实现了一个简单的滑动按钮，知道了一些自定义View的基本步骤，本文是使用贝塞尔曲线实现的一个加载中控件，接下来进入正文讲解。
-地址：WaveLoadingView
-效果图
-
-可以看到，WaveLoadingView除了用于loading外，还可以用于显示进度的场景。
-实现方式在效果图中，波浪是曲线的形式的，所以我们需要想办...
+        前言从 Android 6.0（API 级别 23）开始，用户开始在应用运行时向其授予权限，而不是在应用安装时授予。所以如果你的应用使用到了一些危险权限，就必须在AndroidManifest.xml 中静态地声明需要用到的权限，并在使用到该功能时要动态的申请，否则在调用到相应权限功能时候，会抛出 SecurityException异常。所以本文探讨一下动态权限的申请的正确流程，并把它封装成...
     
 
-        <a href="/2019/08/23/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BD%BF%E7%94%A8%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF%E5%AE%9E%E7%8E%B0WaveLoadingView/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/06/06/android6-0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%94%B3%E8%AF%B7%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%B5%81%E7%A8%8B/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%87%AA%E5%AE%9A%E4%B9%89view/" rel="tag">自定义view</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/" rel="tag">android</a></li></ul>
 
     </div>
     
@@ -283,14 +369,14 @@
         </li>
     
         <li class="post-list-item fade">
-            <article id="post-自定义View实践-仿微信的滑动按钮"
+            <article id="post-发布开源库到jcenter"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-08-06 18:30:02" datetime="2019-08-06T10:30:02.000Z"  itemprop="datePublished">2019-08-06</time>
+        <time class="post-time" title="2019-06-05 18:41:30" datetime="2019-06-05T10:41:30.000Z"  itemprop="datePublished">2019-06-05</time>
 
         
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a></li></ul>
 
 
 
@@ -301,7 +387,7 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/">自定义View实践-仿微信的滑动按钮</a>
+      <a class="post-title-link" href="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/">发布开源库到jcenter</a>
     </h3>
   
 
@@ -311,23 +397,18 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言前几天写过一篇文章View的工作原理，有原理不行，还要有实践，刚好把以前项目写过的仿微信滑动按钮控件封装一下，所以本文记录一下我实现这个控件的细节。
-地址：SwitchButton
-效果图控件使用效果如下：
-
-
-除了颜色，看起来和微信的还是挺像的。
-准备1、选择自定义View的方式自定义View有3种途径实现：1、组合控件；2、继承现有控件(如Button)；3、继承View。下面分别介...
+        前言前几天写过一篇文章快速发布开源库到jitpack，在里面我控诉发布jcenter的发布过程繁琐，对新手不友好，直到这几天我遇到了一个bintray-release插件，发现它可以帮助你更简单的发布开源库到jcenter上，而且过程也很简单。
+如果你还不懂jcenter是什么或者你不懂那些配置有什么作用，强烈建议你先看一下这个两篇文章教你一步步发布一个开源库到 JCenter、手把手教你发...
     
 
-        <a href="/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/06/05/%E5%8F%91%E5%B8%83%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%B0jcenter/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%87%AA%E5%AE%9A%E4%B9%89view/" rel="tag">自定义view</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jcenter/" rel="tag">jcenter</a></li></ul>
 
     </div>
     
@@ -336,14 +417,14 @@
         </li>
     
         <li class="post-list-item fade">
-            <article id="post-View的事件分发机制"
+            <article id="post-Android8.0的Activity启动流程2"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-07-29 23:14:42" datetime="2019-07-29T15:14:42.000Z"  itemprop="datePublished">2019-07-29</time>
+        <time class="post-time" title="2019-05-19 16:12:34" datetime="2019-05-19T08:12:34.000Z"  itemprop="datePublished">2019-05-19</time>
 
         
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/View%E6%9C%BA%E5%88%B6/">View机制</a></li></ul>
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6/">四大组件</a></li></ul>
 
 
 
@@ -354,7 +435,7 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/07/29/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/">View的事件分发机制</a>
+      <a class="post-title-link" href="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B2/">Android8.0的Activity启动流程(2)</a>
     </h3>
   
 
@@ -364,17 +445,20 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言前几天写过一篇文章View的工作原理，讲述的View工作的三大流程，其实与View的工作流程同样重要还有View的事件分发机制，平时我们经常通过setOnClickListener()方法来设置一个View的点击监听，那你有没有想过这个点击事件底层是怎么样传递到这个View的呢？当你自定义控件时，如果要处理滑动事件，那么到底返回true还是false？还有当你遇到了滑动嵌套的情景，你要怎么解决滑动嵌套引起的冲突？所以，本文通过 源码 + 流程图 来深入了解一个事件分发机制，当你掌握了它之后，当你遇到与滑动相关的问题时就更加的游刃有余。
+        前言
+上一篇文章Android8.0的Activity启动流程(1)
+
+上一篇文章讲了应用进程请求AMS启动Activity过程和Activity在AMS中的启动过程，然后Activity启动的代码逻辑就从AMS所在进程，又重新回到了应用进程所在的ApplicationThread中。我们还留下了一个问题，Activity的生命周期方法是如何被回调的？，下面我们就带着这个疑问，去走一遍源码，看一下在应用进程中ApplicationThread启动Activity的过程。
     
 
-        <a href="/2019/07/29/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B2/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/view/" rel="tag">view</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/activity/" rel="tag">activity</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
 
     </div>
     
@@ -383,14 +467,14 @@
         </li>
     
         <li class="post-list-item fade">
-            <article id="post-View的工作原理"
+            <article id="post-Android8.0的Activity启动流程1"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-07-22 19:57:11" datetime="2019-07-22T11:57:11.000Z"  itemprop="datePublished">2019-07-22</time>
+        <time class="post-time" title="2019-05-19 16:11:17" datetime="2019-05-19T08:11:17.000Z"  itemprop="datePublished">2019-05-19</time>
 
         
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/View%E6%9C%BA%E5%88%B6/">View机制</a></li></ul>
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6/">四大组件</a></li></ul>
 
 
 
@@ -401,7 +485,7 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/">View的工作原理</a>
+      <a class="post-title-link" href="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/">Android8.0的Activity启动流程(1)</a>
     </h3>
   
 
@@ -411,17 +495,64 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言在Android中View一直扮演着一个很重要的角色，它是我们开发中视觉的呈现，我平常也使用着Android提供的丰富且功能强大的控件，有时候遇到一个很炫酷的自定义View的开源库，我们也是拿来主义，时间长了你就会发现你只是一个只会使用控件和依赖被人开源库的程序员，这并不是一个开发者，所以我们并不能只满足于使用，我们要理解它背后的工作原理和流程，这样才能自己做出一个属于自己的控件，一直都说自定View是Android进阶中的一道门槛，当其实自定义View当你理解了它的原理后，你就会发现它也不过如此。本文将从源码的角度探讨View工作的三大流程，对View做进一步的认识。俗话说的好：源码才是最好的老师。
+        前言Activity的启动流程有俩种过程，一种是根Activity的启动过程，即在Launch界面点击一个应用图标启动应用程序，根Activity指的是应用程序启动的第一个Activity；另一种是普通Activity的启动流程，即我们平时调用startActivity方法来启动一个Activity。本文讨论第二种，startActivity方法大家都知道是用来启动一个Activity的，那么大家有没有想过它在底层是怎么启动的呢？Activity的生命周期方法是如何被回调的？它启动过程中涉及到多少个进程？接下来我们通过撸一篇源码来了解Activity的大概启动流程，然后解答这几个问题。
     
 
-        <a href="/2019/07/22/View%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/05/19/Android8.0%E7%9A%84Activity%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B1/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/view/" rel="tag">view</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/activity/" rel="tag">activity</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-Window, WindowManager和WindowManagerService之间的关系"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-03-22 22:36:32" datetime="2019-03-22T14:36:32.000Z"  itemprop="datePublished">2019-03-22</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/Window%E6%9C%BA%E5%88%B6/">Window机制</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/">Window,WindowManager和WindowManagerService之间的关系</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言上面3个名词在开发中经常听到，在Android开发中，Window是所有视图的载体，如Activity，Dialog和Toast的视图，我们想要对Window进行添加和删除就要通过WindowManager来操作，而WindowManager就是通过Binder与WindowManagerService进行跨进程通信，把具体的实现工作交给WindowManagerService（下面简称WMS）。下面分别介绍它们，理清它们的基本脉络。
+    
+
+        <a href="/2019/03/22/Window,%20WindowManager%E5%92%8CWindowManagerService%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WMS/" rel="tag">WMS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/window/" rel="tag">window</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windowManager/" rel="tag">windowManager</a></li></ul>
 
     </div>
     
@@ -434,7 +565,7 @@
     
 <nav id="page-nav">
     <div class="inner">
-    <a class="extend prev" rel="prev" href="/page/4/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/6/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/4/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/">下一页</a>
     </div>
 </nav>
 
@@ -449,7 +580,7 @@
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>This blog is licensed under a <a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</span>
+            <span>このブログの内容物は<a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja" target="_blank">クリエイティブ・コモンズ 表示 - 非営利 - 継承 4.0 国際ライセンスの下に提供されています</a></span>
         </p>
     </div>
     <div class="bottom">

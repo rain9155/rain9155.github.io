@@ -144,7 +144,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="検索">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -178,168 +178,11 @@
     <ul class="post-list">
     
         <li class="post-list-item fade">
-            <article id="post-java集合"
+            <article id="post-工厂模式"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-11-05 18:33:15" datetime="2019-11-05T10:33:15.000Z"  itemprop="datePublished">2019-11-05</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/11/05/java%E9%9B%86%E5%90%88/">java学习总结之集合框架</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        前言在JDK1.2之前，java是没有完整的集合框架的，只有一些简单的可以扩展的容器类，如Vector、Stack、Hashtable等，这些容器类它们解决了数组不能动态扩容和使用复杂的问题，到了JDK1.2之后，为了管理这些容器类，就出现了集合框架这个概念，集合框架是为了表示和操作集合而规定的一种统一的标准的体系结构，它包含三大内容：对外的接口、接口的实现和对集合运算的算法（对某一种数据结...
-    
-
-        <a href="/2019/11/05/java%E9%9B%86%E5%90%88/" class="post-more waves-effect waves-button">
-            Continue reading...
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/list/" rel="tag">list</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/map/" rel="tag">map</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/queue/" rel="tag">queue</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/set/" rel="tag">set</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%9B%86%E5%90%88/" rel="tag">集合</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-通过源码全面解剖Retrofit2的整体流程"
-  class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-10-23 22:00:22" datetime="2019-10-23T14:00:22.000Z"  itemprop="datePublished">2019-10-23</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E4%BC%98%E7%A7%80%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%86%E6%9E%90/">优秀开源库分析</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/10/23/%E9%80%9A%E8%BF%87%E6%BA%90%E7%A0%81%E5%85%A8%E9%9D%A2%E8%A7%A3%E5%89%96Retrofit2%E7%9A%84%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B/">通过源码全面解剖Retrofit2的整体流程</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        前言上两篇文章：
-
-okhttp3源码分析之请求流程
-okhttp3源码分析之拦截器
-
-Retrofit与Okhttp是Android开发中最最热门的网络请求库，它们都来自square公司，Okhttp在前面的两篇文章中已经通过源码从请求流程和拦截器两个角度分析过，本文的主角是Retrofit，经过这几天的研究，我发现Retrofit只是一个对Okhttp网络请求框架的巧妙包装，它通过注解去定义一个HTTP请求，然后在底层通过Okhttp发起网络请求，就是这样的一个简单的过程，其间运用了很多的设计模式：外观模式、动态代理模式、适配器模式、装饰者模式等，其最核心的是动态代理模式，所以在此之前大家对动态代理要有一个了解：
-静态和动态代理模式
-其他的设计模式我会在讲解的过程中简单介绍，除了使用了大量的设计模式，Retrofit还应用了面向接口编程的思想，使得整个系统解耦彻底，本文会通过一个简单的Retrofit使用示例，然后引出Retrofit的核心类，面向接口思想、构建过程、动态代理和网络请求过程，通过这几部分来解剖Retrofit。
-Retrofit的项目地址：Retrofit
-
-本文源码基于Retrofit2.4
-
-    
-
-        <a href="/2019/10/23/%E9%80%9A%E8%BF%87%E6%BA%90%E7%A0%81%E5%85%A8%E9%9D%A2%E8%A7%A3%E5%89%96Retrofit2%E7%9A%84%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B/" class="post-more waves-effect waves-button">
-            Continue reading...
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/retrofit/" rel="tag">retrofit</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-使用AIDL来进行进程间通信"
-  class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-10-21 21:04:01" datetime="2019-10-21T13:04:01.000Z"  itemprop="datePublished">2019-10-21</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/10/21/%E4%BD%BF%E7%94%A8AIDL%E6%9D%A5%E8%BF%9B%E8%A1%8C%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">使用AIDL来进行进程间通信</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        前言AIDL它是Android众多进程间通信方式中的一种，底层是Binder机制的实现，所以想要读懂AIDL自动生成的代码中各个类的作用，就必须对Binder有一定的了解，其实不止AIDL，Android进程间通信的大多数方式的底层都是Binder机制，本文主要介绍AIDL的使用，所以不会介绍Binder机制的原理，关于Binder机制的原理，我推荐下面的一篇文章，零基础也能看懂：
-写给 Android 应用工程师的 Binder 原理剖析
-看完上面的文章你也就能对Binder原理的实现有大概的了解，对于我们Android应用开发也就足够了，如果你还不满足，想从底层和源码了解Binder机制，你可以阅读下面的两个链接：
-Android Bander设计与实现
-Binder系列—开篇
-上面两个系列就是从设计和源码的角度去解读Binder，有点深入。好了，对Binder有一个大体上的认识后，接下来我们就要通过AIDL的使用来完成Android进程间通信的实践。
-    
-
-        <a href="/2019/10/21/%E4%BD%BF%E7%94%A8AIDL%E6%9D%A5%E8%BF%9B%E8%A1%8C%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" class="post-more waves-effect waves-button">
-            Continue reading...
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AIDL/" rel="tag">AIDL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IPC/" rel="tag">IPC</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-策略模式"
-  class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-10-19 22:56:38" datetime="2019-10-19T14:56:38.000Z"  itemprop="datePublished">2019-10-19</time>
+        <time class="post-time" title="2019-09-07 19:47:08" datetime="2019-09-07T11:47:08.000Z"  itemprop="datePublished">2019-09-07</time>
 
         
 	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></li></ul>
@@ -353,7 +196,7 @@ Binder系列—开篇
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/10/19/%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/">策略模式</a>
+      <a class="post-title-link" href="/2019/09/07/%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">工厂模式</a>
     </h3>
   
 
@@ -363,11 +206,11 @@ Binder系列—开篇
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        介绍在开发中也经常遇到这种情况，实现某一个功能往往有许多算法或者策略，我们在实际开发中选择不同的算法或策略来完成该功能。一般的情况是我们会把所有的算法或策略写入一个类中，通过if…else…或case语句来根据实际情况来选择具体算法或策略，但是这种方法会使这个类臃肿，维护难，当增加一种算法或策略时又要修改源代码，违反了面向对象的单一原则和开闭原则。如果将这些算法或者策略抽象出来，提供一个统一...
+        前言工厂方法模式是一种结构简单的模式，并且在我们的应用中很广泛，如Android中Activity的各个生命周期的回调，以onCreate方法为例，它就可以看做是一个工厂方法，我们在其中构造我们的View并返回给framework处理。
     
 
-        <a href="/2019/10/19/%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/09/07/%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
@@ -382,11 +225,11 @@ Binder系列—开篇
         </li>
     
         <li class="post-list-item fade">
-            <article id="post-代理模式"
+            <article id="post-Builder模式"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-10-15 20:05:03" datetime="2019-10-15T12:05:03.000Z"  itemprop="datePublished">2019-10-15</time>
+        <time class="post-time" title="2019-09-07 19:35:25" datetime="2019-09-07T11:35:25.000Z"  itemprop="datePublished">2019-09-07</time>
 
         
 	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></li></ul>
@@ -400,7 +243,7 @@ Binder系列—开篇
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/10/15/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/">静态和动态代理模式</a>
+      <a class="post-title-link" href="/2019/09/07/Builder%E6%A8%A1%E5%BC%8F/">Builder模式</a>
     </h3>
   
 
@@ -410,17 +253,323 @@ Binder系列—开篇
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言代理模式，也称委托模式，是结构型设计模式之一，何为代理呢? 在日常生活中就比如叫朋友替你拿个快递，叫朋友替你做一下作业，叫朋友替你买点东西等等，这个朋友就是你的代理，你把事情委托你的朋友做了，同样在代码的世界中也存在代理，而且在你以后阅读到更多的设计模式时，你会发现很多的设计模式中也有代理模式的影子，代理模式是一个非常重要的设计模式，代理模式分为静态代理和动态代理，本文将会通过一个简单的...
+        前言Builder模式是一步步创建一个复杂对象的创建型模式，它允许用户在不知道内部构建细节的情况下，可以更加精准的控制对象的构造过程，为了在构建过程中，对外部隐藏实现细节，就可以使用Builder模式将部件和组装过程分离，使得构建过程和部件可以自由扩展，两者之间的耦合度也降到最低。
     
 
-        <a href="/2019/10/15/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/09/07/Builder%E6%A8%A1%E5%BC%8F/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/" rel="tag">动态代理</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86/" rel="tag">静态代理</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-责任链模式"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-09-07 16:46:01" datetime="2019-09-07T08:46:01.000Z"  itemprop="datePublished">2019-09-07</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/09/07/%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/">责任链模式</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言责任链模式是一种链式结构，就是由一个个节点首尾相接串起来的结构，具有很好的灵活性，将每一个节点看作是一个对象，每一个对象拥有不同的处理逻辑，将一个请求从链式的首端发出，沿着链的路径依此传递每一个节点对象，直到有对象处理这个请求为止，我们将这样一种模式称为责任链模式。
+    
+
+        <a href="/2019/09/07/%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-okhttp3源码分析之拦截器"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-09-07 15:01:40" datetime="2019-09-07T07:01:40.000Z"  itemprop="datePublished">2019-09-07</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E4%BC%98%E7%A7%80%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%86%E6%9E%90/">优秀开源库分析</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/09/07/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%8B%A6%E6%88%AA%E5%99%A8/">okhttp3源码分析之拦截器</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言
+上一篇文章：okhttp3源码分析之请求流程
+
+本篇文章继续通过源码来探讨okhttp的另外一个重要知识点：拦截器，在上一篇文章我们知道，在请求发送到服务器之前有一系列的拦截器对请求做了处理后才发送出去，在服务器返回响应之后，同样的有一系列拦截器对响应做了处理后才返回给发起请求的调用者，可见，拦截器是okhttp的一个重要的核心功能，在分析各个拦截器功能的同时又会牵扯出okhttp的缓存机制、连接机制。
+
+本文源码基于okhttp3.14.x
+
+okhttp项目地址：okhttp
+    
+
+        <a href="/2019/09/07/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%8B%A6%E6%88%AA%E5%99%A8/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/okhttp/" rel="tag">okhttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-okhttp3源码分析之请求流程"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-09-03 22:49:13" datetime="2019-09-03T14:49:13.000Z"  itemprop="datePublished">2019-09-03</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E4%BC%98%E7%A7%80%E5%BC%80%E6%BA%90%E5%BA%93%E5%88%86%E6%9E%90/">优秀开源库分析</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/">okhttp3源码分析之请求流程</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言在Android开发中，当下最火的网络请求框架莫过于okhttp和retrofit，它们都是square公司的产品，两个都是非常优秀开源库，值得我们去阅读它们的源码，学习它们的设计理念，但其实retrofit底层还是用okhttp来发起网络请求的，所以深入理解了okhttp也就深入理解了retrofit，它们的源码阅读顺序应该是先看okhttp，我在retrofit上发现它最近的一次提交才把okhttp版本更新到3.14，okhttp目前最新的版本是4.0.x，okhttp从4.0.x开始采用kotlin编写，在这之前还是用java，而我本次分析的okhttp源码版本是基本3.14.x，看哪个版本的不重要，重要的是阅读过后的收获，我打算分2篇文章去分析okhttp，分别是：
+
+请求流程(同步、异步)
+拦截器(Interceptor)
+
+本文是第一篇 - okhttp的请求流程，okhttp项目地址：okhttp
+    
+
+        <a href="/2019/09/03/okhttp3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/okhttp/" rel="tag">okhttp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-自定义View实践-使用贝塞尔曲线实现WaveLoadingView"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-08-23 18:19:46" datetime="2019-08-23T10:19:46.000Z"  itemprop="datePublished">2019-08-23</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/08/23/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BD%BF%E7%94%A8%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF%E5%AE%9E%E7%8E%B0WaveLoadingView/">自定义View实践-使用贝塞尔曲线实现一个loading控件</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言上一篇文章：仿微信滑动按钮
+本文是自定义View实践第二篇，上一篇实现了一个简单的滑动按钮，知道了一些自定义View的基本步骤，本文是使用贝塞尔曲线实现的一个加载中控件，接下来进入正文讲解。
+地址：WaveLoadingView
+效果图
+
+可以看到，WaveLoadingView除了用于loading外，还可以用于显示进度的场景。
+实现方式在效果图中，波浪是曲线的形式的，所以我们需要想办...
+    
+
+        <a href="/2019/08/23/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BD%BF%E7%94%A8%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF%E5%AE%9E%E7%8E%B0WaveLoadingView/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%87%AA%E5%AE%9A%E4%B9%89view/" rel="tag">自定义view</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-自定义View实践-仿微信的滑动按钮"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-08-06 18:30:02" datetime="2019-08-06T10:30:02.000Z"  itemprop="datePublished">2019-08-06</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE/">开源项目</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/">自定义View实践-仿微信的滑动按钮</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言前几天写过一篇文章View的工作原理，有原理不行，还要有实践，刚好把以前项目写过的仿微信滑动按钮控件封装一下，所以本文记录一下我实现这个控件的细节。
+地址：SwitchButton
+效果图控件使用效果如下：
+
+
+除了颜色，看起来和微信的还是挺像的。
+准备1、选择自定义View的方式自定义View有3种途径实现：1、组合控件；2、继承现有控件(如Button)；3、继承View。下面分别介...
+    
+
+        <a href="/2019/08/06/%E8%87%AA%E5%AE%9A%E4%B9%89View%E5%AE%9E%E8%B7%B5-%E4%BB%BF%E5%BE%AE%E4%BF%A1%E7%9A%84%E6%BB%91%E5%8A%A8%E6%8C%89%E9%92%AE/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%87%AA%E5%AE%9A%E4%B9%89view/" rel="tag">自定义view</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-View的事件分发机制"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-07-29 23:14:42" datetime="2019-07-29T15:14:42.000Z"  itemprop="datePublished">2019-07-29</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/View%E6%9C%BA%E5%88%B6/">View机制</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/07/29/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/">View的事件分发机制</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言前几天写过一篇文章View的工作原理，讲述的View工作的三大流程，其实与View的工作流程同样重要还有View的事件分发机制，平时我们经常通过setOnClickListener()方法来设置一个View的点击监听，那你有没有想过这个点击事件底层是怎么样传递到这个View的呢？当你自定义控件时，如果要处理滑动事件，那么到底返回true还是false？还有当你遇到了滑动嵌套的情景，你要怎么解决滑动嵌套引起的冲突？所以，本文通过 源码 + 流程图 来深入了解一个事件分发机制，当你掌握了它之后，当你遇到与滑动相关的问题时就更加的游刃有余。
+    
+
+        <a href="/2019/07/29/View%E7%9A%84%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/view/" rel="tag">view</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
 
     </div>
     
@@ -433,7 +582,7 @@ Binder系列—开篇
     
 <nav id="page-nav">
     <div class="inner">
-    <a class="extend prev" rel="prev" href="/page/2/">上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/2/">上一页</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/">下一页</a>
     </div>
 </nav>
 
@@ -448,7 +597,7 @@ Binder系列—开篇
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>This blog is licensed under a <a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</span>
+            <span>このブログの内容物は<a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja" target="_blank">クリエイティブ・コモンズ 表示 - 非営利 - 継承 4.0 国際ライセンスの下に提供されています</a></span>
         </p>
     </div>
     <div class="bottom">

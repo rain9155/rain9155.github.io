@@ -144,7 +144,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="検索">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -178,14 +178,14 @@
     <ul class="post-list">
     
         <li class="post-list-item fade">
-            <article id="post-java面向对象"
+            <article id="post-RecyclerView之观察者模式"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-07-19 12:29:50" datetime="2019-07-19T04:29:50.000Z"  itemprop="datePublished">2019-07-19</time>
+        <time class="post-time" title="2019-03-09 17:39:00" datetime="2019-03-09T09:39:00.000Z"  itemprop="datePublished">2019-03-09</time>
 
         
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/recyclerView/">recyclerView</a></li></ul>
 
 
 
@@ -196,7 +196,54 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/">java学习总结之面向对象</a>
+      <a class="post-title-link" href="/2019/03/09/RecyclerView%E4%B9%8B%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/">RecyclerView之观察者模式</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言RecyclerView是Android开发中的一个重要的模式，通常我们往RecyclerView添加数据时，都会调用Adapter的notifiyXX函数，这是为什么呢，今天我们就从源码来探究一下，对观察者模式不熟悉的读者，可以看一下这一篇博客观察者模式, RecyclerView在更新数据时也算是对观察者模式的一种应用。
+    
+
+        <a href="/2019/03/09/RecyclerView%E4%B9%8B%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/recyclerView/" rel="tag">recyclerView</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-RecyclerView之缓存设计"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-03-08 14:56:50" datetime="2019-03-08T06:56:50.000Z"  itemprop="datePublished">2019-03-08</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/recyclerView/">recyclerView</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/03/08/RecyclerView%E4%B9%8B%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/">RecyclerView之缓存设计</a>
     </h3>
   
 
@@ -207,18 +254,19 @@
 
     
         前言
-上一篇文章java基础本篇文章继续Java知识点的归纳，梳理一下关于面向对象的知识点，涉及到封装、继承、多态，还有接口，类之间的关系。
+上一篇文章RecyclerView之布局设计
 
+RecyclerView，见名之义，这个View代表了可循环使用的视图集合控件，封装了View的缓存逻辑判断，RecyclerView的基本单元是ViewHolder，里面有一个itemView代表了视图上的子View，所以RecyclerView的缓存基本单元也是ViewHolder。本文将从源码的角度来讲解RecyclerView的缓存设计。
     
 
-        <a href="/2019/07/19/java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/03/08/RecyclerView%E4%B9%8B%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" rel="tag">面向对象</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/recyclerView/" rel="tag">recyclerView</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
 
     </div>
     
@@ -227,11 +275,58 @@
         </li>
     
         <li class="post-list-item fade">
-            <article id="post-java线程池"
+            <article id="post-RecyclerView之布局设计"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-07-19 12:26:00" datetime="2019-07-19T04:26:00.000Z"  itemprop="datePublished">2019-07-19</time>
+        <time class="post-time" title="2019-03-01 15:10:00" datetime="2019-03-01T07:10:00.000Z"  itemprop="datePublished">2019-03-01</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/recyclerView/">recyclerView</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/03/01/RecyclerView%E4%B9%8B%E5%B8%83%E5%B1%80%E8%AE%BE%E8%AE%A1/">RecyclerView之布局设计</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        前言RecyclerView功能强大，自推出以来受到了无数人的喜爱，它可以通过一个LayoutManager将一个RecyclerView显示为不同的样式，例如ListView、GridView样式、瀑布流样式，所以加深对于RecyclerView的学习对于开发有很重要的意义。关于RecyclerView如何使用网上有很多文章，本篇文章从源码讲解RecyclerView如何通过layoutManager来进行布局。
+    
+
+        <a href="/2019/03/01/RecyclerView%E4%B9%8B%E5%B8%83%E5%B1%80%E8%AE%BE%E8%AE%A1/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/recyclerView/" rel="tag">recyclerView</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-ThreadLocal解析"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-02-21 13:55:50" datetime="2019-02-21T05:55:50.000Z"  itemprop="datePublished">2019-02-21</time>
 
         
 	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
@@ -245,7 +340,56 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/07/19/java%E7%BA%BF%E7%A8%8B%E6%B1%A0/">java学习总结之线程池</a>
+      <a class="post-title-link" href="/2019/02/21/ThreadLocal%E8%A7%A3%E6%9E%90/">ThreadLocal原理解析</a>
+    </h3>
+  
+
+
+
+
+    <div class="post-content" id="post-content" itemprop="postContent">
+
+    
+        概述ThreadLocal，线程本地存储区（Thread Local Storage，简称为TLS），通过它可以在指定的线程中存储数据，数据存储之后，只能在指定的线程中可以获取到存储的数据，对于其他线程来说则无法获取到数据。
+使用ThreadLocal 提供了 get()，set(T value)，remove() 3个对外方法，来看一个简单的例子：
+12345678910111213141...
+    
+
+        <a href="/2019/02/21/ThreadLocal%E8%A7%A3%E6%9E%90/" class="post-more waves-effect waves-button">
+            続きを読む…
+        </a>
+    </div>
+    
+    <div class="post-footer">
+        
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ThreadLocal/" rel="tag">ThreadLocal</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
+
+    </div>
+    
+</article>
+
+        </li>
+    
+        <li class="post-list-item fade">
+            <article id="post-Android消息机制native层"
+  class="article-card article-type-post" itemprop="blogPost">
+
+    <div class="post-meta">
+        <time class="post-time" title="2019-02-21 13:51:51" datetime="2019-02-21T05:51:51.000Z"  itemprop="datePublished">2019-02-21</time>
+
+        
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6/">消息机制</a></li></ul>
+
+
+
+    </div>
+
+    
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2019/02/21/Android%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6native%E5%B1%82/">Android消息机制(native层)</a>
     </h3>
   
 
@@ -256,19 +400,19 @@
 
     
         前言
-上一篇文章：java学习总结之线程
+上一篇文章：Android消息机制java层
 
-当我们需要频繁的创建多个线程时，每次都通过new一个Thread是一种不好的操作，创建一个线程是要消耗资源，频繁的创建会导致性能较差，而且我们还要管理多个线程的状态，管理不好还可能会出现死锁，浪费资源。这时就需要java提供的线程池，它能够有效的管理、调度线程，避免过多资源的消耗，通过线程池的统一调度、管理，使得多线程开发变得更简单。本文讲解一下有关线程池的知识点。
+MessageQueue中有多个native方法，MessaeQueue是Android消息机制的Java层和native层的连接纽带，Android的java层和native层通过JNI调用打通，java层和native各有一套消息机制，实现不一样，本文讲解native层的Android消息机制，了解了native层的消息机制，你就能明...
     
 
-        <a href="/2019/07/19/java%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/02/21/Android%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6native%E5%B1%82/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" rel="tag">线程池</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/handler/" rel="tag">handler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/native/" rel="tag">native</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
 
     </div>
     
@@ -277,14 +421,14 @@
         </li>
     
         <li class="post-list-item fade">
-            <article id="post-java线程"
+            <article id="post-Android消息机制java层"
   class="article-card article-type-post" itemprop="blogPost">
 
     <div class="post-meta">
-        <time class="post-time" title="2019-07-19 12:25:50" datetime="2019-07-19T04:25:50.000Z"  itemprop="datePublished">2019-07-19</time>
+        <time class="post-time" title="2019-02-21 13:33:11" datetime="2019-02-21T05:33:11.000Z"  itemprop="datePublished">2019-02-21</time>
 
         
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6/">消息机制</a></li></ul>
 
 
 
@@ -295,7 +439,7 @@
 
   
     <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/07/19/java%E7%BA%BF%E7%A8%8B/">java学习总结之线程</a>
+      <a class="post-title-link" href="/2019/02/21/Android%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6java%E5%B1%82/">Android消息机制(java层)</a>
     </h3>
   
 
@@ -305,113 +449,17 @@
     <div class="post-content" id="post-content" itemprop="postContent">
 
     
-        前言在java中，线程非常重要，我们要分清楚进程和线程的区别：进程是操作系统中资源分配的基本单位，进程是指一个内存中运行的应用程序，每个进程都拥有自己的一块独立的内存空间，进程之间的资源不共享；而线程是CPU调度的最小单元，一个进程可以有多个线程，线程之间的堆空间是共享的，但栈空间是独立的，java程序的进程至少包含主线程和后台线程(垃圾回收线程)。了解这些知识后，来看下文有关线程的知识。
+        前言Android的消息机制用于同进程的线程间通信，它是由MessageQueue，Message，Looper，Handler共同组成，Android中大量的交互都是通过消息机制，比如四大组件启动过程与服务的交互、View的绘制、更新等都离不开消息机制，所以Android在某种意义上也可以说成是一个以消息驱动的系统，在Android中消息机制的运作分为java层和native层，它们之间的...
     
 
-        <a href="/2019/07/19/java%E7%BA%BF%E7%A8%8B/" class="post-more waves-effect waves-button">
-            Continue reading...
+        <a href="/2019/02/21/Android%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6java%E5%B1%82/" class="post-more waves-effect waves-button">
+            続きを読む…
         </a>
     </div>
     
     <div class="post-footer">
         
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%BA%BF%E7%A8%8B/" rel="tag">线程</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-java基础"
-  class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-07-19 12:24:58" datetime="2019-07-19T04:24:58.000Z"  itemprop="datePublished">2019-07-19</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/07/19/java%E5%9F%BA%E7%A1%80/">java学习总结之基础</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        前言万事开头难，准备从零把java相关知识点捡起来，把自己所学的Java知识点归纳，下面是关于java的一些基本知识点。
-    
-
-        <a href="/2019/07/19/java%E5%9F%BA%E7%A1%80/" class="post-more waves-effect waves-button">
-            Continue reading...
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/" rel="tag">java</a></li></ul>
-
-    </div>
-    
-</article>
-
-        </li>
-    
-        <li class="post-list-item fade">
-            <article id="post-搞定两种场景下的Fragment懒加载"
-  class="article-card article-type-post" itemprop="blogPost">
-
-    <div class="post-meta">
-        <time class="post-time" title="2019-07-14 18:33:57" datetime="2019-07-14T10:33:57.000Z"  itemprop="datePublished">2019-07-14</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
-
-
-
-    </div>
-
-    
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/">搞定两种场景下的Fragment懒加载</a>
-    </h3>
-  
-
-
-
-
-    <div class="post-content" id="post-content" itemprop="postContent">
-
-    
-        前言我对懒加载的定义是：数据的加载要等到页面对用户可见时才加载，否则的话会浪费用户流量。网上实现懒加载的方案非常多，但大多数都是解决了我下面说到的场景一的懒加载，本文还解决场景二的懒加载方式。
-如果不想看下面的分析，直接这个类导入你的项目中，需要懒加载的Fragment继承这个类，并重写相应的方法就行：传送门。
-场景一： Viewpager + Tablayout + Fragment什么？...
-    
-
-        <a href="/2019/07/14/%E6%90%9E%E5%AE%9A%E4%B8%A4%E7%A7%8D%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/" class="post-more waves-effect waves-button">
-            Continue reading...
-        </a>
-    </div>
-    
-    <div class="post-footer">
-        
-	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/fragment/" rel="tag">fragment</a></li></ul>
+	<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/handler/" rel="tag">handler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a></li></ul>
 
     </div>
     
@@ -424,7 +472,7 @@
     
 <nav id="page-nav">
     <div class="inner">
-    <a class="extend prev" rel="prev" href="/page/5/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/7/">下一页</a>
+    <a class="extend prev" rel="prev" href="/page/5/">上一页</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span>
     </div>
 </nav>
 
@@ -439,7 +487,7 @@
             
                 <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
             
-            <span>This blog is licensed under a <a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</span>
+            <span>このブログの内容物は<a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja" target="_blank">クリエイティブ・コモンズ 表示 - 非営利 - 継承 4.0 国際ライセンスの下に提供されています</a></span>
         </p>
     </div>
     <div class="bottom">
